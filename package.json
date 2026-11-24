@@ -1,7 +1,7 @@
 {
   "name": "makerworld-to-any",
-  "version": "1.1.0",
-  "description": "Skill do Claude Code que adapta projetos 3MF do Bambu Studio / MakerWorld para a Anycubic Kobra X (Anycubic Slicer Next).",
+  "version": "1.2.0",
+  "description": "Adapta projetos 3MF do Bambu Studio / MakerWorld para impressoras Anycubic (Kobra X, S1, Kobra 3, Kobra 4...) no Anycubic Slicer Next: perfis, filamentos, cores, torre de purga, tamanho e verificacao fatiando. Feito pela Megatic.",
   "bin": {
     "makerworld-to-any": "bin/instalar.js"
   },
@@ -24,7 +24,10 @@
     "bambu-lab",
     "makerworld",
     "3mf",
-    "3d-printing"
+    "3d-printing",
+    "kobra-s1",
+    "kobra-3",
+    "kobra-4"
   ],
   "author": "Megatic (https://megatic.pt)",
   "license": "MIT",

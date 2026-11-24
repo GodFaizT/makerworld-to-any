@@ -1,8 +1,9 @@
-"""Biblioteca comum da skill makerworld-to-any.
+"""Biblioteca comum da skill makerworld-to-any (MakerWorld to Any, feita pela Megatic - https://megatic.pt).
 
-Converte projetos 3MF do Bambu Studio / MakerWorld para a Anycubic Kobra X (bico 0.4) com a linha de
-comandos do proprio Anycubic Slicer Next (testado com a 2.0.0.3) e verifica o resultado fatiando.
-So precisa da biblioteca padrao do Python (usa o numpy se existir, para medir mais depressa).
+Converte projetos 3MF do Bambu Studio / MakerWorld para impressoras Anycubic (Kobra X, Kobra S1, Kobra 3, Kobra 4,
+...) com a linha de comandos do proprio Anycubic Slicer Next (testado com a 2.0.0.3) e verifica o resultado
+fatiando. A impressora de destino escolhe-se com usa_impressora(); tamanho da mesa, perfis e filamentos vem dos
+perfis de sistema do Anycubic. So precisa da biblioteca padrao do Python (o numpy acelera, se existir).
 """
 import glob
 import json
@@ -20,24 +21,18 @@ except ImportError:  # funciona sem numpy, so mais devagar em malhas grandes
 
 ANY = os.environ.get("ANYCUBIC_SLICER", r"C:\Program Files\AnycubicSlicerNext\AnycubicSlicerNext.exe")
 PERFIS = os.environ.get("ANYCUBIC_PERFIS", os.path.join(os.environ.get("APPDATA", ""), "AnycubicSlicerNext", "system", "Anycubic"))
-MAQUINA = "Anycubic Kobra X 0.4 nozzle"
-SUF = " @Anycubic Kobra X 0.4 nozzle"
-CAMA = 260.0      # mesa da Kobra X (mm)
-ALTURA_MAX = 260.0
-PASSO = 312.0     # distancia entre pratos num projeto do Anycubic (mesa x 1.2)
+# impressora por omissao (o nome do modelo basta: "Kobra X", "Kobra S1", "Kobra 3 Max"...)
+IMPRESSORA_OMISSAO = os.environ.get("MAKERWORLD_TO_ANY_IMPRESSORA", "Kobra X")
 
-# O fim de impressao de fabrica da Kobra X desliga tudo com o bico pousado em cima da peca (fio e bolinha
-# no topo). Como na Kobra 3 / S1: levanta 5 mm e afasta a cabeca antes de desligar.
-FIM_GCODE = ("M400\n"
-             "G92 E0\n"
-             "{if max_layer_z < max_print_height - 5}G1 Z{max_layer_z + 5} F900 ; levanta o bico da peca{endif}\n"
-             "G1 X250 Y250 F12000 ; afasta a cabeca antes de desligar\n"
-             "M400\n"
-             "M140 S0 ; turn off heatbed\n"
-             "M104 S0 ; turn off temperature\n"
-             "M107;turn off fan\n"
-             "M84; disable motors\n"
-             "; disable stepper motors\n")
+# impressora de destino: usa_impressora() preenche isto a partir do perfil da maquina
+MAQUINA = "Anycubic Kobra X 0.4 nozzle"
+MODELO = "Anycubic Kobra X"
+SUF = " @" + MAQUINA
+BICO = "0.4"
+CAMA_X = CAMA_Y = 260.0      # mesa (mm)
+ALTURA_MAX = 260.0
+PASSO_X = PASSO_Y = 312.0    # distancia entre pratos num projeto do Anycubic (mesa x 1.2)
+MULTICOR = True              # tem ACE (troca de filamento automatica)
 
 # filamento por funcao (Bambu 2.x): tambem contam como "usados" e tem de ser renumerados
 CHAVES_FIL = ("support_filament", "support_interface_filament", "wall_filament", "sparse_infill_filament",
@@ -108,6 +103,103 @@ def primeiro(v):
     return v[0] if isinstance(v, list) and v else v
 
 
+# ------------------------------------------------------------------------------------- impressoras
+
+def _instanciavel(d):
+    return str(d.get("instantiation", "true")).lower() == "true"
+
+
+def maquinas():
+    """{modelo: {bico: nome da maquina}} de todas as impressoras Anycubic do slicer."""
+    global _IDX
+    _IDX = _IDX or _indice()
+    out = {}
+    for (t, n), d in _IDX.items():
+        m = re.match(r"(.+?) (\d+(?:\.\d+)?) nozzle$", n)
+        if t == "machine" and m and _instanciavel(d):
+            modelo = perfil("machine", n).get("printer_model") or m.group(1)
+            out.setdefault(modelo, {})[format(float(m.group(2)), "g")] = n
+    return out
+
+
+def _norm(s):
+    return re.sub(r"[^a-z0-9.]+", " ", s.lower().replace("anycubic", "")).strip()
+
+
+def encontra_maquina(consulta=None, bico=None):
+    """'Kobra S1', 'kobra-3-max', 'Kobra X 0.6', 'Anycubic Kobra X 0.4 nozzle'... -> nome da maquina no Anycubic."""
+    consulta = (consulta or IMPRESSORA_OMISSAO).strip()
+    if existe("machine", consulta):
+        return consulta
+    mb = re.search(r"\s(\d\.\d+)\s*(?:mm)?\s*(?:nozzle|bico)?\s*$", " " + consulta)
+    if mb:
+        bico = bico or mb.group(1)
+        consulta = (" " + consulta)[:mb.start()].strip()
+    ms = maquinas()
+    q = _norm(consulta)
+    exatos = [m for m in ms if _norm(m) == q]
+    cands = exatos or [m for m in ms if q and q in _norm(m)]
+    if len(cands) != 1:
+        lista = ", ".join(sorted(m.replace("Anycubic ", "") for m in ms))
+        raise SystemExit(f"Impressora '{consulta}' " + ("ambigua" if cands else "desconhecida") + f". Ha: {lista}")
+    bicos = ms[cands[0]]
+    b = format(float(bico), "g") if bico else "0.4"
+    if b not in bicos:
+        raise SystemExit(f"A {cands[0]} nao tem perfis para bico {b} (ha: {', '.join(sorted(bicos))})")
+    return bicos[b]
+
+
+def usa_impressora(maquina):
+    """Passa a trabalhar para esta maquina: mesa, altura, passo entre pratos, ACE, sufixo dos perfis."""
+    global MAQUINA, MODELO, SUF, BICO, CAMA_X, CAMA_Y, ALTURA_MAX, PASSO_X, PASSO_Y, MULTICOR
+    d = perfil("machine", maquina)
+    pts = [tuple(float(v) for v in p.split("x")) for p in d.get("printable_area", ["0x0", "260x0", "260x260", "0x260"])]
+    CAMA_X = max(p[0] for p in pts) - min(p[0] for p in pts)
+    CAMA_Y = max(p[1] for p in pts) - min(p[1] for p in pts)
+    ALTURA_MAX = float(primeiro(d.get("printable_height", "250")))
+    PASSO_X, PASSO_Y = CAMA_X * 1.2, CAMA_Y * 1.2
+    MULTICOR = len(str(d.get("change_filament_gcode", "")).strip()) > 20
+    MAQUINA, SUF = maquina, " @" + maquina
+    MODELO = d.get("printer_model") or re.sub(r" \d+(\.\d+)? nozzle$", "", maquina)
+    BICO = format(float(primeiro(d.get("nozzle_diameter", "0.4"))), "g")
+    return d
+
+
+def nome_curto():
+    """'Kobra X', 'Kobra S1 0.6'..."""
+    return MODELO.replace("Anycubic ", "") + ("" if BICO == "0.4" else f" {BICO}")
+
+
+def impressora_do_projeto(j):
+    """Num projeto do Anycubic, passa a usar a impressora dele. False se nao for uma Anycubic conhecida."""
+    n = str(primeiro(j.get("printer_settings_id", "")))
+    if existe("machine", n):
+        usa_impressora(n)
+        return True
+    return False
+
+
+def compativeis(tipo):
+    """{nome base: nome completo} dos perfis de processo/filamento desta maquina."""
+    global _IDX
+    _IDX = _IDX or _indice()
+    out = {}
+    for (t, n), d in _IDX.items():
+        if t == tipo and _instanciavel(d) and (n.endswith(SUF) or MAQUINA in perfil(t, n).get("compatible_printers", [])):
+            out[n.split(" @")[0]] = n
+    return out
+
+
+def fim_gcode():
+    """Fim de impressao. O de fabrica da Kobra X, Kobra 4 e S1 Max desliga com o bico pousado em cima da peca (fio e
+    bolinha no topo): junta-se antes um levantamento de 5 mm e afasta-se a cabeca. None = o de fabrica ja levanta."""
+    fim = str(perfil("machine", MAQUINA).get("machine_end_gcode", ""))
+    if re.search(r"G1\s+Z|max_layer_z|G91", fim):
+        return None
+    return ("M400\nG92 E0\n{if max_layer_z < max_print_height - 5}G1 Z{max_layer_z + 5} F900 ; levanta o bico da peca{endif}\n"
+            f"G1 X{CAMA_X - 10:g} Y{CAMA_Y - 10:g} F12000 ; afasta a cabeca antes de desligar\n" + fim.rstrip("\n") + "\n")
+
+
 # ------------------------------------------------------------------------------- linha de comandos
 
 def corre_cli(args, cwd, timeout=3600):
@@ -137,9 +229,12 @@ def exporta(entrada, saida, maquina_json, processo_json, filamentos_json, cwd):
         raise RuntimeError("O Anycubic falhou a exportar: " + explica_rc(rc, log))
 
 
-def cubo_stl(caminho, lado=10.0, centro=125.0):
-    """Cubo para o projeto de referencia. Tem de estar dentro da mesa: encostado a origem o Anycubic recusa-o."""
-    v = [(x + centro, y + centro, z) for z in (0, lado) for y in (0, lado) for x in (0, lado)]
+def cubo_stl(caminho, lado=10.0):
+    """Cubo para o projeto de referencia (so servem as definicoes). O Anycubic so carrega um STL solto se estiver mais
+    ou menos entre 60 e 125 mm, seja qual for a mesa (na origem ou a partir de ~150 mm da "Loading of a model file
+    failed"), por isso fica sempre a 100 mm."""
+    cx = cy = 100.0
+    v = [(x + cx, y + cy, z) for z in (0, lado) for y in (0, lado) for x in (0, lado)]
     f = [(0, 2, 3), (0, 3, 1), (4, 5, 7), (4, 7, 6), (0, 1, 5), (0, 5, 4),
          (2, 6, 7), (2, 7, 3), (0, 4, 6), (0, 6, 2), (1, 3, 7), (1, 7, 5)]
     with open(caminho, "wb") as fh:
@@ -256,14 +351,14 @@ def colunas(n):
 def origem_prato(i, n):
     """Canto do prato i (1..n) nas coordenadas do projeto do Anycubic."""
     c = colunas(n)
-    return ((i - 1) % c) * PASSO, -((i - 1) // c) * PASSO
+    return ((i - 1) % c) * PASSO_X, -((i - 1) // c) * PASSO_Y
 
 
 def prato_de(caixa, n):
     cx = (caixa["lo"][0] + caixa["hi"][0]) / 2
     cy = (caixa["lo"][1] + caixa["hi"][1]) / 2
-    col = math.floor((cx + (PASSO - CAMA) / 2) / PASSO)
-    lin = math.floor((CAMA + (PASSO - CAMA) / 2 - cy) / PASSO)
+    col = math.floor((cx + (PASSO_X - CAMA_X) / 2) / PASSO_X)
+    lin = math.floor((CAMA_Y + (PASSO_Y - CAMA_Y) / 2 - cy) / PASSO_Y)
     return lin * colunas(n) + col + 1
 
 
@@ -287,8 +382,8 @@ def avisos_mesa(por_prato, folga=0.5, sobreposicao=False):
         for c in cs:
             if c["printable"] == "0":
                 continue
-            if min(c["llo"][:2]) < -folga or max(c["lhi"][:2]) > CAMA + folga:
-                av.append(f"prato {p}: '{c['nome']}' sai da mesa de {CAMA:.0f} mm "
+            if min(c["llo"][:2]) < -folga or c["lhi"][0] > CAMA_X + folga or c["lhi"][1] > CAMA_Y + folga:
+                av.append(f"prato {p}: '{c['nome']}' sai da mesa de {CAMA_X:.0f} x {CAMA_Y:.0f} mm "
                           f"(x {c['llo'][0]:.1f}..{c['lhi'][0]:.1f}, y {c['llo'][1]:.1f}..{c['lhi'][1]:.1f})")
             if c["lhi"][2] > ALTURA_MAX:
                 av.append(f"prato {p}: '{c['nome']}' tem {c['lhi'][2]:.1f} mm de altura (maximo {ALTURA_MAX:.0f})")
@@ -317,14 +412,14 @@ def sep(a, b):
 
 def posicao_torre(rects, n_fil, largura=35.0, folga=10.0):
     """Canto (wipe_tower_x, wipe_tower_y) da torre de purga, livre das pecas e o mais perto do centro.
-    Pegada medida na Kobra X: x de X-6 a X+largura+1, y de Y-7.5 a Y+20 com 2 cores (cresce com mais cores)."""
+    Pegada medida numa Kobra X: x de X-6 a X+largura+1, y de Y-7.5 a Y+20 com 2 cores (cresce com mais cores)."""
     fundo = 22 + 10 * max(0, n_fil - 2)
     melhor = None
-    for X in range(12, int(CAMA - largura - 6), 2):
-        for Y in range(12, int(CAMA - fundo - 4), 2):
+    for X in range(12, int(CAMA_X - largura - 6), 2):
+        for Y in range(12, int(CAMA_Y - fundo - 4), 2):
             tr = (X - 8, Y - 8, X + largura + 3, Y + fundo)
             if all(sep(tr, r) >= folga for r in rects):
-                d = math.hypot(X + largura / 2 - CAMA / 2, Y + fundo / 2 - CAMA / 2)
+                d = math.hypot(X + largura / 2 - CAMA_X / 2, Y + fundo / 2 - CAMA_Y / 2)
                 if melhor is None or d < melhor[0]:
                     melhor = (d, X, Y)
     return (melhor[1], melhor[2]) if melhor else None

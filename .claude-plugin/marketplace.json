@@ -5,14 +5,14 @@
     "url": "https://megatic.pt"
   },
   "metadata": {
-    "description": "Ferramentas de impressao 3D para o Claude Code: projetos Bambu Lab / MakerWorld na Anycubic Kobra X."
+    "description": "Ferramentas de impressao 3D da Megatic para o Claude Code: projetos Bambu Lab / MakerWorld em impressoras Anycubic."
   },
   "plugins": [
     {
       "name": "makerworld-to-any",
       "source": "./",
-      "description": "Adapta projetos 3MF do Bambu Studio / MakerWorld para a Anycubic Kobra X (Anycubic Slicer Next).",
-      "version": "1.1.0",
+      "description": "Adapta projetos 3MF do Bambu Studio / MakerWorld para impressoras Anycubic (Kobra X, S1, Kobra 3, Kobra 4...) no Anycubic Slicer Next: perfis, filamentos, cores, torre de purga, tamanho e verificacao fatiando. Feito pela Megatic.",
+      "version": "1.2.0",
       "category": "productivity",
       "keywords": [
         "anycubic",

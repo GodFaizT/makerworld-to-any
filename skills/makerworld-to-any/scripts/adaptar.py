@@ -1,20 +1,23 @@
-"""Adapta um projeto 3MF do Bambu Studio / MakerWorld para a Anycubic Kobra X (bico 0.4).
+"""Adapta um projeto 3MF do Bambu Studio / MakerWorld para uma impressora Anycubic (por omissao a Kobra X).
+MakerWorld to Any - feito pela Megatic (https://megatic.pt).
 
 Uso:
-    python adaptar.py "<original.3mf>" [--saida PASTA] [--processo "0.16mm High Quality"]
-                      [--filamentos "Anycubic PLA Matte;Anycubic PLA"] [--cores "#FFFFFF;#800020"]
-                      [--substituir] [--arquivar-original PASTA] [--sem-fatiar]
+    python adaptar.py "<original.3mf>" [--impressora "Kobra S1"] [--bico 0.4] [--saida PASTA]
+                      [--processo "0.16mm High Quality"] [--filamentos "Anycubic PLA Matte;Anycubic PLA"]
+                      [--cores "#FFFFFF;#800020"] [--substituir] [--arquivar-original PASTA] [--sem-fatiar]
+    python adaptar.py --listar-impressoras
 
 O que faz:
   1. Le o projeto: impressora, perfil, filamentos e quais sao mesmo usados, pratos, objetos.
   2. Prepara uma copia: nomes de prato vazios (com nome o Anycubic rebenta) e filamentos usados renumerados 1..n.
-  3. Escolhe o perfil da Kobra X com a mesma altura de camada e passa as definicoes do autor (as que ele mudou
-     e as de "intencao": paredes, enchimento, suportes, brim, costura, ironing, fuzzy skin...).
+  3. Escolhe o perfil da impressora com o mesmo nome do perfil base do autor (ou a mesma altura de camada) e passa
+     as definicoes do autor (as que ele mudou e as de "intencao": paredes, enchimento, suportes, brim, costura,
+     ironing, fuzzy skin...).
   4. O Anycubic cria o projeto (formato dele) a partir do 3MF original: mantem pecas, modificadores, pintura,
      pratos, camadas variaveis e os creditos do autor.
   5. Corrige o que a linha de comandos deixa mal: filamentos a mais, matriz de purga, torre de purga desligada,
      lista de definicoes alteradas.
-  6. Confere medidas (iguais ao original), se tudo cabe na mesa de 260 mm, e fatia todos os pratos.
+  6. Confere medidas (iguais ao original), se tudo cabe na mesa da impressora, e fatia todos os pratos.
 """
 import argparse
 import json
@@ -26,9 +29,9 @@ import tempfile
 import zipfile
 
 sys.dont_write_bytecode = True
-import kobrax as K
+import anycubic as K
 
-# definicoes que dizem como a peca deve ser impressa: passam sempre que diferem do perfil da Kobra X
+# definicoes que dizem como a peca deve ser impressa: passam sempre que diferem do perfil da impressora
 INTENCAO = ["layer_height", "wall_loops", "top_shell_layers", "bottom_shell_layers", "sparse_infill_density",
             "sparse_infill_pattern", "enable_support", "support_type", "support_threshold_angle",
             "support_on_build_plate_only", "brim_type", "raft_layers", "spiral_mode", "ironing_type", "fuzzy_skin",
@@ -48,7 +51,7 @@ def normaliza(k, v, sis):
     if k.endswith("_pattern") and v == "zig-zag":
         v = "zigzag"
     if k == "support_style" and v == "tree_organic":
-        return None            # o Anycubic 2.0 nao tem arvore organica: fica o estilo da Kobra X
+        return None            # o Anycubic 2.0 nao tem arvore organica: fica o estilo da impressora
     return v
 
 
@@ -56,23 +59,25 @@ TIPOS = {"High Quality": "High Quality", "Optimal": "High Quality", "Fine": "Hig
 
 
 def escolhe_processo(j, pedido=None):
-    """Perfil base do autor com o mesmo nome na Kobra X (as mudancas dele sao relativas a esse perfil, e a altura
-    de camada dele passa como mudanca); senao o perfil da Kobra X com a altura de camada mais proxima."""
-    kx = [n for n in K.nomes("process") if n.endswith(K.SUF)]
+    """Perfil base do autor com o mesmo nome nesta impressora (as mudancas dele sao relativas a esse perfil, e a
+    altura de camada dele passa como mudanca); senao o perfil com a altura de camada mais proxima."""
+    comp = K.compativeis("process")
+    if not comp:
+        raise SystemExit(f"Nao ha perfis de processo para {K.MAQUINA}")
     if pedido:
-        n = pedido if pedido.endswith(K.SUF) else pedido + K.SUF
-        if n not in kx:
-            raise SystemExit(f"Perfil '{n}' nao existe. Ha: " + ", ".join(x.replace(K.SUF, "") for x in kx))
-        return n
+        base = pedido.split(" @")[0].strip()
+        if base not in comp:
+            raise SystemExit(f"Perfil '{base}' nao existe para {K.MAQUINA}. Ha: " + ", ".join(sorted(comp)))
+        return comp[base]
     lh = float(K.primeiro(j.get("layer_height", "0.2")))
     m = re.match(r"\s*(\d+\.\d+)mm ([A-Za-z ]+?)\s*@", str(K.primeiro(j.get("print_settings_id", ""))))
     if m:
         tipo = next((v for c, v in TIPOS.items() if c == m.group(2).strip()), "Standard")
-        for c in (f"{float(m.group(1)):.2f}mm {tipo}{K.SUF}", f"{float(m.group(1)):.2f}mm Standard{K.SUF}"):
-            if c in kx:
-                return c
-    std = [n for n in kx if "Standard" in n]
-    return min(std, key=lambda n: abs(float(n.split("mm")[0]) - lh))
+        for c in (f"{float(m.group(1)):.2f}mm {tipo}", f"{float(m.group(1)):.2f}mm Standard"):
+            if c in comp:
+                return comp[c]
+    std = [b for b in comp if "Standard" in b and re.match(r"\d", b)] or [b for b in comp if re.match(r"\d", b)] or list(comp)
+    return comp[min(std, key=lambda b: abs(float(re.match(r"[\d.]+", b).group(0)) - lh) if re.match(r"[\d.]+", b) else 9)]
 
 
 def mudancas_processo(j, sis):
@@ -95,27 +100,40 @@ def mudancas_processo(j, sis):
     return mud, ignorados, diffs
 
 
-def filamento_kx(nome_b, tipo):
+VARIANTES_PLA = (("matte", "PLA Matte"), ("silk", "PLA Silk"), ("wood", "PLA Wood"), ("glow", "PLA Glow"),
+                 ("transl", "PLA Translucent"), ("clear", "PLA Clear"), ("marble", "PLA Marble"), ("galaxy", "PLA Galaxy"),
+                 ("metal", "PLA Metal"), ("-cf", "PLA-CF"), (" cf", "PLA-CF"), ("pla+", "PLA+"), ("tough", "PLA+"),
+                 ("high speed", "PLA High Speed"))
+
+
+def filamento_para(nome_b, tipo):
+    """Perfil de filamento desta impressora mais parecido com o do autor (Anycubic primeiro, depois Generic)."""
+    comp = K.compativeis("filament")
     n, t = (nome_b or "").lower(), (tipo or "PLA").upper()
     if "PETG" in t:
-        c = "Anycubic PETG-CF" if "cf" in n else "Anycubic PETG"
-    elif t in ("ABS", "ASA", "PVA"):
-        c = "Anycubic " + t
+        bases = (["PETG-CF"] if "cf" in n else []) + ["PETG"]
     elif "TPU" in t:
-        c = "Anycubic TPU 95A"
-    elif "PLA" in t or not t:
-        c = "Anycubic PLA"
-        for chave, kx in (("matte", "Anycubic PLA Matte"), ("silk", "Anycubic PLA Silk"), ("wood", "Anycubic PLA Wood"),
-                          ("glow", "Anycubic PLA Glow"), ("transl", "Anycubic PLA Translucent"), ("-cf", "Anycubic PLA-CF"),
-                          (" cf", "Anycubic PLA-CF"), ("pla+", "Anycubic PLA+"), ("tough", "Anycubic PLA+"),
-                          ("high speed", "Anycubic PLA High Speed")):
-            if chave in n:
-                c = kx
-                break
+        bases = ["TPU 95A", "TPU", "TPU for ACE"]
+    elif t in ("ABS", "ASA", "PVA", "PC", "PA", "PEBA"):
+        bases = [t]
     else:
-        c = "Anycubic PLA"
-    nome = c + K.SUF
-    return nome if K.existe("filament", nome) else "Anycubic PLA" + K.SUF
+        bases = [v for c, v in VARIANTES_PLA if c in n][:1]
+    for b in bases + ["PLA"]:
+        for marca in ("Anycubic ", "Generic "):
+            if marca + b in comp:
+                return comp[marca + b]
+    if not comp:
+        raise SystemExit(f"Nao ha perfis de filamento para {K.MAQUINA}")
+    return comp[sorted(comp)[0]]
+
+
+def lista_impressoras():
+    print("Impressoras Anycubic no Anycubic Slicer Next (usar com --impressora):")
+    for modelo, bicos in sorted(K.maquinas().items()):
+        maq = bicos.get("0.4") or next(iter(bicos.values()))
+        K.usa_impressora(maq)
+        print(f"  {modelo.replace('Anycubic ', ''):18s} mesa {K.CAMA_X:g} x {K.CAMA_Y:g} x {K.ALTURA_MAX:g} mm | "
+              f"bicos {', '.join(sorted(bicos, key=float))} | {'ACE (varias cores)' if K.MULTICOR else 'uma cor'}")
 
 
 def filamentos_usados(z, j, ms):
@@ -165,6 +183,25 @@ def filamentos_usados(z, j, ms):
     return sorted(usados), n, dict(pintura_cores=pintado, fuzzy_pintado=fuzzy, suportes_pintados=suportes, costura_pintada=costura)
 
 
+def cores_por_objeto(ms, j):
+    """[(nome do objeto, [cores do autor])] a partir do filamento de cada objeto/peca."""
+    fcores = j.get("filament_colour", [])
+    out = []
+    for o in re.finditer(r'<object id="\d+">(.*?)</object>', ms, re.S):
+        corpo = o.group(1)
+        cab = corpo.split("<part", 1)[0]
+        mn = re.search(r'key="name" value="([^"]*)"', cab)
+        mo = re.search(r'key="extruder" value="(\d+)"', cab)
+        eo = int(mo.group(1)) if mo and int(mo.group(1)) > 0 else 1
+        es = set()
+        for sub, pc in re.findall(r'<part id="\d+" subtype="(\w+)">(.*?)</part>', corpo, re.S):
+            if sub == "normal_part":
+                mp = re.search(r'key="extruder" value="(\d+)"', pc)
+                es.add(int(mp.group(1)) if mp and int(mp.group(1)) > 0 else eo)
+        out.append((mn.group(1) if mn else "?", [fcores[e - 1] if e - 1 < len(fcores) else "?" for e in sorted(es or {eo})]))
+    return out
+
+
 def prepara(orig, dst, mapa):
     def mudar(nome, d):
         if nome == "Metadata/model_settings.config":
@@ -182,7 +219,7 @@ def prepara(orig, dst, mapa):
     K.reescreve(orig, dst, mudar)
 
 
-def corrige(exp, ref, dst, n_orig, idx, proc_diff, torre):
+def corrige(exp, ref, dst, n_orig, idx, proc_diff, maq_diff, torre):
     R = json.loads(zipfile.ZipFile(ref).read("Metadata/project_settings.config"))
     k = len(R["filament_settings_id"])
     relatorio = {"cortadas": [], "sem_regra": []}
@@ -218,7 +255,7 @@ def corrige(exp, ref, dst, n_orig, idx, proc_diff, torre):
                     relatorio["cortadas"].append(key)
                 elif isinstance(r, list) and len(r) != len(v):
                     relatorio["sem_regra"].append((key, len(v), len(r)))
-            j["different_settings_to_system"] = [proc_diff] + [""] * k + ["machine_end_gcode"]
+            j["different_settings_to_system"] = [proc_diff] + [""] * k + [maq_diff]
             if k > 1:
                 j["enable_prime_tower"] = "1"
                 if torre:
@@ -237,11 +274,14 @@ def corrige(exp, ref, dst, n_orig, idx, proc_diff, torre):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Bambu Lab 3MF -> Anycubic Kobra X")
-    ap.add_argument("original")
-    ap.add_argument("--saida", help="pasta de saida (por omissao: 'Adaptado Kobra X' ao lado, se existir)")
-    ap.add_argument("--nome", help="nome do ficheiro de saida (por omissao '<original> - Kobra X.3mf')")
-    ap.add_argument("--processo", help='perfil da Kobra X, ex. "0.16mm High Quality" (por omissao: mesma altura de camada)')
+    ap = argparse.ArgumentParser(description="MakerWorld to Any: Bambu Lab 3MF -> impressora Anycubic (Megatic)")
+    ap.add_argument("original", nargs="?")
+    ap.add_argument("--impressora", help=f'impressora Anycubic, ex. "Kobra S1", "Kobra 3 Max" (por omissao: {K.IMPRESSORA_OMISSAO})')
+    ap.add_argument("--bico", help="diametro do bico (por omissao o do original, se houver perfil; senao 0.4)")
+    ap.add_argument("--listar-impressoras", action="store_true", help="mostra as impressoras disponiveis e sai")
+    ap.add_argument("--saida", help="pasta de saida (por omissao: 'Adaptado <impressora>' ao lado, se existir)")
+    ap.add_argument("--nome", help="nome do ficheiro de saida (por omissao '<original> - <impressora>.3mf')")
+    ap.add_argument("--processo", help='perfil da impressora, ex. "0.16mm High Quality" (por omissao: o do autor)')
     ap.add_argument("--filamentos", help='perfis Anycubic por ordem, separados por ";" (ex. "Anycubic PLA Matte;Anycubic PLA")')
     ap.add_argument("--cores", help='cores por ordem, separadas por ";" (por omissao as do autor)')
     ap.add_argument("--substituir", action="store_true", help="substitui o ficheiro de saida se ja existir")
@@ -249,27 +289,52 @@ def main():
     ap.add_argument("--sem-fatiar", action="store_true")
     ap.add_argument("--manter-temp", action="store_true", help="guarda a pasta temporaria (para investigar)")
     a = ap.parse_args()
+    if a.listar_impressoras:
+        lista_impressoras()
+        return
+    if not a.original:
+        ap.error("falta o ficheiro 3MF original")
 
     orig = os.path.abspath(a.original)
-    pasta_o = os.path.dirname(orig)
-    saida = a.saida
-    if not saida:
-        cand = [os.path.join(pasta_o, "Adaptado Kobra X"), os.path.join(os.path.dirname(pasta_o), "Adaptado Kobra X")]
-        saida = next((c for c in cand if os.path.isdir(c)), pasta_o)
-    nome_saida = a.nome or os.path.splitext(os.path.basename(orig))[0] + " - Kobra X.3mf"
-    destino = os.path.join(saida, nome_saida)
-    if os.path.exists(destino) and not a.substituir:
-        raise SystemExit(f"Ja existe {destino} (usa --substituir ou --nome)")
-
     z = zipfile.ZipFile(orig)
     if "3D/3dmodel.model" not in z.namelist():
         raise SystemExit("Este ficheiro nao tem modelo 3D (sera um .gcode.3mf ja fatiado?)")
     j = json.loads(z.read("Metadata/project_settings.config"))
+
+    # impressora de destino; bico: o pedido, o do nome ("Kobra X 0.6"), o do original se houver perfil, ou 0.4
+    bico_orig = format(float(K.primeiro(j.get("nozzle_diameter", "0.4")) or 0.4), "g")
+    if a.bico or re.search(r"\d\.\d+\s*(mm|nozzle|bico)?\s*$", a.impressora or ""):
+        maquina = K.encontra_maquina(a.impressora, a.bico)
+    else:
+        try:
+            maquina = K.encontra_maquina(a.impressora, bico_orig)
+        except SystemExit:
+            maquina = K.encontra_maquina(a.impressora, "0.4")
+    K.usa_impressora(maquina)
+
+    pasta_o = os.path.dirname(orig)
+    saida = a.saida
+    if not saida:
+        nomes_pasta = [f"Adaptado {K.nome_curto()}", f"Adaptado {K.MODELO.replace('Anycubic ', '')}"]
+        cand = [os.path.join(b, n) for n in nomes_pasta for b in (pasta_o, os.path.dirname(pasta_o))]
+        saida = next((c for c in cand if os.path.isdir(c)), pasta_o)
+    nome_saida = a.nome or os.path.splitext(os.path.basename(orig))[0] + f" - {K.nome_curto()}.3mf"
+    destino = os.path.join(saida, nome_saida)
+    if os.path.exists(destino) and not a.substituir:
+        raise SystemExit(f"Ja existe {destino} (usa --substituir ou --nome)")
     ms = z.read("Metadata/model_settings.config").decode("utf-8") if "Metadata/model_settings.config" in z.namelist() else ""
     nomes_pratos = re.findall(r'<metadata key="plater_name" value="([^"]*)"', ms)
     usados, n_orig, pinturas = filamentos_usados(z, j, ms)
     k = len(usados)
-    mapa = {old: i + 1 for i, old in enumerate(usados)} if usados != list(range(1, k + 1)) else {}
+    cores_obj = []
+    if k > 1 and not K.MULTICOR:
+        # sem ACE nao ha troca de filamento: tudo no filamento 1 (sem comandos T1 no g-code); o relatorio diz a cor
+        # que o autor deu a cada objeto, para trocar o rolo entre pratos
+        cores_obj = cores_por_objeto(ms, j)
+        mapa = {u: 1 for u in usados}
+        usados, k = usados[:1], 1
+    else:
+        mapa = {old: i + 1 for i, old in enumerate(usados)} if usados != list(range(1, k + 1)) else {}
     idx = [u - 1 for u in usados]
 
     processo = escolhe_processo(j, a.processo)
@@ -289,19 +354,22 @@ def main():
     fils = []
     for i, u in enumerate(usados):
         if i < len(pedidos):
-            nome = pedidos[i] if pedidos[i].endswith(K.SUF) else pedidos[i] + K.SUF
-            if not K.existe("filament", nome):
-                raise SystemExit(f"Filamento '{nome}' nao existe no Anycubic")
+            comp = K.compativeis("filament")
+            base = pedidos[i].split(" @")[0].strip()
+            if base not in comp:
+                raise SystemExit(f"Filamento '{base}' nao existe para {K.MAQUINA}. Ha: " + ", ".join(sorted(comp)))
+            nome = comp[base]
         else:
-            nome = filamento_kx(fids[u - 1] if u - 1 < len(fids) else "", ftipos[u - 1] if u - 1 < len(ftipos) else "PLA")
+            nome = filamento_para(fids[u - 1] if u - 1 < len(fids) else "", ftipos[u - 1] if u - 1 < len(ftipos) else "PLA")
         cor = cores_p[i] if i < len(cores_p) else (fcores[u - 1] if u - 1 < len(fcores) else "#FFFFFF")
         fils.append((nome, cor, fids[u - 1] if u - 1 < len(fids) else "?"))
 
-    tmp = tempfile.mkdtemp(prefix="kobrax_")
+    tmp = tempfile.mkdtemp(prefix="mw2any_")
     try:
         prep = os.path.join(tmp, "entrada.3mf")
         prepara(orig, prep, mapa)
-        mj = K.grava_perfil(os.path.join(tmp, "machine.json"), "machine", K.MAQUINA, {"machine_end_gcode": K.FIM_GCODE})
+        fim = K.fim_gcode()
+        mj = K.grava_perfil(os.path.join(tmp, "machine.json"), "machine", K.MAQUINA, {"machine_end_gcode": fim} if fim else {})
         pj = K.grava_perfil(os.path.join(tmp, "process.json"), "process", processo, mud)
         fj = [K.grava_perfil(os.path.join(tmp, f"fil{i + 1}.json"), "filament", n, {"filament_colour": [c]})
               for i, (n, c, _) in enumerate(fils)]
@@ -318,9 +386,9 @@ def main():
             torre = []
             for p in range(1, mod.n_pratos + 1):
                 pos = K.posicao_torre([K.ret(c) for c in por_prato.get(p, []) if c["printable"] != "0"], k, largura)
-                torre.append(pos or (int(K.CAMA / 2), int(K.CAMA - 50)))
+                torre.append(pos or (int(K.CAMA_X / 2), int(K.CAMA_Y - 50)))
         final = os.path.join(tmp, "final.3mf")
-        rel = corrige(exp, ref, final, n_orig, idx, proc_diff, torre)
+        rel = corrige(exp, ref, final, n_orig, idx, proc_diff, "machine_end_gcode" if fim else "", torre)
 
         # ---- verificacoes
         mod_f = K.Modelo(zipfile.ZipFile(final))
@@ -332,16 +400,20 @@ def main():
             avisos.append(f"as medidas mudaram! original {t_orig} -> novo {t_novo}")
         if rel["sem_regra"]:
             avisos.append(f"listas com comprimento inesperado (ver no Anycubic): {rel['sem_regra']}")
+        if cores_obj:
+            avisos.append(f"a {K.MODELO} nao tem ACE: ficou tudo num filamento so. Cores do autor por objeto (trocar o "
+                          "rolo entre pratos): " + "; ".join(dict.fromkeys(f"{n}: {'+'.join(c)}" for n, c in cores_obj)))
+            varias = [n for n, c in cores_obj if len(set(c)) > 1]
+            if varias or pinturas["pintura_cores"]:
+                avisos.append("estes objetos tinham varias cores e saem numa so: " + (", ".join(varias) or "pintura de cores"))
         if k > 4:
             avisos.append(f"usa {k} cores: uma ACE so tem 4 ranhuras")
-        bocal = str(K.primeiro(j.get("nozzle_diameter", "0.4")))
-        if bocal not in ("0.4", "0.40"):
-            avisos.append(f"o original era para bico {bocal}; o adaptado e para bico 0.4")
+        if bico_orig != K.BICO:
+            avisos.append(f"o original era para bico {bico_orig}; o adaptado e para bico {K.BICO}")
         res = None
         if not a.sem_fatiar:
             res = K.fatia(final, os.path.join(tmp, "fatiado"), tmp)
             avisos += K.colisoes_torre(res, por_prato)
-
         os.makedirs(saida, exist_ok=True)
         shutil.copyfile(final, destino)
         arquivado = None
@@ -370,6 +442,8 @@ def main():
         if extras:
             print("  tem:", ", ".join(extras))
         print("ADAPTADO :", destino)
+        print(f"  impressora: {K.MODELO} (bico {K.BICO}, mesa {K.CAMA_X:g} x {K.CAMA_Y:g} x {K.ALTURA_MAX:g} mm"
+              f"{', com ACE' if K.MULTICOR else ', sem ACE'})" + (" | fim de impressao: levanta o bico" if fim else ""))
         print("  perfil:", processo)
         for key in sorted(mud):
             print(f"    {key}: {sis.get(key)} -> {mud[key]}")

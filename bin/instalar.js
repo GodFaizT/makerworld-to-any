@@ -29,7 +29,7 @@ const erro = (t) => console.log(cor("31", "  ✖ ") + t);
 
 if (tem("--ajuda") || tem("-h") || tem("--help")) {
   console.log(`
-  ${NOME} — skill do Claude Code: projetos Bambu Lab / MakerWorld -> Anycubic Kobra X
+  ${NOME} — skill do Claude Code: projetos Bambu Lab / MakerWorld -> impressoras Anycubic
 
   npx github:GodFaizT/${NOME}               instala para todos os projetos (~/.claude/skills)
   npx github:GodFaizT/${NOME} --projeto     instala so neste projeto (./.claude/skills)

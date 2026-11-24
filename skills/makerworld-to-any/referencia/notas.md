@@ -1,5 +1,7 @@
 # Notas tecnicas (Anycubic Slicer Next 2.0.0.3, linha de comandos)
 
+MakerWorld to Any - Megatic (https://megatic.pt).
+
 O `adaptar.py` ja trata tudo o que esta marcado com (auto).
 
 ## Linha de comandos do Anycubic
@@ -15,8 +17,9 @@ O `adaptar.py` ja trata tudo o que esta marcado com (auto).
 - **Rebenta** com uma malha a meio abaixo de z=0. O Bambu guarda malhas centradas (z -h/2..h/2): so importa se se
   extrair a malha para STL; a partir do 3MF original nao acontece.
 - Recusa ("Loading of a model file failed") um STL encostado a origem; no meio da mesa aceita (auto).
-- Passa os pratos para a mesa de 260: +2,+2 de uma mesa de 256; +40 da A1 mini (180). Pratos de 312 em 312
-  (colunas = arredondar para cima de raiz(n)); na vista de montagem o passo e 307.2.
+- Centra os pratos na mesa da impressora de destino (Kobra X: +2,+2 de uma mesa de 256; +40 da A1 mini de 180).
+  Pratos separados por mesa x 1.2 (Kobra X 312, S1 300, Kobra 3 306, 3 Max 511.2 x 504); colunas = arredondar para
+  cima de raiz(n). A vista de montagem (assemble) e so visual.
 - Escreve mal `different_settings_to_system`; tem de ser `[processo, "" por filamento..., "machine_end_gcode"]` (auto).
 - Com menos ficheiros de filamento do que o projeto tinha, so substitui os primeiros e deixa os restantes como
   perfis Bambu (temperaturas erradas, High Flow a 220 C...) -> cortar todas as listas por filamento (auto). Listas
@@ -24,27 +27,40 @@ O `adaptar.py` ja trata tudo o que esta marcado com (auto).
   original -> sub-matriz dos filamentos usados (auto).
 - No Bambu 2.x, `wall_filament`/`sparse_infill_filament`/`solid_infill_filament` do perfil valem 1 por omissao (=
   filamento do objeto): nao contam como "usados" (auto).
-- Desliga a torre de purga (`enable_prime_tower` 0) mesmo com 2 cores; o perfil da Kobra X tem 1 (auto, e posicao
-  livre por prato). Pegada medida: x de X-6 a X+largura+1, y de Y-7.5 a Y+20 com 2 cores.
+- Desliga a torre de purga (`enable_prime_tower` 0) mesmo com 2 cores; os perfis com ACE tem 1 (auto, e posicao
+  livre por prato). Pegada medida numa Kobra X: x de X-6 a X+largura+1, y de Y-7.5 a Y+20 com 2 cores.
 - A matriz `matrix` das pecas no `model_settings` sai "dobrada" (escala 1.21 para 1.1): inofensivo, o g-code sai certo.
 - Diferencas de normalizacao que aparecem sempre (internal_solid_infill_pattern rectilinear, wall_direction ccw,
   ironing_angle 0) sao do proprio Anycubic.
+
+## Impressoras
+
+- Maquinas: `%APPDATA%\AnycubicSlicerNext\system\Anycubic\machine\*.json`, nome `Anycubic <modelo> <bico> nozzle`;
+  processos e filamentos chamam-se `<nome> @<maquina>` (ou tem a maquina em `compatible_printers`) (auto).
+- Mesa: `printable_area` + `printable_height` (Kobra 1/2/2 Neo/2 Pro 220; Kobra 3 255; S1 250; Kobra X e 4 260;
+  1 Plus 300; 2 Plus 320; S1 Max 350; 1 Max 400; 2 Max 426; 3 Max 426 x 420 x 501).
+- ACE (varias cores): as maquinas com `change_filament_gcode` (Kobra X, 4, 3, 3 V2, 3 Max, S1, S1 Max). As Kobra 1
+  e 2 nao tem (aviso se o projeto tem varias cores).
+- Fim de impressao de fabrica sem levantar o bico: Kobra X, Kobra 4, S1 Max -> junta-se o levantamento (auto).
+  S1, Kobra 3 e Kobra 1/2 ja levantam e ficam como estao.
+- Filamentos por impressora variam muito (Kobra 1 so tem Generic PLA/PETG/ABS; Kobra 2 Neo so Anycubic PLA/PETG):
+  usa-se o mais proximo, Anycubic primeiro, depois Generic (auto).
 
 ## Perfis
 
 - Perfis de sistema: `%APPDATA%\AnycubicSlicerNext\system\Anycubic\{machine,process,filament}\*.json` com heranca
   por `inherits` (auto).
-- Kobra X 0.20mm Standard ~ Bambu A1 0.20mm Standard (2 paredes, 15 % grelha, tree(auto) a 30 graus). A Kobra X vem
-  com suportes desligados e so na mesa.
-- O autor muda definicoes em relacao ao perfil base dele -> usar o perfil da Kobra X com o **mesmo nome do perfil
+- Kobra X 0.20mm Standard ~ Bambu A1 0.20mm Standard (2 paredes, 15 % grelha, tree(auto) a 30 graus). Os perfis
+  Anycubic vem com suportes desligados e so na mesa.
+- O autor muda definicoes em relacao ao perfil base dele -> usar o perfil da impressora com o **mesmo nome do perfil
   base** e a altura de camada dele como mudanca (auto). Ex.: um perfil "optimised" a 0.12 feito sobre o 0.20 Standard.
 - Alturas de camada variaveis (`Metadata/layer_heights_profile.txt`) mandam sobre `layer_height` (tambem no Bambu).
   Um perfil "0.12" com o perfil variavel do autor a 0.2 imprime a 0.2. Um 0.12 a serio precisa do perfil limitado a
   0.12.
 - Anycubic 2.0.0.3: estilos de suporte default/tree_slim/tree_strong/tree_hybrid (sem tree_organic) (auto).
   `zig-zag` do Bambu -> `zigzag` (auto). Fuzzy skin pintado (`paint_fuzzy_skin`) e suportado.
-- Fim de impressao: o de fabrica desliga com o bico pousado na peca (fio/bolinha no topo) -> levanta 5 mm e vai a
-  X250 Y250 (auto).
+- Fim de impressao: onde o de fabrica desliga com o bico pousado na peca (fio/bolinha no topo) -> levanta 5 mm e vai
+  para o canto (mesa - 10 mm) (auto).
 
 ## Pecas com texto (trabalho a mao)
 

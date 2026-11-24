@@ -1,9 +1,9 @@
-"""Mede um projeto 3MF (original Bambu ou adaptado Kobra X): tamanho de cada objeto e, opcionalmente, fatia.
+"""Mede um projeto 3MF (original Bambu ou adaptado Anycubic): tamanho de cada objeto e, opcionalmente, fatia.
 
 Uso:
     python medir.py <ficheiro.3mf> [--fatiar]
 
-Num projeto da Kobra X tambem diz em que prato esta cada objeto, a posicao na mesa de 260 mm e avisos
+Num projeto Anycubic tambem diz em que prato esta cada objeto, a posicao na mesa da impressora e avisos
 (fora da mesa, pecas encostadas, torre de purga em cima de pecas).
 """
 import argparse
@@ -15,7 +15,7 @@ import tempfile
 import zipfile
 
 sys.dont_write_bytecode = True
-import kobrax as K
+import anycubic as K
 
 
 def main():
@@ -29,8 +29,9 @@ def main():
     print("impressora:", impressora, "| perfil:", K.primeiro(j.get("print_settings_id", "")),
           "| filamentos:", j.get("filament_settings_id"), j.get("filament_colour"))
     mod = K.Modelo(z)
-    kobra = "Kobra X" in impressora
+    kobra = K.impressora_do_projeto(j)
     if kobra:
+        print(f"mesa da {K.MODELO}: {K.CAMA_X:g} x {K.CAMA_Y:g} x {K.ALTURA_MAX:g} mm")
         por_prato = K.caixas_por_prato(mod)
         for p, cs in sorted(por_prato.items()):
             for c in cs:
@@ -44,8 +45,8 @@ def main():
     z.close()
     if a.fatiar:
         if not kobra:
-            raise SystemExit("--fatiar so para projetos da Kobra X (adapta primeiro)")
-        tmp = tempfile.mkdtemp(prefix="kobrax_med_")
+            raise SystemExit("--fatiar so para projetos de impressoras Anycubic (adapta primeiro)")
+        tmp = tempfile.mkdtemp(prefix="mw2any_med_")
         try:
             res = K.fatia(os.path.abspath(a.ficheiro), os.path.join(tmp, "fatiado"), tmp)
             print("FATIADO:\n  " + K.texto_resumo(res, j.get("filament_colour")).replace("\n", "\n  "))

@@ -1,5 +1,5 @@
-"""Separa pratos de um projeto da Kobra X: fica so com os pratos pedidos, renumerados 1..n, e com os objetos
-deslocados para as novas posicoes de prato (passo 312 na mesa de 260; 307.2 na vista de montagem).
+"""Separa pratos de um projeto Anycubic: fica so com os pratos pedidos, renumerados 1..n, e com os objetos
+deslocados para as novas posicoes de prato (passo = mesa x 1.2: 312 mm na Kobra X).
 
 Uso:
     python separar_pratos.py <entrada.3mf> <saida.3mf> <pratos, ex. 3,4>
@@ -7,10 +7,14 @@ Uso:
 Exemplo: o Engel+ tinha anjo grande nos pratos 1-2 e pequeno nos 3-4 -> "1,2" e "3,4" dao dois ficheiros.
 Fatiar depois com medir.py --fatiar para confirmar.
 """
+import json
 import math
 import re
 import sys
 import zipfile
+
+sys.dont_write_bytecode = True
+import anycubic as K
 
 
 def colunas(n):
@@ -23,6 +27,7 @@ def main():
     src, dst, pratos = sys.argv[1], sys.argv[2], [int(x) for x in sys.argv[3].split(",")]
     zi = zipfile.ZipFile(src)
     ms = zi.read("Metadata/model_settings.config").decode("utf-8")
+    K.impressora_do_projeto(json.loads(zi.read("Metadata/project_settings.config")))
     placas = {int(re.search(r'plater_id" value="(\d+)"', p).group(1)): p for p in re.findall(r"  <plate>.*?</plate>\n", ms, re.S)}
     n_orig = len(placas)
     faltam = [p for p in pratos if p not in placas]
@@ -40,10 +45,10 @@ def main():
     novo_id = {old: k + 1 for k, old in enumerate(pratos)}
     manter = {o for o, i in obj_prato.items() if i in pratos}
 
-    def desloc(oid, passo):
+    def desloc(oid):
         i = obj_prato[oid]
         (c0, l0), (c1, l1) = slot(i, n_orig), slot(novo_id[i], len(pratos))
-        return (c1 - c0) * passo, -(l1 - l0) * passo
+        return (c1 - c0) * K.PASSO_X, -(l1 - l0) * K.PASSO_Y
 
     print("objetos mantidos:", sorted(manter, key=int))
     m = zi.read("3D/3dmodel.model").decode("utf-8")
@@ -55,7 +60,7 @@ def main():
         oid, t = mm.group(1), mm.group(3).split()
         if oid not in obj_prato:
             return mm.group(0)
-        dx, dy = desloc(oid, 312)
+        dx, dy = desloc(oid)
         t[9] = format(float(t[9]) + dx, ".9g")
         t[10] = format(float(t[10]) + dy, ".9g")
         return mm.group(0).replace(mm.group(3), " ".join(t))
@@ -77,7 +82,7 @@ def main():
         oid, t = mm.group(1), mm.group(2).split()
         if oid not in obj_prato:
             return mm.group(0)
-        dx, dy = desloc(oid, 307.2)
+        dx, dy = desloc(oid)
         t[9] = repr(float(t[9]) + dx)
         t[10] = repr(float(t[10]) + dy)
         return mm.group(0).replace(mm.group(2), " ".join(t))
@@ -103,7 +108,6 @@ def main():
         elif nome == "Metadata/model_settings.config":
             d = ms.encode("utf-8")
         elif nome == "Metadata/project_settings.config":   # torre de purga: uma posicao por prato
-            import json
             j = json.loads(d)
             for key in ("wipe_tower_x", "wipe_tower_y"):
                 if isinstance(j.get(key), list) and len(j[key]) == n_orig:

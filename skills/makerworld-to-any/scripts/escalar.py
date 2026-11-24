@@ -1,4 +1,4 @@
-"""Muda o tamanho de objetos num projeto da Kobra X (ja adaptado).
+"""Muda o tamanho de objetos num projeto Anycubic ja adaptado (MakerWorld to Any, Megatic).
 
 Uso:
     python escalar.py <entrada.3mf> <saida.3mf> (--altura MM | --largura MM | --fator F) [--objeto TEXTO] [--fatiar]
@@ -22,7 +22,7 @@ import tempfile
 import zipfile
 
 sys.dont_write_bytecode = True
-import kobrax as K
+import anycubic as K
 
 
 def main():
@@ -38,6 +38,7 @@ def main():
     a = ap.parse_args()
 
     z = zipfile.ZipFile(a.entrada)
+    K.impressora_do_projeto(json.loads(z.read("Metadata/project_settings.config")))   # mesa e passo entre pratos
     mod = K.Modelo(z)
     cx = mod.caixas()
     esc = [i for i, c in enumerate(cx) if not a.objeto or a.objeto.lower() in c["nome"].lower()]
@@ -98,7 +99,7 @@ def main():
             return "\n".join(linhas).encode()
         return d
 
-    tmp = tempfile.mkdtemp(prefix="kobrax_esc_")
+    tmp = tempfile.mkdtemp(prefix="mw2any_esc_")
     try:
         meio = os.path.join(tmp, "escalado.3mf")
         K.reescreve(a.entrada, meio, mudar)
@@ -112,7 +113,7 @@ def main():
         if nfil > 1 and str(j.get("enable_prime_tower")) == "1":
             largura = float(K.primeiro(j.get("prime_tower_width", "35")) or 35)
             pos = [K.posicao_torre([K.ret(c) for c in por_prato.get(p, []) if c["printable"] != "0"], nfil, largura)
-                   or (int(K.CAMA / 2), int(K.CAMA - 50)) for p in range(1, mod2.n_pratos + 1)]
+                   or (int(K.CAMA_X / 2), int(K.CAMA_Y - 50)) for p in range(1, mod2.n_pratos + 1)]
 
             def torre(nome, d):
                 if nome != "Metadata/project_settings.config":
