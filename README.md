@@ -40,6 +40,7 @@ Claude  › Ficou em Adaptado Kobra X\Anjo - Kobra X.3mf (perfil 0.20mm Standard
 | | O que faz |
 |---|---|
 | 🖨️ **Várias impressoras** | Kobra X, Kobra S1 e S1 Max, Kobra 3, 3 V2 e 3 Max, Kobra 4, Kobra 2 e Kobra 1, com os bicos que o Anycubic Slicer Next tem. A mesa, os perfis e os filamentos vêm dos perfis de cada impressora. |
+| ⚡ **Melhor perfil para cada impressora** | Velocidades, acelerações, temperaturas, retração e ventilação vêm dos perfis oficiais da Anycubic para essa impressora, esse bico e esse filamento. Do autor só passa o que diz respeito ao modelo. Nas impressoras mais lentas (Kobra 1 e Kobra 2 / 2 Neo), as velocidades do autor só podem baixar. |
 | 🎯 **Perfil certo** | Usa o perfil da tua impressora equivalente ao do autor (`0.20mm Standard @BBL A1` → `0.20mm Standard @Anycubic Kobra S1`) e passa só o que o autor mudou e importa: suportes, enchimento, paredes, ironing, fuzzy skin, costura, modo vaso… Ignora o que é da impressora dele (acelerações, g-code, posição da torre). |
 | 🎨 **Filamentos e cores** | Descobre que filamentos o modelo usa *mesmo* (projetos do MakerWorld trazem muitas vezes 4–5 que não servem para nada), troca-os pelos que a tua impressora tem (Matte → PLA Matte, Silk → PLA Silk, PETG → PETG…) e mantém as cores do autor. |
 | 🗼 **Torre de purga** | Liga-a quando há várias cores (impressoras com ACE) e põe-na num sítio livre de cada prato, longe das peças. |
@@ -121,6 +122,28 @@ Descarrega o ZIP do repositório (botão verde **Code → Download ZIP**) e copi
 | **Chat da app / claude.ai** | ⚠️ Só conversa | Descarrega `makerworld-to-any-skill.zip` das [releases](https://github.com/GodFaizT/makerworld-to-any/releases/latest) e carrega-o em **Definições → Capacidades → Skills**. O chat corre num servidor da Anthropic, sem o Anycubic Slicer Next: o Claude explica e planeia, mas não consegue exportar nem fatiar. Para adaptar ficheiros usa o separador _Code_. |
 
 Depois de instalar, abre uma sessão nova do Claude Code.
+
+## Comandos
+
+Com a skill instalada, adaptas um ficheiro com um comando: escreves o comando e o caminho do `.3mf` (ou de uma
+pasta, para adaptar todos os que lá estão). Depois do caminho podes juntar pedidos.
+
+| Comando | Impressora |
+|---|---|
+| `/kobrax <ficheiro>` | Kobra X |
+| `/kobra4 <ficheiro>` | Kobra 4 |
+| `/kobras1 <ficheiro>` | Kobra S1 |
+| `/kobras1max <ficheiro>` | Kobra S1 Max |
+| `/kobra3 <ficheiro>` | Kobra 3 |
+| `/kobra3max <ficheiro>` | Kobra 3 Max |
+| `/anycubic <impressora> <ficheiro>` | qualquer outra (Kobra 2 Neo, Kobra 3 V2, Kobra 1…) |
+
+```text
+/kobrax "C:\Downloads\Vaso.3mf"
+/kobras1 "C:\Downloads\Vaso.3mf" com 12 cm, PLA Silk dourado
+/kobra3max "C:\Downloads\MakerWorld"            ← adapta todos os .3mf da pasta
+/anycubic Kobra 2 Neo "C:\Downloads\Vaso.3mf"
+```
 
 ## Como usar
 

@@ -33,6 +33,19 @@ computador Windows onde esta o Anycubic (na app Claude: separador "Code"), e aju
   sozinhas. Nas Kobra 1 e 2 um projeto com varias cores da aviso: imprimir numa cor (`--filamentos` com um so) ou
   trocar a mao.
 
+## Comandos
+
+O utilizador pode chamar `/kobrax`, `/kobra4`, `/kobras1`, `/kobras1max`, `/kobra3`, `/kobra3max` (impressora
+fixa) ou `/anycubic <impressora>`, seguido do caminho do `.3mf` ou de uma pasta e de pedidos extra. Esses comandos
+carregam esta skill: usar a impressora do comando e tratar os pedidos extra (tamanho, bico, filamento, cor).
+
+## Melhores definicoes por impressora
+
+Velocidades, aceleracoes, temperaturas, retracao e ventilacao vem dos perfis oficiais da Anycubic para a impressora,
+o bico e o filamento escolhidos. Do autor passa so o que diz respeito ao modelo. Nas impressoras lentas (velocidade
+maxima < 450 mm/s: Kobra 1, 1 Plus, 1 Max, Kobra 2, 2 Neo) as velocidades do autor so podem baixar; o relatorio diz
+quais ficaram com o valor da impressora.
+
 ## Regras
 
 - O Anycubic escreve certificados e chaves privadas da impressora (ficheiros com nome hexadecimal) na pasta onde corre.

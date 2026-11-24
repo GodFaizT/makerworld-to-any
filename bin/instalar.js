@@ -80,31 +80,45 @@ if (tem("--verificar")) {
   process.exit(0);
 }
 
-const destino = path.join(pastaSkills(), NOME);
+// skill principal + comandos (/kobrax, /kobras1, ... /anycubic): cada pasta de skills/ e uma skill
+const PASTAS = fs.readdirSync(path.join(__dirname, "..", "skills"), { withFileTypes: true })
+  .filter((d) => d.isDirectory() && fs.existsSync(path.join(__dirname, "..", "skills", d.name, "SKILL.md")))
+  .map((d) => d.name);
+const base = pastaSkills();
 
 if (tem("--desinstalar")) {
-  if (fs.existsSync(destino)) {
-    fs.rmSync(destino, { recursive: true, force: true });
-    ok(`Removida de ${destino}`);
-  } else aviso(`Nao estava instalada em ${destino}`);
+  for (const p of PASTAS) {
+    const d = path.join(base, p);
+    if (fs.existsSync(d)) {
+      fs.rmSync(d, { recursive: true, force: true });
+      ok(`Removida ${d}`);
+    }
+  }
   process.exit(0);
 }
 
 try {
-  if (fs.existsSync(destino)) fs.rmSync(destino, { recursive: true, force: true });
-  fs.mkdirSync(path.dirname(destino), { recursive: true });
-  fs.cpSync(ORIGEM, destino, {
-    recursive: true,
-    filter: (src) => !/__pycache__|\.pyc$/.test(src),
-  });
-  ok(`Skill instalada em ${destino}`);
+  fs.mkdirSync(base, { recursive: true });
+  for (const p of PASTAS) {
+    const d = path.join(base, p);
+    if (fs.existsSync(d)) fs.rmSync(d, { recursive: true, force: true });
+    fs.cpSync(path.join(__dirname, "..", "skills", p), d, {
+      recursive: true,
+      filter: (src) => !/__pycache__|\.pyc$/.test(src),
+    });
+  }
+  ok(`Skill instalada em ${path.join(base, NOME)}`);
+  const cmds = PASTAS.filter((p) => p !== NOME).map((p) => "/" + p);
+  if (cmds.length) ok(`Comandos: ${cmds.join(" ")}`);
 } catch (e) {
   erro(`Falhou a copia: ${e.message}`);
   process.exit(1);
 }
 verificar();
 console.log(`
-  Abre uma sessao nova do Claude Code e pede, por exemplo:
-    ${cor("36", '"adapta este ficheiro para a kobra x: C:\\...\\modelo.3mf"')}
-  ou chama ${cor("36", "/" + NOME)}.
+  Abre uma sessao nova do Claude Code e usa, por exemplo:
+    ${cor("36", '/kobrax "C:\...\modelo.3mf"')}
+    ${cor("36", '/kobras1 "C:\...\modelo.3mf" com 10 cm')}
+    ${cor("36", '/anycubic Kobra 2 Neo "C:\...\modelo.3mf"')}
+  ou pede simplesmente ${cor("36", '"adapta este ficheiro para a kobra x: ..."')}.
 `);

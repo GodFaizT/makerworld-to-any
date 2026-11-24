@@ -43,6 +43,8 @@ O `adaptar.py` ja trata tudo o que esta marcado com (auto).
   e 2 nao tem (aviso se o projeto tem varias cores).
 - Fim de impressao de fabrica sem levantar o bico: Kobra X, Kobra 4, S1 Max -> junta-se o levantamento (auto).
   S1, Kobra 3 e Kobra 1/2 ja levantam e ficam como estao.
+- Velocidades: impressoras com `machine_max_speed_x` >= 450 aceitam as do autor; nas lentas (Kobra 1/1 Plus/1 Max,
+  Kobra 2/2 Neo) so passam as mais baixas que as do perfil (auto).
 - Filamentos por impressora variam muito (Kobra 1 so tem Generic PLA/PETG/ABS; Kobra 2 Neo so Anycubic PLA/PETG):
   usa-se o mais proximo, Anycubic primeiro, depois Generic (auto).
 

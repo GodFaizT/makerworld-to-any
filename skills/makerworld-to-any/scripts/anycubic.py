@@ -33,6 +33,7 @@ CAMA_X = CAMA_Y = 260.0      # mesa (mm)
 ALTURA_MAX = 260.0
 PASSO_X = PASSO_Y = 312.0    # distancia entre pratos num projeto do Anycubic (mesa x 1.2)
 MULTICOR = True              # tem ACE (troca de filamento automatica)
+RAPIDA = True                # impressora da classe das Bambu (>= 450 mm/s): aceita as velocidades do autor
 
 # filamento por funcao (Bambu 2.x): tambem contam como "usados" e tem de ser renumerados
 CHAVES_FIL = ("support_filament", "support_interface_filament", "wall_filament", "sparse_infill_filament",
@@ -151,7 +152,7 @@ def encontra_maquina(consulta=None, bico=None):
 
 def usa_impressora(maquina):
     """Passa a trabalhar para esta maquina: mesa, altura, passo entre pratos, ACE, sufixo dos perfis."""
-    global MAQUINA, MODELO, SUF, BICO, CAMA_X, CAMA_Y, ALTURA_MAX, PASSO_X, PASSO_Y, MULTICOR
+    global MAQUINA, MODELO, SUF, BICO, CAMA_X, CAMA_Y, ALTURA_MAX, PASSO_X, PASSO_Y, MULTICOR, RAPIDA
     d = perfil("machine", maquina)
     pts = [tuple(float(v) for v in p.split("x")) for p in d.get("printable_area", ["0x0", "260x0", "260x260", "0x260"])]
     CAMA_X = max(p[0] for p in pts) - min(p[0] for p in pts)
@@ -159,6 +160,10 @@ def usa_impressora(maquina):
     ALTURA_MAX = float(primeiro(d.get("printable_height", "250")))
     PASSO_X, PASSO_Y = CAMA_X * 1.2, CAMA_Y * 1.2
     MULTICOR = len(str(d.get("change_filament_gcode", "")).strip()) > 20
+    try:
+        RAPIDA = float(primeiro(d.get("machine_max_speed_x", "500"))) >= 450
+    except (TypeError, ValueError):
+        RAPIDA = True
     MAQUINA, SUF = maquina, " @" + maquina
     MODELO = d.get("printer_model") or re.sub(r" \d+(\.\d+)? nozzle$", "", maquina)
     BICO = format(float(primeiro(d.get("nozzle_diameter", "0.4"))), "g")

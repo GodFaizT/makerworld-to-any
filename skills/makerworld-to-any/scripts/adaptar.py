@@ -97,7 +97,18 @@ def mudancas_processo(j, sis):
             v = normaliza(k, j[k], sis)
             if v is not None and str(v) != str(sis.get(k)):
                 mud[k] = v
-    return mud, ignorados, diffs
+    # impressoras lentas (Kobra 1/2): as velocidades do autor (pensadas para uma Bambu) so podem baixar
+    limitadas = []
+    if not K.RAPIDA:
+        for k in [k for k in mud if k.endswith("_speed")]:
+            try:
+                autor, base = float(K.primeiro(mud[k])), float(K.primeiro(sis[k]))
+            except (TypeError, ValueError):
+                continue                      # percentagens (ex. "50%") ficam como estao
+            if autor > base:
+                limitadas.append(f"{k} {autor:g} > {base:g}")
+                del mud[k]
+    return mud, ignorados, diffs, limitadas
 
 
 VARIANTES_PLA = (("matte", "PLA Matte"), ("silk", "PLA Silk"), ("wood", "PLA Wood"), ("glow", "PLA Glow"),
@@ -339,7 +350,7 @@ def main():
 
     processo = escolhe_processo(j, a.processo)
     sis = K.perfil("process", processo)
-    mud, ignorados, diffs = mudancas_processo(j, sis)
+    mud, ignorados, diffs, limitadas = mudancas_processo(j, sis)
     for key in ("support_filament", "support_interface_filament"):   # filamento de suporte renumerado
         v = K.primeiro(j.get(key))
         if v and str(v).isdigit() and int(v) > 0 and key in sis:
@@ -449,6 +460,8 @@ def main():
             print(f"    {key}: {sis.get(key)} -> {mud[key]}")
         if ignorados:
             print("  definicoes do autor nao passadas (sao da impressora dele):", ", ".join(ignorados))
+        if limitadas:
+            print(f"  velocidades do autor acima das da {K.MODELO} (ficam as da impressora):", ", ".join(limitadas))
         for i, (n, c, b) in enumerate(fils):
             print(f"  filamento {i + 1}: {n.replace(K.SUF, '')} {c}  (era {b})")
         if k > 1:
