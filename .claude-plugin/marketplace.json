@@ -1,5 +1,5 @@
 {
-  "name": "bambu-para-kobra-x",
+  "name": "makerworld-to-any",
   "owner": {
     "name": "Megatic",
     "url": "https://megatic.pt"
@@ -9,10 +9,10 @@
   },
   "plugins": [
     {
-      "name": "bambu-para-kobra-x",
+      "name": "makerworld-to-any",
       "source": "./",
       "description": "Adapta projetos 3MF do Bambu Studio / MakerWorld para a Anycubic Kobra X (Anycubic Slicer Next).",
-      "version": "1.0.1",
+      "version": "1.1.0",
       "category": "productivity",
       "keywords": [
         "anycubic",

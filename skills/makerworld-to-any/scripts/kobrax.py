@@ -1,4 +1,4 @@
-"""Biblioteca comum da skill bambu-para-kobra-x.
+"""Biblioteca comum da skill makerworld-to-any.
 
 Converte projetos 3MF do Bambu Studio / MakerWorld para a Anycubic Kobra X (bico 0.4) com a linha de
 comandos do proprio Anycubic Slicer Next (testado com a 2.0.0.3) e verifica o resultado fatiando.

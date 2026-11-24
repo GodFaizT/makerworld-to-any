@@ -1,9 +1,11 @@
 ---
-name: bambu-para-kobra-x
+name: makerworld-to-any
 description: Adapta projetos 3MF do Bambu Studio / MakerWorld (Bambu Lab A1, A1 mini, P1S, X1C...) para a Anycubic Kobra X no Anycubic Slicer Next, e muda o tamanho, separa pratos ou mede/fatia projetos da Kobra X. Usar quando o utilizador pede "adapta para a kobra x", "converte este 3mf para a anycubic", "mete com X cm", "faz um ficheiro so com o prato N", "quanto tempo demora", ou da um .3mf do MakerWorld/Bambu Studio para imprimir numa Kobra X. Also for "convert this Bambu/MakerWorld 3MF to Anycubic Kobra X".
 ---
 
-# Bambu Lab -> Anycubic Kobra X
+# MakerWorld to Any
+
+Projetos Bambu Lab / MakerWorld -> Anycubic Kobra X.
 
 Converte projetos 3MF feitos no Bambu Studio (a maioria dos modelos do MakerWorld) em projetos da **Anycubic Kobra X**
 (bico 0.4, mesa 260 x 260 x 260, ACE com 4 cores) para o **Anycubic Slicer Next** (testado com a 2.0.0.3), e confirma

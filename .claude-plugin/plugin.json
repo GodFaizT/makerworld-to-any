@@ -1,13 +1,13 @@
 {
-  "name": "bambu-para-kobra-x",
-  "version": "1.0.1",
+  "name": "makerworld-to-any",
+  "version": "1.1.0",
   "description": "Adapta projetos 3MF do Bambu Studio / MakerWorld para a Anycubic Kobra X (Anycubic Slicer Next): perfis, filamentos, cores, torre de purga, tamanho e verificacao fatiando.",
   "author": {
     "name": "Megatic",
     "url": "https://megatic.pt"
   },
-  "homepage": "https://github.com/GodFaizT/bambu-para-kobra-x",
-  "repository": "https://github.com/GodFaizT/bambu-para-kobra-x",
+  "homepage": "https://github.com/GodFaizT/makerworld-to-any",
+  "repository": "https://github.com/GodFaizT/makerworld-to-any",
   "license": "MIT",
   "keywords": [
     "anycubic",

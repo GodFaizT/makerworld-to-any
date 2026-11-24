@@ -1,6 +1,10 @@
 <p align="center">
-  <img src="docs/banner.svg" alt="bambu-para-kobra-x — projetos Bambu Lab e MakerWorld prontos para a Anycubic Kobra X" width="100%">
+  <img src="docs/banner.svg" alt="MakerWorld to Any — projetos Bambu Lab e MakerWorld prontos para a Anycubic Kobra X" width="100%">
 </p>
+
+<h1 align="center">MakerWorld to Any</h1>
+
+<p align="center">Feito pela <a href="https://megatic.pt"><b>Megatic</b></a> · <a href="https://megatic.pt">megatic.pt</a></p>
 
 <p align="center">
   <a href="#instalação"><img alt="Claude Code skill" src="https://img.shields.io/badge/Claude%20Code-skill-D97757?logo=claude&logoColor=white"></a>
@@ -15,8 +19,6 @@
   <b>Dás-lhe um 3MF do MakerWorld e recebes um projeto da Anycubic Kobra X pronto a imprimir,<br>
   já fatiado, com tempo e gramas de cada prato.</b>
 </p>
-
-<p align="center">Feito pela <a href="https://megatic.pt"><b>Megatic</b></a> · <a href="https://megatic.pt">megatic.pt</a></p>
 
 ---
 
@@ -66,38 +68,38 @@ formas:
 Dentro do Claude Code:
 
 ```text
-/plugin marketplace add GodFaizT/bambu-para-kobra-x
-/plugin install bambu-para-kobra-x@bambu-para-kobra-x
+/plugin marketplace add GodFaizT/makerworld-to-any
+/plugin install makerworld-to-any@makerworld-to-any
 ```
 
-Atualizar mais tarde: `/plugin update bambu-para-kobra-x@bambu-para-kobra-x`.
+Atualizar mais tarde: `/plugin update makerworld-to-any@makerworld-to-any`.
 
 ### 2. `npx skills`
 
 ```bash
-npx skills add GodFaizT/bambu-para-kobra-x
+npx skills add GodFaizT/makerworld-to-any
 ```
 
 ### 3. Instalador `npx`
 
 ```bash
-npx github:GodFaizT/bambu-para-kobra-x              # para todos os projetos (~/.claude/skills)
-npx github:GodFaizT/bambu-para-kobra-x --projeto    # só no projeto atual (./.claude/skills)
-npx github:GodFaizT/bambu-para-kobra-x --verificar  # verifica Python e Anycubic Slicer Next
-npx github:GodFaizT/bambu-para-kobra-x --desinstalar
+npx github:GodFaizT/makerworld-to-any              # para todos os projetos (~/.claude/skills)
+npx github:GodFaizT/makerworld-to-any --projeto    # só no projeto atual (./.claude/skills)
+npx github:GodFaizT/makerworld-to-any --verificar  # verifica Python e Anycubic Slicer Next
+npx github:GodFaizT/makerworld-to-any --desinstalar
 ```
 
 ### 4. À mão
 
 Descarrega o ZIP do repositório (botão verde **Code → Download ZIP**) e copia a pasta
-`skills/bambu-para-kobra-x` para `%USERPROFILE%\.claude\skills\`.
+`skills/makerworld-to-any` para `%USERPROFILE%\.claude\skills\`.
 
 ### 5. App do Claude (desktop e claude.ai)
 
 | Onde | Funciona? | Como |
 |---|---|---|
 | **App Claude para Windows → separador _Code_** | ✅ Tudo | É o Claude Code dentro da app e corre no teu PC. Instala o plugin (forma 1) ou a skill (formas 2–4); a app usa as mesmas skills e plugins. |
-| **Chat da app / claude.ai** | ⚠️ Só conversa | Descarrega `bambu-para-kobra-x-skill.zip` das [releases](https://github.com/GodFaizT/bambu-para-kobra-x/releases/latest) e carrega-o em **Definições → Capacidades → Skills**. O chat corre num servidor da Anthropic, sem o Anycubic Slicer Next: o Claude explica e planeia, mas não consegue exportar nem fatiar. Para adaptar ficheiros usa o separador _Code_. |
+| **Chat da app / claude.ai** | ⚠️ Só conversa | Descarrega `makerworld-to-any-skill.zip` das [releases](https://github.com/GodFaizT/makerworld-to-any/releases/latest) e carrega-o em **Definições → Capacidades → Skills**. O chat corre num servidor da Anthropic, sem o Anycubic Slicer Next: o Claude explica e planeia, mas não consegue exportar nem fatiar. Para adaptar ficheiros usa o separador _Code_. |
 
 Depois de instalar, abre uma sessão nova do Claude Code.
 
@@ -114,14 +116,14 @@ Fala normalmente com o Claude. Funciona em português e em inglês:
 | `faz um ficheiro só com os pratos 3 e 4` | separa os pratos |
 | `quanto tempo demora este?` | fatia e resume |
 
-Também podes chamar a skill diretamente com `/bambu-para-kobra-x`.
+Também podes chamar a skill diretamente com `/makerworld-to-any`.
 
 ### Sem o Claude
 
 Os scripts são Python simples (só a biblioteca padrão; o `numpy` acelera, mas é opcional):
 
 ```bash
-cd skills/bambu-para-kobra-x
+cd skills/makerworld-to-any
 python scripts/adaptar.py "Modelo.3mf"                      # → Modelo - Kobra X.3mf + relatório
 python scripts/adaptar.py "Modelo.3mf" --filamentos "Anycubic PLA Silk" --cores "#D4AF37"
 python scripts/escalar.py "Modelo - Kobra X.3mf" "Modelo 12cm.3mf" --altura 120 --fatiar
@@ -174,7 +176,7 @@ do autor original.
 <details>
 <summary><b>🇬🇧 English</b></summary>
 
-**bambu-para-kobra-x** is a [Claude Code](https://claude.com/claude-code) skill that converts Bambu Studio /
+**MakerWorld to Any** (`makerworld-to-any`) is a [Claude Code](https://claude.com/claude-code) skill that converts Bambu Studio /
 MakerWorld 3MF projects into ready-to-print **Anycubic Kobra X** projects for Anycubic Slicer Next.
 It runs the slicer's own command line and does the following:
 - maps the designer's profile and changes;
@@ -185,8 +187,8 @@ It runs the slicer's own command line and does the following:
 
 It can also resize models, split plates and measure projects.
 
-Install it with `/plugin marketplace add GodFaizT/bambu-para-kobra-x`, `npx skills add GodFaizT/bambu-para-kobra-x`
-or `npx github:GodFaizT/bambu-para-kobra-x`. Then ask Claude to *"convert this 3MF for the Kobra X"*.
+Install it with `/plugin marketplace add GodFaizT/makerworld-to-any`, `npx skills add GodFaizT/makerworld-to-any`
+or `npx github:GodFaizT/makerworld-to-any`. Then ask Claude to *"convert this 3MF for the Kobra X"*.
 The prompts and reports are in Portuguese, but Claude answers in your language.
 
 Made by [Megatic](https://megatic.pt).

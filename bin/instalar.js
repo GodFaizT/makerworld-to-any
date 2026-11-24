@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// Instala (ou remove) a skill bambu-para-kobra-x no Claude Code.
+// Instala (ou remove) a skill makerworld-to-any no Claude Code.
 //
-//   npx github:GodFaizT/bambu-para-kobra-x              -> ~/.claude/skills/bambu-para-kobra-x
-//   npx github:GodFaizT/bambu-para-kobra-x --projeto    -> ./.claude/skills/bambu-para-kobra-x
-//   npx github:GodFaizT/bambu-para-kobra-x --desinstalar
+//   npx github:GodFaizT/makerworld-to-any              -> ~/.claude/skills/makerworld-to-any
+//   npx github:GodFaizT/makerworld-to-any --projeto    -> ./.claude/skills/makerworld-to-any
+//   npx github:GodFaizT/makerworld-to-any --desinstalar
 //   ... --destino <pasta>   instala noutra pasta de skills
 //   ... --verificar         so verifica Python e Anycubic Slicer Next
 "use strict";
@@ -13,7 +13,7 @@ const os = require("os");
 const path = require("path");
 const { spawnSync } = require("child_process");
 
-const NOME = "bambu-para-kobra-x";
+const NOME = "makerworld-to-any";
 const ORIGEM = path.join(__dirname, "..", "skills", NOME);
 const args = process.argv.slice(2);
 const tem = (f) => args.includes(f);
