@@ -14,6 +14,10 @@ Precisam de Python 3 (`python` ou `py -3`; o numpy acelera mas e opcional) e do 
 `C:\Program Files\AnycubicSlicerNext` (outro sitio: variavel de ambiente `ANYCUBIC_SLICER`). Cada adaptacao demora
 1-3 minutos porque exporta e fatia todos os pratos.
 
+Se o Anycubic Slicer Next nao existir neste ambiente (ex.: chat do claude.ai ou da app Claude, que correm num
+servidor Linux), nao tentar instalar nem simular: explicar que a adaptacao tem de ser feita no Claude Code no
+computador Windows onde esta o Anycubic (na app Claude: separador "Code"), e ajudar so com conselhos.
+
 ## Regras
 
 - O Anycubic escreve certificados e chaves privadas da impressora (ficheiros com nome hexadecimal) na pasta onde corre.

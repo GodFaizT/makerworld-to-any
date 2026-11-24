@@ -46,5 +46,6 @@
     <text x="440" y="182" font-size="58" font-weight="800" fill="#f8fafc">Bambu Lab <tspan fill="#38bdf8" dx="6">→</tspan> <tspan dx="6">Kobra X</tspan></text>
     <text x="442" y="236" font-size="26" fill="#cbd5e1">Projetos do MakerWorld prontos a imprimir na Anycubic Kobra X,</text>
     <text x="442" y="272" font-size="26" fill="#cbd5e1">com perfis, cores, torre de purga e tempo de impressão verificados.</text>
+    <text x="1240" y="318" font-size="18" font-weight="600" fill="#64748b" text-anchor="end">feito pela Megatic · megatic.pt</text>
   </g>
 </svg>

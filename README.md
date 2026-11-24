@@ -8,12 +8,15 @@
   <img alt="Python 3" src="https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white">
   <img alt="Windows" src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?logo=windows&logoColor=white">
   <a href="LICENSE"><img alt="Licença MIT" src="https://img.shields.io/badge/licen%C3%A7a-MIT-22c55e"></a>
+  <a href="https://megatic.pt"><img alt="Feito pela Megatic" src="https://img.shields.io/badge/feito%20pela-Megatic-0F172A?labelColor=38BDF8"></a>
 </p>
 
 <p align="center">
   <b>Dás-lhe um 3MF do MakerWorld e recebes um projeto da Anycubic Kobra X pronto a imprimir,<br>
   já fatiado, com tempo e gramas de cada prato.</b>
 </p>
+
+<p align="center">Feito pela <a href="https://megatic.pt"><b>Megatic</b></a> · <a href="https://megatic.pt">megatic.pt</a></p>
 
 ---
 
@@ -88,6 +91,13 @@ npx github:GodFaizT/bambu-para-kobra-x --desinstalar
 
 Descarrega o ZIP do repositório (botão verde **Code → Download ZIP**) e copia a pasta
 `skills/bambu-para-kobra-x` para `%USERPROFILE%\.claude\skills\`.
+
+### 5. App do Claude (desktop e claude.ai)
+
+| Onde | Funciona? | Como |
+|---|---|---|
+| **App Claude para Windows → separador _Code_** | ✅ Tudo | É o Claude Code dentro da app e corre no teu PC. Instala o plugin (forma 1) ou a skill (formas 2–4); a app usa as mesmas skills e plugins. |
+| **Chat da app / claude.ai** | ⚠️ Só conversa | Descarrega `bambu-para-kobra-x-skill.zip` das [releases](https://github.com/GodFaizT/bambu-para-kobra-x/releases/latest) e carrega-o em **Definições → Capacidades → Skills**. O chat corre num servidor da Anthropic, sem o Anycubic Slicer Next: o Claude explica e planeia, mas não consegue exportar nem fatiar. Para adaptar ficheiros usa o separador _Code_. |
 
 Depois de instalar, abre uma sessão nova do Claude Code.
 
@@ -178,6 +188,11 @@ It can also resize models, split plates and measure projects.
 Install it with `/plugin marketplace add GodFaizT/bambu-para-kobra-x`, `npx skills add GodFaizT/bambu-para-kobra-x`
 or `npx github:GodFaizT/bambu-para-kobra-x`. Then ask Claude to *"convert this 3MF for the Kobra X"*.
 The prompts and reports are in Portuguese, but Claude answers in your language.
+
+Made by [Megatic](https://megatic.pt).
 </details>
 
-<p align="center"><sub>MIT © GodFaizT</sub></p>
+<p align="center">
+  <a href="https://megatic.pt"><b>Megatic</b></a> — feito com ❤️ em Portugal · <a href="https://megatic.pt">megatic.pt</a><br>
+  <sub>Licença MIT</sub>
+</p>

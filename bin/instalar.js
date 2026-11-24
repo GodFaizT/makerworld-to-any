@@ -68,7 +68,7 @@ function verificar() {
   return tudoBem;
 }
 
-console.log(cor("1", `\n  ${NOME}\n`));
+console.log(cor("1", `\n  ${NOME}`) + cor("2", "  ·  feito pela Megatic — https://megatic.pt") + "\n");
 
 if (tem("--verificar")) {
   if (!fs.existsSync(path.join(ORIGEM, "SKILL.md"))) {
