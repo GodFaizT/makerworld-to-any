@@ -91,6 +91,7 @@ o que mais queres em português normal.
 | `/kobra3 <ficheiro>` | Anycubic **Kobra 3** |
 | `/kobra3max <ficheiro>` | Anycubic **Kobra 3 Max** |
 | `/anycubic <impressora> <ficheiro>` | qualquer outra: Kobra 2 Neo, Kobra 3 V2, Kobra 1… |
+| `/any-perfil [meus \| anycubic] [impressora …]` | escolher os perfis e a impressora por omissão |
 | `/any-update` | atualizar a skill e os comandos |
 
 ```text
@@ -138,7 +139,16 @@ ironing, fuzzy skin… O que mudaste nos teus perfis (costura, arachne…) ganha
 omissão. As velocidades, acelerações, temperaturas e retração são sempre as da tua impressora; nas mais lentas
 (Kobra 1 e 2) as velocidades do autor só podem baixar.
 
-Para usares sempre os teus perfis, define a variável de ambiente `MAKERWORLD_TO_ANY_PERFIS=meus`.
+Para escolheres de uma vez, usa o **`/any-perfil`**:
+
+```text
+/any-perfil                       ← mostra o que está escolhido e os perfis que tens guardados
+/any-perfil meus                  ← usa sempre os teus perfis
+/any-perfil anycubic              ← volta aos perfis da Anycubic
+/any-perfil impressora Kobra S1   ← impressora por omissão (para pedidos sem impressora)
+```
+
+A escolha fica guardada fora da pasta da skill, por isso não se perde com o `/any-update`.
 
 ## ✨ O que faz por ti
 
@@ -224,6 +234,7 @@ python scripts/adaptar.py "Modelo.3mf" --impressora "Kobra S1" --perfis meus
 python scripts/escalar.py "Modelo - Kobra X.3mf" "Modelo 12cm.3mf" --altura 120 --fatiar
 python scripts/separar_pratos.py "Projeto.3mf" "Só pratos 3-4.3mf" 3,4
 python scripts/medir.py "Modelo - Kobra X.3mf" --fatiar
+python scripts/perfil.py meus --impressora "Kobra X"
 python scripts/atualizar.py
 ```
 
@@ -237,8 +248,9 @@ python scripts/atualizar.py
 | `--arquivar-original PASTA` | move o original no fim |
 | `--sem-fatiar` · `--manter-temp` | só exportar · guardar a pasta temporária |
 
-Variáveis de ambiente: `MAKERWORLD_TO_ANY_IMPRESSORA` (impressora por omissão), `MAKERWORLD_TO_ANY_PERFIS`
-(`sistema` ou `meus`), `ANYCUBIC_SLICER` (caminho do executável).
+Preferências (`/any-perfil` ou `python scripts/perfil.py meus --impressora "Kobra S1"`) ficam em
+`%APPDATA%\makerworld-to-any\config.json`. Variáveis de ambiente (mandam sobre as preferências):
+`MAKERWORLD_TO_ANY_IMPRESSORA`, `MAKERWORLD_TO_ANY_PERFIS` (`sistema` ou `meus`), `ANYCUBIC_SLICER` (caminho do executável).
 </details>
 
 <details>
@@ -269,8 +281,8 @@ You can use Anycubic's official profiles or your own saved ones.
 
 Install it with `/plugin marketplace add GodFaizT/makerworld-to-any` and
 `/plugin install makerworld-to-any@makerworld-to-any`. Then run `/kobrax "C:\path\model.3mf"` (or `/kobras1`,
-`/kobra3`, `/anycubic <printer> <file>`…), or ask *"convert this 3MF for my Kobra S1"*. Update with
-`/any-update`. The reports are in Portuguese, but Claude answers in your language.
+`/kobra3`, `/anycubic <printer> <file>`…), or ask *"convert this 3MF for my Kobra S1"*. Choose Anycubic's or
+your own profiles (and your default printer) with `/any-perfil`; update with `/any-update`. The reports are in Portuguese, but Claude answers in your language.
 </details>
 
 <p align="center">

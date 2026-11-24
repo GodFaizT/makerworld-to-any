@@ -48,8 +48,11 @@ carregam esta skill: usar a impressora do comando e tratar os pedidos extra (tam
   autor fez de proposito (suportes, enchimento...) continuam a passar. Os perfis do utilizador so sao lidos.
 - `--listar-perfis` mostra os perfis do utilizador. Tambem se pode dar o nome de um perfil dele em `--impressora`,
   `--processo` ou `--filamentos`.
-- Quando o utilizador diz "com os meus perfis" / "com as minhas definicoes": `--perfis meus`. A variavel
-  `MAKERWORLD_TO_ANY_PERFIS=meus` torna isso o normal.
+- Quando o utilizador diz "com os meus perfis" / "com as minhas definicoes": `--perfis meus`.
+- Por omissao: o comando `/any-perfil` (script `perfil.py`) guarda `meus` ou `anycubic` e a impressora por omissao em
+  `%APPDATA%\makerworld-to-any\config.json`. Ordem: opcao no comando > variavel de ambiente
+  (`MAKERWORLD_TO_ANY_PERFIS`, `MAKERWORLD_TO_ANY_IMPRESSORA`) > `/any-perfil` > Kobra X com perfis da Anycubic.
+  Se o utilizador pede "usa sempre os meus perfis" ou "a minha impressora e a S1", correr `perfil.py` com isso.
 - Com `--processo` escolhido a mao, a altura de camada e as camadas de topo/fundo sao as desse perfil (nao as do autor).
 
 ## Atualizar
