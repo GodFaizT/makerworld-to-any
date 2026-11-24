@@ -1,0 +1,42 @@
+{
+  "name": "bambu-para-kobra-x",
+  "version": "1.0.0",
+  "description": "Skill do Claude Code que adapta projetos 3MF do Bambu Studio / MakerWorld para a Anycubic Kobra X (Anycubic Slicer Next).",
+  "bin": {
+    "bambu-para-kobra-x": "bin/instalar.js"
+  },
+  "files": [
+    "bin/",
+    "skills/",
+    ".claude-plugin/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node bin/instalar.js --verificar"
+  },
+  "keywords": [
+    "claude-code",
+    "claude-skill",
+    "agent-skills",
+    "anycubic",
+    "kobra-x",
+    "bambu-lab",
+    "makerworld",
+    "3mf",
+    "3d-printing"
+  ],
+  "author": "GodFaizT (https://github.com/GodFaizT)",
+  "license": "MIT",
+  "homepage": "https://github.com/GodFaizT/bambu-para-kobra-x#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GodFaizT/bambu-para-kobra-x.git"
+  },
+  "bugs": {
+    "url": "https://github.com/GodFaizT/bambu-para-kobra-x/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

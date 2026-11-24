@@ -1,0 +1,17 @@
+{
+  "name": "bambu-para-kobra-x",
+  "owner": { "name": "GodFaizT", "url": "https://github.com/GodFaizT" },
+  "metadata": {
+    "description": "Ferramentas de impressao 3D para o Claude Code: projetos Bambu Lab / MakerWorld na Anycubic Kobra X."
+  },
+  "plugins": [
+    {
+      "name": "bambu-para-kobra-x",
+      "source": "./",
+      "description": "Adapta projetos 3MF do Bambu Studio / MakerWorld para a Anycubic Kobra X (Anycubic Slicer Next).",
+      "version": "1.0.0",
+      "category": "productivity",
+      "keywords": ["anycubic", "kobra-x", "bambu-lab", "makerworld", "3mf", "3d-printing"]
+    }
+  ]
+}
