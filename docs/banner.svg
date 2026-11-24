@@ -1,10 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="340" viewBox="0 0 1280 340" role="img" aria-label="MakerWorld to Any: projetos Bambu Lab e MakerWorld prontos para a Anycubic Kobra X">
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="400" viewBox="0 0 1280 400" role="img" aria-label="MakerWorld to Any — projetos Bambu Lab do MakerWorld prontos a imprimir em impressoras Anycubic. Feito pela Megatic.">
   <defs>
     <linearGradient id="fundo" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0f1419"/>
-      <stop offset="1" stop-color="#1b2330"/>
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="1" stop-color="#121c31"/>
     </linearGradient>
-    <linearGradient id="seta" x1="0" y1="0" x2="1" y2="0">
+    <radialGradient id="brilhoVerde" cx="0.17" cy="0.18" r="0.42">
+      <stop offset="0" stop-color="#22c55e" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#22c55e" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="brilhoAzul" cx="0.88" cy="0.95" r="0.5">
+      <stop offset="0" stop-color="#38bdf8" stop-opacity="0.26"/>
+      <stop offset="1" stop-color="#38bdf8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="acento" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#22c55e"/>
+      <stop offset="1" stop-color="#38bdf8"/>
+    </linearGradient>
+    <linearGradient id="seta" gradientUnits="userSpaceOnUse" x1="256" y1="0" x2="336" y2="0">
       <stop offset="0" stop-color="#22c55e"/>
       <stop offset="1" stop-color="#38bdf8"/>
     </linearGradient>
@@ -12,40 +24,117 @@
       <stop offset="0" stop-color="#38bdf8"/>
       <stop offset="1" stop-color="#22c55e"/>
     </linearGradient>
-    <pattern id="grelha" width="28" height="28" patternUnits="userSpaceOnUse">
-      <path d="M28 0H0V28" fill="none" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1"/>
+    <linearGradient id="cartao" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a2540"/>
+      <stop offset="1" stop-color="#131c31"/>
+    </linearGradient>
+    <pattern id="pontos" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.1" fill="#ffffff" fill-opacity="0.07"/>
     </pattern>
+    <filter id="sombra" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#000000" flood-opacity="0.45"/>
+    </filter>
+    <filter id="brilho" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+    <clipPath id="recorte">
+      <rect width="1280" height="400" rx="22"/>
+    </clipPath>
   </defs>
-  <rect width="1280" height="340" rx="18" fill="url(#fundo)"/>
-  <rect width="1280" height="340" rx="18" fill="url(#grelha)"/>
 
-  <!-- peca a ser impressa: camadas -->
-  <g transform="translate(118 64)">
-    <rect x="-34" y="214" width="268" height="10" rx="3" fill="#2a3442"/>
-    <g fill="url(#camadas)">
-      <rect x="10" y="196" width="180" height="15" rx="7.5"/>
-      <rect x="20" y="178" width="160" height="15" rx="7.5" opacity="0.95"/>
-      <rect x="32" y="160" width="136" height="15" rx="7.5" opacity="0.9"/>
-      <rect x="46" y="142" width="108" height="15" rx="7.5" opacity="0.85"/>
-      <rect x="60" y="124" width="80" height="15" rx="7.5" opacity="0.8"/>
-      <rect x="72" y="106" width="44" height="15" rx="7.5" opacity="0.75"/>
-    </g>
-    <!-- bico -->
-    <g transform="translate(118 18)">
-      <rect x="-30" y="0" width="60" height="38" rx="6" fill="#cbd5e1"/>
-      <rect x="-30" y="0" width="60" height="10" rx="5" fill="#94a3b8"/>
-      <path d="M-16 38 H16 L6 64 H-6 Z" fill="#e2e8f0"/>
-      <circle cx="0" cy="74" r="4" fill="#f59e0b"/>
-      <path d="M0 78 Q -10 84 -22 86" stroke="#f59e0b" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <g clip-path="url(#recorte)">
+    <rect width="1280" height="400" fill="url(#fundo)"/>
+    <rect width="1280" height="400" fill="url(#pontos)"/>
+    <rect width="1280" height="400" fill="url(#brilhoVerde)"/>
+    <rect width="1280" height="400" fill="url(#brilhoAzul)"/>
+  </g>
+
+  <!-- cartao 1: o projeto do MakerWorld -->
+  <g filter="url(#sombra)">
+    <rect x="60" y="76" width="178" height="240" rx="18" fill="url(#cartao)" stroke="#2a3a5c"/>
+  </g>
+  <g transform="translate(149 186)">
+    <path d="M-30 -48 H14 L32 -30 V48 H-30 Z" fill="#22c55e" fill-opacity="0.12" stroke="#22c55e" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M14 -48 V-30 H32" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linejoin="round"/>
+    <text x="1" y="8" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="21" font-weight="800" fill="#4ade80">3MF</text>
+    <g transform="translate(1 30)" fill="none" stroke="#4ade80" stroke-width="1.8" stroke-linejoin="round" opacity="0.85">
+      <path d="M0 -9 L9 -4.5 L0 0 L-9 -4.5 Z"/>
+      <path d="M-9 -4.5 V5 L0 9.5 V0"/>
+      <path d="M9 -4.5 V5 L0 9.5"/>
     </g>
   </g>
 
+  <!-- seta animada -->
+  <path d="M256 196 H322" fill="none" stroke="url(#seta)" stroke-width="4" stroke-linecap="round" stroke-dasharray="10 9">
+    <animate attributeName="stroke-dashoffset" from="38" to="0" dur="1.1s" repeatCount="indefinite"/>
+  </path>
+  <path d="M320 184 L336 196 L320 208" fill="none" stroke="#38bdf8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- cartao 2: impressora Anycubic a imprimir -->
+  <g filter="url(#sombra)">
+    <rect x="354" y="76" width="222" height="240" rx="18" fill="url(#cartao)" stroke="#2a3a5c"/>
+  </g>
+  <rect x="376" y="98" width="178" height="196" rx="10" fill="#0d1424" stroke="#33415e" stroke-width="2"/>
+  <rect x="388" y="122" width="154" height="9" rx="4.5" fill="#475569"/>
+  <!-- peca a crescer -->
+  <rect x="392" y="270" width="146" height="8" rx="4" fill="#334155"/>
+  <g fill="url(#camadas)">
+    <rect x="410" y="252" width="110" height="13" rx="6.5"/>
+    <rect x="418" y="236" width="94" height="13" rx="6.5" opacity="0.95"/>
+    <rect x="428" y="220" width="74" height="13" rx="6.5" opacity="0.9"/>
+    <rect x="438" y="204" width="54" height="13" rx="6.5" opacity="0.85">
+      <animate attributeName="opacity" values="0.55;1;0.55" dur="2.4s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  <!-- cabeca: vai e vem por cima da peca -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="-28 0; 28 0; -28 0" dur="3.2s" repeatCount="indefinite"/>
+    <rect x="451" y="126" width="28" height="30" rx="5" fill="#cbd5e1"/>
+    <rect x="451" y="126" width="28" height="9" rx="4" fill="#94a3b8"/>
+    <path d="M456 156 H474 L468 172 H462 Z" fill="#e2e8f0"/>
+    <circle cx="465" cy="179" r="4" fill="#f59e0b"/>
+    <circle cx="465" cy="179" r="7" fill="#f59e0b" opacity="0.6" filter="url(#brilho)"/>
+    <path d="M465 183 V200" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- legendas dos cartoes -->
+  <g font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" text-anchor="middle">
+    <text x="149" y="344" font-size="17" font-weight="700" fill="#e2e8f0">MakerWorld</text>
+    <text x="149" y="366" font-size="13.5" fill="#8b9bb4">projeto Bambu Lab</text>
+    <text x="465" y="344" font-size="17" font-weight="700" fill="#e2e8f0">Anycubic</text>
+    <text x="465" y="366" font-size="13.5" fill="#8b9bb4">pronto a imprimir</text>
+  </g>
+
   <!-- texto -->
-  <g font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif">
-    <text x="440" y="118" font-size="30" font-weight="600" fill="#94a3b8" letter-spacing="3">CLAUDE CODE SKILL</text>
-    <text x="440" y="182" font-size="58" font-weight="800" fill="#f8fafc">MakerWorld <tspan fill="#38bdf8">to</tspan> Any</text>
-    <text x="442" y="236" font-size="26" fill="#cbd5e1">Projetos Bambu Lab do MakerWorld prontos para impressoras Anycubic,</text>
-    <text x="442" y="272" font-size="26" fill="#cbd5e1">com perfis, cores, torre de purga e tempo de impressão verificados.</text>
-    <text x="1240" y="318" font-size="18" font-weight="600" fill="#64748b" text-anchor="end">feito pela Megatic · megatic.pt</text>
+  <g font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
+    <rect x="636" y="70" width="218" height="32" rx="16" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.14"/>
+    <circle cx="656" cy="86" r="5" fill="url(#acento)"/>
+    <text x="670" y="91.5" font-size="13.5" font-weight="700" fill="#cbd5e1" letter-spacing="2.2">CLAUDE CODE SKILL</text>
+
+    <text x="634" y="176" font-size="64" font-weight="800" fill="#f8fafc" letter-spacing="-1">MakerWorld <tspan fill="url(#acento)">to</tspan> Any</text>
+
+    <text x="637" y="220" font-size="23" fill="#cbd5e1">Projetos do MakerWorld prontos a imprimir</text>
+    <text x="637" y="250" font-size="23" fill="#cbd5e1">na tua impressora Anycubic, com um comando.</text>
+
+    <g font-size="14" font-weight="600" fill="#e2e8f0">
+      <rect x="636" y="276" width="80" height="30" rx="15" fill="#22c55e" fill-opacity="0.14" stroke="#22c55e" stroke-opacity="0.55"/>
+      <text x="676" y="296" text-anchor="middle">Kobra X</text>
+      <rect x="726" y="276" width="88" height="30" rx="15" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.18"/>
+      <text x="770" y="296" text-anchor="middle">Kobra S1</text>
+      <rect x="824" y="276" width="80" height="30" rx="15" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.18"/>
+      <text x="864" y="296" text-anchor="middle">Kobra 3</text>
+      <rect x="914" y="276" width="80" height="30" rx="15" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.18"/>
+      <text x="954" y="296" text-anchor="middle">Kobra 4</text>
+      <rect x="1004" y="276" width="112" height="30" rx="15" fill="#38bdf8" fill-opacity="0.12" stroke="#38bdf8" stroke-opacity="0.5"/>
+      <text x="1060" y="296" text-anchor="middle" fill="#7dd3fc">+ 12 modelos</text>
+    </g>
+
+    <g font-size="15" fill="#8b9bb4">
+      <circle cx="642" cy="336" r="3.5" fill="#22c55e"/><text x="652" y="341">perfis certos</text>
+      <circle cx="768" cy="336" r="3.5" fill="#2dd4bf"/><text x="778" y="341">cores e torre de purga</text>
+      <circle cx="950" cy="336" r="3.5" fill="#38bdf8"/><text x="960" y="341">tempo e gramas</text>
+    </g>
+
+    <text x="1244" y="376" text-anchor="end" font-size="14.5" font-weight="600" fill="#64748b">feito pela <tspan fill="#94a3b8">Megatic</tspan> · megatic.pt</text>
   </g>
 </svg>
