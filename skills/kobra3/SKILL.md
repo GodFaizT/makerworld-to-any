@@ -14,9 +14,9 @@ Pedido: `$ARGUMENTS`
 2. Impressora de destino: **Anycubic Kobra 3** -> `adaptar.py "<ficheiro>" --impressora "Kobra 3"` (mais as opcoes que os
    pedidos pedirem).
 3. O pedido comeca pelo caminho do ficheiro `.3mf` (com ou sem aspas, pode ter espacos); o resto sao pedidos extra:
-   tamanho ("com 10 cm" -> `escalar.py` depois de adaptar), bico ("bico 0.6" -> `--bico 0.6`), filamento/cor
-   ("PLA Silk dourado" -> `--filamentos "Anycubic PLA Silk" --cores "#D4AF37"`), perfil ("0.16 high quality" ->
-   `--processo`), etc.
+   tamanho ("com 10 cm" -> `escalar.py` depois de adaptar), bico ("bico 0.6" -> `--bico 0.6`), material
+   ("em PETG", "em PLA Silk" -> `--material PETG`), cor ("dourado" -> `--cores "#D4AF37"`), perfis ("com os meus
+   perfis" -> `--perfis meus`), perfil de impressao ("0.16 high quality" -> `--processo`), etc.
 4. Se o caminho for uma **pasta**, adapta um a um todos os `.3mf` dessa pasta (sem subpastas), menos os que ja sao
    adaptados (acabam em ` - <impressora>.3mf`).
 5. Se nao houver caminho, ou o ficheiro nao existir, ve so a pasta indicada ou a pasta atual (nunca o disco todo):

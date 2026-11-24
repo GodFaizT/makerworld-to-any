@@ -23,6 +23,7 @@
   <a href="#comandos"><b>Comandos</b></a> ·
   <a href="#impressoras"><b>Impressoras</b></a> ·
   <a href="#perfis"><b>Perfis</b></a> ·
+  <a href="#filamentos"><b>Filamentos</b></a> ·
   <a href="#atualizar"><b>Atualizar</b></a> ·
   <a href="#perguntas"><b>Perguntas</b></a>
 </p>
@@ -98,6 +99,7 @@ o que mais queres em português normal.
 /kobrax "C:\Downloads\Vaso.3mf"
 /kobras1 "C:\Downloads\Vaso.3mf" com 12 cm, PLA Silk dourado
 /kobrax "C:\Downloads\Vaso.3mf" com os meus perfis
+/kobrax "C:\Downloads\Vaso.3mf" em PETG
 /kobra3max "C:\Downloads\MakerWorld"                  ← todos os .3mf da pasta
 /anycubic Kobra 2 Neo "C:\Downloads\Vaso.3mf" bico 0.6
 ```
@@ -128,34 +130,142 @@ a skill diz-te que cor vai em cada objeto, para trocares o rolo entre pratos.
 
 ## 🎛 Perfis: os da Anycubic ou os teus
 
-| | Perfis da Anycubic *(por omissão)* | Os teus perfis |
+Cada adaptação usa **três perfis** do Anycubic Slicer Next:
+
+| Perfil | O que define | Exemplo |
 |---|---|---|
-| **O que usa** | Os perfis oficiais da Anycubic para a tua impressora, bico e filamento | As versões que guardaste no Anycubic Slicer Next (ex. *"0.20mm Standard – Copy"*) |
-| **Como pedir** | Nada a fazer | Diz *"com os meus perfis"*, ou `--perfis meus` |
-| **Quando não tens perfil teu** | — | Usa o da Anycubic para esse caso |
+| 🖨 **Impressora** | mesa, bico, início e fim de impressão, trocas de cor | `Anycubic Kobra X 0.4 nozzle` |
+| 🧱 **Impressão** | altura de camada, paredes, enchimento, velocidades, suportes, costura | `0.20mm Standard @Anycubic Kobra X 0.4 nozzle` |
+| 🧵 **Filamento** | temperaturas, ventilação, retração, fluxo, velocidade máxima | `Anycubic PLA Matte @Anycubic Kobra X 0.4 nozzle` |
 
-Em ambos os casos, do autor do modelo só passa o que diz respeito ao modelo: suportes, enchimento, paredes,
-ironing, fuzzy skin… O que mudaste nos teus perfis (costura, arachne…) ganha aos valores que o autor só tinha por
-omissão. As velocidades, acelerações, temperaturas e retração são sempre as da tua impressora; nas mais lentas
-(Kobra 1 e 2) as velocidades do autor só podem baixar.
+### Duas maneiras de trabalhar
 
-Para escolheres de uma vez, usa o **`/any-perfil`**:
+<table>
+<tr>
+<th width="50%">🏭 Perfis da Anycubic <i>(por omissão)</i></th>
+<th width="50%">🙋 Os teus perfis</th>
+</tr>
+<tr valign="top">
+<td>
 
-```text
-/any-perfil                       ← mostra o que está escolhido e os perfis que tens guardados
-/any-perfil meus                  ← usa sempre os teus perfis
-/any-perfil anycubic              ← volta aos perfis da Anycubic
-/any-perfil impressora Kobra S1   ← impressora por omissão (para pedidos sem impressora)
+Os perfis oficiais que vêm com o Anycubic Slicer Next, afinados pela Anycubic para cada impressora, bico e
+filamento. Não tens de fazer nada: é o que a skill usa se não disseres o contrário.
+
+</td>
+<td>
+
+Os perfis que tu afinaste e guardaste no Anycubic Slicer Next (costura atrás, mais paredes, o teu PLA com outra
+temperatura…). A skill usa-os sempre que tens um baseado no perfil que ela escolheu; nos outros casos usa o da
+Anycubic.
+
+</td>
+</tr>
+</table>
+
+### Usar os teus perfis, passo a passo
+
+1. **Cria o teu perfil no Anycubic Slicer Next.** Escolhe a impressora e o perfil que queres afinar (ex.
+   `0.20mm Standard`), muda o que quiseres e carrega no ícone de **guardar**. Dá-lhe um nome teu
+   (ex. *"0.20 Os meus"*).
+   Para filamentos é igual: abre por exemplo o `Anycubic PLA Matte`, afina a temperatura e guarda com outro nome.
+2. **Confirma que a skill o vê:**
+   ```text
+   /any-perfil
+   ```
+   Lista os teus perfis e marca com *"← para a tua impressora"* os que servem.
+3. **Escolhe usá-los:**
+   ```text
+   /any-perfil meus                         ← sempre, a partir de agora
+   /kobrax "C:\…\Vaso.3mf" com os meus perfis   ← só desta vez
+   ```
+4. **Adapta como sempre.** O relatório diz que perfis foram usados e marca os teus com
+   *"(perfil teu, baseado em …)"*.
+
+Para voltar aos da Anycubic: `/any-perfil anycubic`.
+
+> 💡 **Dica:** os modelos do MakerWorld são quase todos a **0.20 mm**. Se quiseres as tuas definições em quase
+> tudo, cria o teu perfil a partir do `0.20mm Standard` da tua impressora.
+
+### Como a skill escolhe
+
+```mermaid
+flowchart LR
+    A["Perfil do autor<br/>0.20mm Standard @BBL A1"] --> B["Perfil equivalente da Anycubic<br/>0.20mm Standard @Kobra X"]
+    B --> C{"Tens um perfil teu<br/>baseado neste?"}
+    C -- "sim, e /any-perfil meus" --> D["🙋 Usa o teu<br/>(o mais recente)"]
+    C -- "não" --> E["🏭 Usa o da Anycubic"]
 ```
 
-A escolha fica guardada fora da pasta da skill, por isso não se perde com o `/any-update`.
+### Quem manda em quê
+
+| Definições | De onde vêm |
+|---|---|
+| Velocidades, acelerações, temperaturas, retração, ventilação | do perfil escolhido (Anycubic ou teu) — nunca da Bambu |
+| Suportes, enchimento, paredes, ironing, fuzzy skin, modo vaso | do **autor do modelo**, porque o modelo foi pensado assim |
+| O que mudaste no teu perfil (costura, arachne…) | **teu**: ganha aos valores que o autor só tinha por omissão |
+| Altura de camada | a do autor; se escolheres o perfil à mão ("com 0.12"), a desse perfil |
+| Velocidades nas Kobra 1 e 2 | as da impressora; o autor só as pode baixar |
+
+### Prioridades
+
+O que pedes no comando ganha a tudo: depois vêm as variáveis de ambiente, depois o `/any-perfil`, e por fim a Kobra X
+com os perfis da Anycubic.
+
+```text
+/kobrax "C:\…\Vaso.3mf"                          ← usa o que está no /any-perfil
+/kobrax "C:\…\Vaso.3mf" com os meus perfis       ← os teus, só desta vez
+/kobrax "C:\…\Vaso.3mf" com 0.16 high quality    ← outro perfil de impressão
+```
+
+A escolha do `/any-perfil` fica guardada fora da pasta da skill, por isso não se perde com o `/any-update`. Os teus
+perfis só são lidos: a skill nunca escreve na pasta do Anycubic.
+
+<a id="filamentos"></a>
+
+## 🧵 Filamentos: cada material com o seu perfil
+
+A skill vê o material de cada filamento do autor e escolhe o perfil **desse material** para a tua impressora, com
+as temperaturas, a ventilação, a retração e a velocidade máxima certas. As cores do autor mantêm-se.
+
+| Material do autor (Bambu) | Fica (se a impressora tiver) | Notas |
+|---|---|---|
+| PLA Basic, Generic PLA | Anycubic PLA | |
+| PLA Matte · Silk · Wood · Glow · Translucent · Marble · Galaxy/Sparkle · Metal | a variante igual da Anycubic | se a impressora não a tiver, fica PLA |
+| PLA Tough / PLA+ | Anycubic PLA+ | |
+| PLA-CF | Anycubic PLA-CF | 🔩 bico endurecido |
+| PETG (Basic, HF, Translucent) | Anycubic PETG | |
+| PETG-CF · PET-CF | Anycubic PETG-CF · PET-CF | 🔩 bico endurecido |
+| PCTG | Anycubic PETG | ⚠️ avisa |
+| ABS · ASA | Anycubic ABS · ASA | 📦 impressora fechada |
+| PC · PC-CF · PC-GF | Anycubic PC · PC-CF · PC-GF | 📦 impressora fechada |
+| PA · PA6-CF · PAHT-CF | Anycubic PA · PA6-CF · PAHT-CF | 📦 fechada · 🔩 bico endurecido |
+| TPU 95A | Anycubic TPU 95A / TPU | 🌀 bobine externa |
+| TPU for AMS | Anycubic TPU for ACE | 🌀 pode ir pela ACE |
+| PVA | Anycubic PVA | 💧 guardar seco |
+| Support for PLA | Anycubic PLA | ⚠️ avisa (era material só para suportes) |
+
+**Se a tua impressora não tiver perfil para o material** (por exemplo PC na Kobra X ou ASA na Kobra 1), a skill usa o
+mais próximo e **avisa sempre**. Nunca troca de material em silêncio. Os materiais disponíveis variam muito: a S1
+Max tem PA, PC e fibras, e a Kobra 1 só tem Generic PLA, PETG e ABS.
+
+**Mudar o material** — pede no comando e as cores ficam:
+
+```text
+/kobrax "C:\…\Vaso.3mf" em PETG
+/kobras1 "C:\…\Vaso.3mf" em PLA Silk
+/kobras1max "C:\…\Suporte.3mf" em PA6-CF
+```
+
+**Usar o teu perfil de filamento:** guarda-o no Anycubic Slicer Next a partir do perfil da Anycubic desse material
+(ex. o teu *"PETG preto"* a partir do `Anycubic PETG`) e usa `/any-perfil meus`. A skill usa-o sempre que o material
+for esse.
 
 ## ✨ O que faz por ti
 
 | | |
 |---|---|
 | 🎯 **Perfil certo** | O perfil da tua impressora com o mesmo nome do do autor (`0.20mm Standard @BBL A1` → `0.20mm Standard @Anycubic Kobra X`) |
-| 🎨 **Filamentos e cores** | Descobre que filamentos o modelo usa *mesmo*, troca-os pelos da tua impressora (Matte → PLA Matte, Silk → PLA Silk…) e mantém as cores |
+| 🎨 **Filamentos e cores** | Descobre que filamentos o modelo usa *mesmo* e escolhe o perfil de cada material (PLA, PETG, ABS, TPU, CF…) para a tua impressora, com as cores do autor; avisa se a impressora não tiver o material |
 | 🗼 **Torre de purga** | Liga-a quando há cores e põe-na num sítio livre de cada prato |
 | 🧩 **Tudo intacto** | Pratos, peças, modificadores, pintura de cores, fuzzy skin, alturas de camada variáveis e os créditos do autor |
 | 🩹 **Bugs do Anycubic** | Contorna os crashes e erros conhecidos da linha de comandos do Anycubic |
@@ -243,6 +353,7 @@ python scripts/atualizar.py
 | `--impressora "Kobra S1"` · `--bico 0.6` | impressora e bico de destino |
 | `--perfis sistema\|meus` | perfis da Anycubic ou os teus |
 | `--processo "0.16mm High Quality"` | outro perfil de impressão (também um teu, pelo nome) |
+| `--material PETG` | muda o material de todos os filamentos (as cores ficam) |
 | `--filamentos "Anycubic PLA Matte;Anycubic PLA"` · `--cores "#FFFFFF;#800020"` | filamentos e cores por ordem |
 | `--saida PASTA` · `--nome FICHEIRO` · `--substituir` | onde gravar |
 | `--arquivar-original PASTA` | move o original no fim |

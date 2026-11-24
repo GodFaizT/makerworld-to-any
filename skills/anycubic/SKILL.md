@@ -14,8 +14,8 @@ Pedido: `$ARGUMENTS`
 2. O pedido comeca pela impressora (ex. "Kobra 2 Neo", "Kobra 3 V2", "S1 Max", "Kobra X 0.6") e depois o caminho do
    `.3mf` ou de uma pasta. Passa a impressora em `adaptar.py --impressora "..."`. Se nao reconheceres a impressora,
    corre `adaptar.py --listar-impressoras` e pergunta qual.
-3. O resto sao pedidos extra: tamanho -> `escalar.py` depois de adaptar; bico -> `--bico`; filamento/cor ->
-   `--filamentos`/`--cores`; perfil -> `--processo`.
+3. O resto sao pedidos extra: tamanho -> `escalar.py` depois de adaptar; bico -> `--bico`; material ("em PETG")
+   -> `--material`; cor -> `--cores`; "com os meus perfis" -> `--perfis meus`; perfil de impressao -> `--processo`.
 4. Se o caminho for uma **pasta**, adapta um a um todos os `.3mf` dessa pasta (sem subpastas), menos os que ja sao
    adaptados (acabam em ` - <impressora>.3mf`).
 5. Se nao houver caminho, ou o ficheiro nao existir, ve so a pasta indicada ou a pasta atual (nunca o disco todo):

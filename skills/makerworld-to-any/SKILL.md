@@ -91,6 +91,7 @@ lado do original (ou na pasta-mae), se existir; senao ao lado do original.
 | `--arquivar-original PASTA` | no fim move o original para essa pasta (ex.: uma pasta de originais) |
 | `--processo "0.16mm High Quality"` | forcar outro perfil da impressora |
 | `--filamentos "Anycubic PLA Matte;Anycubic PLA"` | perfis de filamento por ordem (so o nome, sem ` @Anycubic ...`) |
+| `--material PETG` | muda o material de todos os filamentos ("em PETG", "em PLA Silk", "em ABS"), com as cores do autor |
 | `--cores "#FFFFFF;#800020"` | cores por ordem (o utilizador diz nomes: traduzir para hex) |
 | `--sem-fatiar` | so exportar (rapido, para ver definicoes) |
 | `--manter-temp` | guardar a pasta temporaria para investigar |
@@ -105,8 +106,12 @@ O que o script faz:
    de "intencao" (paredes, enchimento, suportes, brim, costura, ironing, fuzzy skin, modo vaso...), mas nao as da
    impressora dele (aceleracoes, posicao da torre, g-code). `zig-zag` -> `zigzag`; `tree_organic` sai (o Anycubic
    2.0 nao tem).
-4. Filamentos: Bambu PLA Matte -> Anycubic PLA Matte, Silk -> PLA Silk, PETG -> PETG, TPU -> TPU 95A... (so os que a
-   impressora tem; senao o Anycubic/Generic mais proximo) com as cores do autor.
+4. Filamentos por material: PLA (e variantes Matte, Silk, Wood, Glow, Translucent, Marble, Galaxy, Metal, PLA+,
+   High Speed), PLA-CF, PETG, PETG-CF, PCTG -> PETG, PET-CF, ABS, ASA, PC (CF/GF), PA / PA6-CF / PAHT-CF, TPU (TPU for
+   AMS -> TPU for ACE), PEBA, PVA; "Support for PLA" -> PLA. Usa o perfil Anycubic (ou Generic) desse material que a
+   impressora tiver; se nao houver, avisa (ex. ASA -> ABS na Kobra 1, PC -> PLA na Kobra X) - nunca troca de material
+   em silencio. Cores do autor. Notas por material no relatorio (bico endurecido para CF/GF, impressora fechada para
+   ABS/ASA/PC/PA, TPU so pela ACE com "TPU for ACE", PVA seco).
 5. O Anycubic cria o projeto a partir do 3MF original (mantem pecas, modificadores, pintura de cores, fuzzy skin
    pintado, pratos, alturas de camada variaveis e os creditos do autor) e centra tudo na mesa da impressora.
 6. Corrige o que a linha de comandos deixa mal: listas com filamentos a mais (compara com um projeto de referencia

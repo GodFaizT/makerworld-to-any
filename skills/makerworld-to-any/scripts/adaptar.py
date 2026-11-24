@@ -126,31 +126,117 @@ def mudancas_processo(j, sis, protegidas=(), sem_altura=False):
     return mud, ignorados, diffs, limitadas
 
 
+# variantes de PLA reconhecidas pelo nome do filamento do autor (Bambu PLA Matte, Silk+, Galaxy...)
 VARIANTES_PLA = (("matte", "PLA Matte"), ("silk", "PLA Silk"), ("wood", "PLA Wood"), ("glow", "PLA Glow"),
-                 ("transl", "PLA Translucent"), ("clear", "PLA Clear"), ("marble", "PLA Marble"), ("galaxy", "PLA Galaxy"),
-                 ("metal", "PLA Metal"), ("-cf", "PLA-CF"), (" cf", "PLA-CF"), ("pla+", "PLA+"), ("tough", "PLA+"),
-                 ("high speed", "PLA High Speed"))
+                 ("transl", "PLA Translucent"), ("clear", "PLA Clear"), ("marble", "PLA Marble"),
+                 ("galaxy", "PLA Galaxy"), ("sparkle", "PLA Galaxy"), ("metal", "PLA Metal"),
+                 ("pla+", "PLA+"), ("pla plus", "PLA+"), ("tough", "PLA+"), ("high speed", "PLA High Speed"),
+                 ("pla se", "PLA SE"))
+# material -> perfis Anycubic/Generic por ordem de preferencia (o primeiro que a impressora tiver)
+MATERIAIS = {
+    "PLA": ["PLA", "PLA+"],
+    "PLA-CF": ["PLA-CF", "PLA"],
+    "PETG": ["PETG"],
+    "PETG-CF": ["PETG-CF", "PETG"],
+    "PCTG": ["PETG"],
+    "PET-CF": ["PET-CF", "PETG-CF", "PETG"],
+    "ABS": ["ABS"],
+    "ASA": ["ASA", "ABS"],
+    "PC": ["PC", "PC-GF", "PC-CF"],
+    "PC-CF": ["PC-CF", "PC"],
+    "PC-GF": ["PC-GF", "PC"],
+    "PA": ["PA", "PAHT-CF", "PA6-CF"],
+    "PA-CF": ["PA6-CF", "PAHT-CF", "PA"],
+    "PAHT-CF": ["PAHT-CF", "PA6-CF", "PA"],
+    "TPU": ["TPU 95A", "TPU", "TPU for ACE"],
+    "TPU-ACE": ["TPU for ACE", "TPU 95A", "TPU"],
+    "PEBA": ["PEBA 95A", "PEBA"],
+    "PVA": ["PVA"],
+}
+# notas por material (aparecem no relatorio)
+NOTAS = {
+    "fibra": "material com fibra (CF/GF): usa um bico endurecido; o de latao gasta-se depressa",
+    "fechada": "ABS/ASA/PC/PA: imprime com a impressora fechada (ou numa caixa) e sem correntes de ar, para nao empenar",
+    "tpu": "TPU e flexivel: imprime devagar a partir de uma bobine externa; so pela ACE com o perfil 'TPU for ACE'",
+    "pva": "PVA dissolve-se em agua: guarda-o bem seco",
+    "suporte": "o autor usava um material so para suportes (Support for PLA/PA): ficou o material normal; os suportes saem mais presos",
+}
+
+
+def familia(x):
+    """'PA6-CF' -> 'PA', 'PAHT-CF' -> 'PA', 'PLA Matte' -> 'PLA', 'PETG-CF' -> 'PETG' (PET e PETG sao diferentes)."""
+    f = re.sub(r"\d", "", x.upper().split()[0].split("-")[0])
+    return "PA" if f.startswith("PAHT") else f
+
+
+def material_de(nome_b, tipo):
+    """(material, variante PLA ou None, suporte?) a partir do filamento do autor (tipo da Bambu + nome)."""
+    n, t = (nome_b or "").lower(), (tipo or "PLA").upper().replace(" ", "")
+    suporte = t in ("PLA-S", "PA-S", "SUPPORT") or "support" in n
+    if suporte:
+        t = "PA" if t.startswith("PA") else "PLA"
+    cf = "-cf" in n or " cf" in n or t.endswith("-CF")
+    gf = "-gf" in n or " gf" in n or t.endswith("-GF")
+    if t.startswith("PLA"):
+        mat = "PLA-CF" if cf else "PLA"
+    elif t.startswith("PCTG"):
+        mat = "PCTG"
+    elif t.startswith("PETG") or t == "PET":
+        mat = "PETG-CF" if cf else "PETG"
+    elif t.startswith("PET"):
+        mat = "PET-CF"
+    elif t.startswith("ABS"):
+        mat = "ABS"
+    elif t.startswith("ASA"):
+        mat = "ASA"
+    elif t.startswith("PC"):
+        mat = "PC-CF" if cf else "PC-GF" if gf else "PC"
+    elif t.startswith("PAHT"):
+        mat = "PAHT-CF"
+    elif t.startswith("PA"):
+        mat = "PA-CF" if cf else "PA"
+    elif t.startswith("TPU") or t.startswith("TPE"):
+        mat = "TPU-ACE" if ("ams" in n or "ace" in n or "AMS" in t) else "TPU"
+    elif t.startswith("PEBA"):
+        mat = "PEBA"
+    elif t.startswith("PVA") or t.startswith("BVOH"):
+        mat = "PVA"
+    else:
+        mat = None                       # HIPS, PP, PE, PPS, PPA... sem perfil Anycubic
+    variante = next((v for c, v in VARIANTES_PLA if c in n), None) if mat == "PLA" else None
+    return mat, variante, suporte
 
 
 def filamento_para(nome_b, tipo):
-    """Perfil de filamento desta impressora mais parecido com o do autor (Anycubic primeiro, depois Generic)."""
+    """(perfil desta impressora mais parecido com o do autor, aviso ou None, notas)."""
     comp = K.compativeis("filament")
-    n, t = (nome_b or "").lower(), (tipo or "PLA").upper()
-    if "PETG" in t:
-        bases = (["PETG-CF"] if "cf" in n else []) + ["PETG"]
-    elif "TPU" in t:
-        bases = ["TPU 95A", "TPU", "TPU for ACE"]
-    elif t in ("ABS", "ASA", "PVA", "PC", "PA", "PEBA"):
-        bases = [t]
-    else:
-        bases = [v for c, v in VARIANTES_PLA if c in n][:1]
-    for b in bases + ["PLA"]:
-        for marca in ("Anycubic ", "Generic "):
-            if marca + b in comp:
-                return comp[marca + b]
     if not comp:
         raise SystemExit(f"Nao ha perfis de filamento para {K.MAQUINA}")
-    return comp[sorted(comp)[0]]
+    mat, variante, suporte = material_de(nome_b, tipo)
+    bases = ([variante] if variante else []) + MATERIAIS.get(mat, [])
+    notas = []
+    if mat and ("CF" in mat or "GF" in mat):
+        notas.append(NOTAS["fibra"])
+    if mat in ("ABS", "ASA", "PC", "PC-CF", "PC-GF", "PA", "PA-CF", "PAHT-CF"):
+        notas.append(NOTAS["fechada"])
+    if mat in ("TPU", "TPU-ACE", "PEBA"):
+        notas.append(NOTAS["tpu"])
+    if mat == "PVA":
+        notas.append(NOTAS["pva"])
+    if suporte:
+        notas.append(NOTAS["suporte"])
+    for b in bases:
+        for marca in ("Anycubic ", "Generic "):
+            if marca + b in comp:
+                aviso = None
+                if mat and (familia(b) != familia(mat) or ("CF" in mat and "CF" not in b)) and not b.startswith("TPU"):
+                    aviso = f"'{nome_b}' ({mat}): a {K.MODELO} nao tem perfil de {mat}, ficou {marca + b}"
+                return comp[marca + b], aviso, notas
+    for marca in ("Anycubic ", "Generic "):              # material sem perfil nesta impressora
+        if marca + "PLA" in comp:
+            return comp[marca + "PLA"], (f"'{nome_b}' ({mat or tipo}): a {K.MODELO} nao tem perfil para este material; "
+                                         f"ficou {marca}PLA - confirma o material ou escolhe outro com --material/--filamentos"), notas
+    return comp[sorted(comp)[0]], f"'{nome_b}': sem perfil equivalente, ficou {sorted(comp)[0]}", notas
 
 
 def lista_perfis():
@@ -322,6 +408,8 @@ def main():
     ap.add_argument("--processo", help='perfil da impressora, ex. "0.16mm High Quality" (por omissao: o do autor)')
     ap.add_argument("--filamentos", help='perfis Anycubic por ordem, separados por ";" (ex. "Anycubic PLA Matte;Anycubic PLA")')
     ap.add_argument("--cores", help='cores por ordem, separadas por ";" (por omissao as do autor)')
+    ap.add_argument("--material", help='muda o material de todos os filamentos, ex. "PETG", "PLA Silk", "ABS", "TPU" '
+                                       '(as cores ficam; --filamentos manda sobre isto)')
     ap.add_argument("--substituir", action="store_true", help="substitui o ficheiro de saida se ja existir")
     ap.add_argument("--arquivar-original", metavar="PASTA", help="no fim move o original para esta pasta")
     ap.add_argument("--sem-fatiar", action="store_true")
@@ -399,6 +487,7 @@ def main():
     pedidos = [s.strip() for s in a.filamentos.split(";")] if a.filamentos else []
     cores_p = [s.strip() for s in a.cores.split(";")] if a.cores else []
     fils = []
+    avisos_fil, notas_fil = [], []
     for i, u in enumerate(usados):
         if i < len(pedidos):
             comp = K.compativeis("filament")
@@ -411,7 +500,14 @@ def main():
                 meus_f = [n for n, _ in K.meus("filament") if K.meu_compativel("filament", n)]
                 raise SystemExit(f"Filamento '{base}' nao existe para {K.MAQUINA}. Ha: " + ", ".join(sorted(comp) + meus_f))
         else:
-            nome = filamento_para(fids[u - 1] if u - 1 < len(fids) else "", ftipos[u - 1] if u - 1 < len(ftipos) else "PLA")
+            nb = fids[u - 1] if u - 1 < len(fids) else ""
+            tb = ftipos[u - 1] if u - 1 < len(ftipos) else "PLA"
+            if a.material:                              # "em PETG": o material pedido, com as cores do autor
+                nb, tb = a.material, a.material.split()[0]
+            nome, av, notas = filamento_para(nb, tb)
+            if av:
+                avisos_fil.append(av)
+            notas_fil += [x for x in notas if x not in notas_fil]
         if a.perfis == "meus" and not K.do_utilizador("filament", nome):
             nome = K.meu_para("filament", nome) or nome
         cor = cores_p[i] if i < len(cores_p) else (fcores[u - 1] if u - 1 < len(fcores) else "#FFFFFF")
@@ -463,6 +559,9 @@ def main():
                 avisos.append("estes objetos tinham varias cores e saem numa so: " + (", ".join(varias) or "pintura de cores"))
         if k > 4:
             avisos.append(f"usa {k} cores: uma ACE so tem 4 ranhuras")
+        avisos += avisos_fil
+        if any(n == NOTAS["tpu"] for n in notas_fil) and k > 1 and K.MULTICOR and not any("TPU for ACE" in n for n, _, _ in fils):
+            avisos.append("ha TPU num projeto de varias cores: pela ACE so com o perfil 'TPU for ACE'")
         if bico_orig != K.BICO:
             avisos.append(f"o original era para bico {bico_orig}; o adaptado e para bico {K.BICO}")
         res = None
@@ -511,6 +610,8 @@ def main():
             print(f"  velocidades do autor acima das da {K.MODELO} (ficam as da impressora):", ", ".join(limitadas))
         for i, (n, c, b) in enumerate(fils):
             print(f"  filamento {i + 1}: {n.replace(K.SUF, '')} {c}  (era {b})" + teu("filament", n))
+        for x in notas_fil:
+            print("  nota:", x)
         if k > 1:
             print("  torre de purga:", rel["prime_tower"], "| posicao por prato:", torre)
         for p, cs in sorted(por_prato.items()):
