@@ -85,6 +85,7 @@ const PASTAS = fs.readdirSync(path.join(__dirname, "..", "skills"), { withFileTy
   .filter((d) => d.isDirectory() && fs.existsSync(path.join(__dirname, "..", "skills", d.name, "SKILL.md")))
   .map((d) => d.name);
 const base = pastaSkills();
+const OBSOLETAS = ["makerworld-update"]; // comandos que mudaram de nome (-> any-update na 1.4.1)
 
 if (tem("--desinstalar")) {
   for (const p of PASTAS) {
@@ -95,6 +96,12 @@ if (tem("--desinstalar")) {
     }
   }
   process.exit(0);
+}
+
+for (const p of OBSOLETAS) {
+  const d = path.join(base, p);
+  const sk = path.join(d, "SKILL.md");
+  if (fs.existsSync(sk) && fs.readFileSync(sk, "utf8").includes("MakerWorld to Any")) fs.rmSync(d, { recursive: true, force: true });
 }
 
 try {

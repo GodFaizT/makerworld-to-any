@@ -91,7 +91,7 @@ o que mais queres em português normal.
 | `/kobra3 <ficheiro>` | Anycubic **Kobra 3** |
 | `/kobra3max <ficheiro>` | Anycubic **Kobra 3 Max** |
 | `/anycubic <impressora> <ficheiro>` | qualquer outra: Kobra 2 Neo, Kobra 3 V2, Kobra 1… |
-| `/makerworld-update` | atualizar a skill e os comandos |
+| `/any-update` | atualizar a skill e os comandos |
 
 ```text
 /kobrax "C:\Downloads\Vaso.3mf"
@@ -166,7 +166,7 @@ flowchart LR
 ## 🔄 Atualizar
 
 ```text
-/makerworld-update
+/any-update
 ```
 
 Vê a última versão no GitHub e atualiza a skill e os comandos. Se instalaste como plugin, também podes usar
@@ -270,7 +270,7 @@ You can use Anycubic's official profiles or your own saved ones.
 Install it with `/plugin marketplace add GodFaizT/makerworld-to-any` and
 `/plugin install makerworld-to-any@makerworld-to-any`. Then run `/kobrax "C:\path\model.3mf"` (or `/kobras1`,
 `/kobra3`, `/anycubic <printer> <file>`…), or ask *"convert this 3MF for my Kobra S1"*. Update with
-`/makerworld-update`. The reports are in Portuguese, but Claude answers in your language.
+`/any-update`. The reports are in Portuguese, but Claude answers in your language.
 </details>
 
 <p align="center">

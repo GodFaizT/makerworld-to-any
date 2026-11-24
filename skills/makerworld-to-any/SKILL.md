@@ -54,7 +54,7 @@ carregam esta skill: usar a impressora do comando e tratar os pedidos extra (tam
 
 ## Atualizar
 
-`/makerworld-update` (ou `python "<skill>/scripts/atualizar.py"`) atualiza a skill e os comandos para a ultima versao
+`/any-update` (ou `python "<skill>/scripts/atualizar.py"`) atualiza a skill e os comandos para a ultima versao
 do GitHub; no plugin usa `claude plugin update`. Depois e preciso abrir uma sessao nova.
 
 ## Melhores definicoes por impressora

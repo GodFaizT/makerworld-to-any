@@ -25,6 +25,7 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 SKILL = os.path.dirname(AQUI)              # .../makerworld-to-any
 BASE = os.path.dirname(SKILL)              # pasta das skills (ou skills/ do plugin)
 CABECALHOS = {"User-Agent": "makerworld-to-any-atualizar", "Accept": "application/vnd.github+json"}
+OBSOLETAS = ["makerworld-update"]   # comandos que mudaram de nome (makerworld-update -> any-update na 1.4.1)
 
 
 def versao_local():
@@ -94,6 +95,11 @@ def atualiza_pastas(rel):
             if os.path.isdir(destino):
                 shutil.rmtree(destino)
             shutil.copytree(os.path.join(ext, d), destino)
+        for d in OBSOLETAS:                              # so se for mesmo nosso (SKILL.md fala da MakerWorld to Any)
+            velha = os.path.join(BASE, d)
+            sk = os.path.join(velha, "SKILL.md")
+            if d not in pastas and os.path.isfile(sk) and "MakerWorld to Any" in open(sk, encoding="utf-8", errors="ignore").read():
+                shutil.rmtree(velha)
         return pastas
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

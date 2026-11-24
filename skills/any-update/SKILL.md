@@ -1,11 +1,11 @@
 ---
-name: makerworld-update
-description: "Comando /makerworld-update: atualiza a MakerWorld to Any (skill e comandos /kobrax, /kobras1, ...) para a ultima versao publicada no GitHub. Feito pela Megatic."
+name: any-update
+description: "Comando /any-update: atualiza a MakerWorld to Any (skill e comandos /kobrax, /kobras1, ...) para a ultima versao publicada no GitHub. Feito pela Megatic."
 argument-hint: "[--verificar]"
 disable-model-invocation: true
 ---
 
-# /makerworld-update - atualizar a MakerWorld to Any
+# /any-update - atualizar a MakerWorld to Any
 
 Pedido: `$ARGUMENTS`
 
