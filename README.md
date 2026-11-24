@@ -32,7 +32,7 @@ Claude  › Ficou em Adaptado Kobra X\Anjo - Kobra X.3mf (perfil 0.20mm Standard
 
 ## O que faz
 
-| | |
+| | O que faz |
 |---|---|
 | 🎯 **Perfil certo** | Usa o perfil da Kobra X equivalente ao do autor (`0.20mm Standard @BBL A1` → `0.20mm Standard @Anycubic Kobra X`) e passa só o que o autor mudou e importa: suportes, enchimento, paredes, ironing, fuzzy skin, costura, modo vaso… Ignora o que é da impressora dele (acelerações, g-code, posição da torre). |
 | 🎨 **Filamentos e cores** | Descobre que filamentos o modelo usa *mesmo* (projetos do MakerWorld trazem muitas vezes 4–5 que não servem para nada), troca-os pelos Anycubic equivalentes (Matte → PLA Matte, Silk → PLA Silk, PETG → PETG…) e mantém as cores do autor. |
@@ -46,12 +46,10 @@ Claude  › Ficou em Adaptado Kobra X\Anjo - Kobra X.3mf (perfil 0.20mm Standard
 
 ```mermaid
 flowchart LR
-    A[3MF do MakerWorld<br/>Bambu Studio] --> B[Analisa<br/>perfil · filamentos · pratos]
-    B --> C[Prepara cópia<br/>nomes de prato · filamentos 1..n]
-    C --> D[Anycubic Slicer Next<br/>exporta com perfis da Kobra X]
-    D --> E[Corrige<br/>filamentos · purga · torre]
-    E --> F[Verifica<br/>medidas · mesa · fatia]
-    F --> G[✔ Modelo - Kobra X.3mf<br/>tempo e gramas por prato]
+    A["3MF do MakerWorld"] --> B["Analisa o projeto"]
+    B --> C["Anycubic exporta<br/>com perfis da Kobra X"]
+    C --> D["Corrige e verifica"]
+    D --> E["✔ Pronto a imprimir"]
 ```
 
 ## Instalação
