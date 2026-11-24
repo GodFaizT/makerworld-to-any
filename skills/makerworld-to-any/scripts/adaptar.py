@@ -6,6 +6,11 @@ Uso:
                       [--processo "0.16mm High Quality"] [--filamentos "Anycubic PLA Matte;Anycubic PLA"]
                       [--cores "#FFFFFF;#800020"] [--substituir] [--arquivar-original PASTA] [--sem-fatiar]
     python adaptar.py --listar-impressoras
+    python adaptar.py --listar-perfis            (os perfis que o utilizador guardou no Anycubic Slicer Next)
+
+Perfis: --perfis sistema (por omissao) usa os perfis de origem da Anycubic; --perfis meus usa, para cada perfil
+escolhido, a versao que o utilizador guardou no slicer (se tiver uma baseada nele). Tambem se pode dar o nome de um
+perfil do utilizador em --impressora, --processo ou --filamentos.
 
 O que faz:
   1. Le o projeto: impressora, perfil, filamentos e quais sao mesmo usados, pratos, objetos.
@@ -65,6 +70,8 @@ def escolhe_processo(j, pedido=None):
     if not comp:
         raise SystemExit(f"Nao ha perfis de processo para {K.MAQUINA}")
     if pedido:
+        if K.existe("process", pedido) and (K.meu_compativel("process", pedido) or pedido in comp.values()):
+            return pedido
         base = pedido.split(" @")[0].strip()
         if base not in comp:
             raise SystemExit(f"Perfil '{base}' nao existe para {K.MAQUINA}. Ha: " + ", ".join(sorted(comp)))
@@ -80,10 +87,16 @@ def escolhe_processo(j, pedido=None):
     return comp[min(std, key=lambda b: abs(float(re.match(r"[\d.]+", b).group(0)) - lh) if re.match(r"[\d.]+", b) else 9)]
 
 
-def mudancas_processo(j, sis):
+def mudancas_processo(j, sis, protegidas=(), sem_altura=False):
+    """Mudancas do autor a aplicar sobre o perfil `sis`. protegidas: o que o utilizador mudou no perfil dele (ganha aos
+    valores "de intencao" que o autor nao mudou de proposito). sem_altura: o utilizador escolheu o perfil, a altura de
+    camada e a dele."""
     diffs = [k for k in str(K.primeiro(j.get("different_settings_to_system", [""])) or "").split(";") if k]
     mud, ignorados = {}, []
+    dependem_da_altura = {"layer_height", "top_shell_layers", "bottom_shell_layers"}
     for k in diffs:
+        if sem_altura and k in dependem_da_altura:
+            continue
         if IGNORAR.match(k) or k not in sis:
             ignorados.append(k)
             continue
@@ -93,6 +106,8 @@ def mudancas_processo(j, sis):
         elif str(v) != str(sis.get(k)):
             mud[k] = v
     for k in INTENCAO:
+        if sem_altura and k in dependem_da_altura or k in protegidas:
+            continue
         if k in j and k in sis and k not in mud:
             v = normaliza(k, j[k], sis)
             if v is not None and str(v) != str(sis.get(k)):
@@ -136,6 +151,15 @@ def filamento_para(nome_b, tipo):
     if not comp:
         raise SystemExit(f"Nao ha perfis de filamento para {K.MAQUINA}")
     return comp[sorted(comp)[0]]
+
+
+def lista_perfis():
+    print("Perfis guardados no Anycubic Slicer Next (usar com --perfis meus, ou pelo nome):")
+    for tipo, titulo in (("machine", "impressoras"), ("process", "processo"), ("filament", "filamentos")):
+        ms = K.meus(tipo)
+        print(f"  {titulo}:" + ("" if ms else " nenhum"))
+        for n, b in ms:
+            print(f"    {n}   (baseado em {b or '?'})")
 
 
 def lista_impressoras():
@@ -230,7 +254,7 @@ def prepara(orig, dst, mapa):
     K.reescreve(orig, dst, mudar)
 
 
-def corrige(exp, ref, dst, n_orig, idx, proc_diff, maq_diff, torre):
+def corrige(exp, ref, dst, n_orig, idx, proc_diff, fil_diffs, maq_diff, torre):
     R = json.loads(zipfile.ZipFile(ref).read("Metadata/project_settings.config"))
     k = len(R["filament_settings_id"])
     relatorio = {"cortadas": [], "sem_regra": []}
@@ -266,7 +290,7 @@ def corrige(exp, ref, dst, n_orig, idx, proc_diff, maq_diff, torre):
                     relatorio["cortadas"].append(key)
                 elif isinstance(r, list) and len(r) != len(v):
                     relatorio["sem_regra"].append((key, len(v), len(r)))
-            j["different_settings_to_system"] = [proc_diff] + [""] * k + [maq_diff]
+            j["different_settings_to_system"] = [proc_diff] + (list(fil_diffs) + [""] * k)[:k] + [maq_diff]
             if k > 1:
                 j["enable_prime_tower"] = "1"
                 if torre:
@@ -290,6 +314,9 @@ def main():
     ap.add_argument("--impressora", help=f'impressora Anycubic, ex. "Kobra S1", "Kobra 3 Max" (por omissao: {K.IMPRESSORA_OMISSAO})')
     ap.add_argument("--bico", help="diametro do bico (por omissao o do original, se houver perfil; senao 0.4)")
     ap.add_argument("--listar-impressoras", action="store_true", help="mostra as impressoras disponiveis e sai")
+    ap.add_argument("--perfis", choices=("sistema", "meus"), default=K.PERFIS_OMISSAO,
+                    help="sistema = perfis de origem da Anycubic; meus = os que guardaste no slicer, quando existem")
+    ap.add_argument("--listar-perfis", action="store_true", help="mostra os perfis que guardaste no slicer e sai")
     ap.add_argument("--saida", help="pasta de saida (por omissao: 'Adaptado <impressora>' ao lado, se existir)")
     ap.add_argument("--nome", help="nome do ficheiro de saida (por omissao '<original> - <impressora>.3mf')")
     ap.add_argument("--processo", help='perfil da impressora, ex. "0.16mm High Quality" (por omissao: o do autor)')
@@ -302,6 +329,9 @@ def main():
     a = ap.parse_args()
     if a.listar_impressoras:
         lista_impressoras()
+        return
+    if a.listar_perfis:
+        lista_perfis()
         return
     if not a.original:
         ap.error("falta o ficheiro 3MF original")
@@ -321,6 +351,8 @@ def main():
             maquina = K.encontra_maquina(a.impressora, bico_orig)
         except SystemExit:
             maquina = K.encontra_maquina(a.impressora, "0.4")
+    if a.perfis == "meus" and not K.do_utilizador("machine", maquina):
+        maquina = K.meu_para("machine", maquina) or maquina
     K.usa_impressora(maquina)
 
     pasta_o = os.path.dirname(orig)
@@ -349,15 +381,19 @@ def main():
     idx = [u - 1 for u in usados]
 
     processo = escolhe_processo(j, a.processo)
+    if a.perfis == "meus" and not K.do_utilizador("process", processo):
+        processo = K.meu_para("process", processo) or processo
     sis = K.perfil("process", processo)
-    mud, ignorados, diffs, limitadas = mudancas_processo(j, sis)
+    mud, ignorados, diffs, limitadas = mudancas_processo(j, sis, set(K.mudancas_do_utilizador("process", processo)),
+                                                         sem_altura=bool(a.processo))
     for key in ("support_filament", "support_interface_filament"):   # filamento de suporte renumerado
         v = K.primeiro(j.get(key))
         if v and str(v).isdigit() and int(v) > 0 and key in sis:
             novo = K.normaliza_tipo(str(mapa.get(int(v), int(v))), sis[key])
             if str(novo) != str(sis[key]):
                 mud[key] = novo
-    proc_diff = ";".join(sorted(x for x, v in mud.items() if str(v) != str(sis.get(x))))
+    proc_diff = ";".join(sorted({x for x, v in mud.items() if str(v) != str(sis.get(x))}
+                                | set(K.mudancas_do_utilizador("process", processo))))
 
     fids, ftipos, fcores = j.get("filament_settings_id", []), j.get("filament_type", []), j.get("filament_colour", [])
     pedidos = [s.strip() for s in a.filamentos.split(";")] if a.filamentos else []
@@ -367,11 +403,17 @@ def main():
         if i < len(pedidos):
             comp = K.compativeis("filament")
             base = pedidos[i].split(" @")[0].strip()
-            if base not in comp:
-                raise SystemExit(f"Filamento '{base}' nao existe para {K.MAQUINA}. Ha: " + ", ".join(sorted(comp)))
-            nome = comp[base]
+            if K.existe("filament", pedidos[i]) and K.meu_compativel("filament", pedidos[i]):
+                nome = pedidos[i]                       # perfil do utilizador pelo nome
+            elif base in comp:
+                nome = comp[base]
+            else:
+                meus_f = [n for n, _ in K.meus("filament") if K.meu_compativel("filament", n)]
+                raise SystemExit(f"Filamento '{base}' nao existe para {K.MAQUINA}. Ha: " + ", ".join(sorted(comp) + meus_f))
         else:
             nome = filamento_para(fids[u - 1] if u - 1 < len(fids) else "", ftipos[u - 1] if u - 1 < len(ftipos) else "PLA")
+        if a.perfis == "meus" and not K.do_utilizador("filament", nome):
+            nome = K.meu_para("filament", nome) or nome
         cor = cores_p[i] if i < len(cores_p) else (fcores[u - 1] if u - 1 < len(fcores) else "#FFFFFF")
         fils.append((nome, cor, fids[u - 1] if u - 1 < len(fids) else "?"))
 
@@ -399,7 +441,9 @@ def main():
                 pos = K.posicao_torre([K.ret(c) for c in por_prato.get(p, []) if c["printable"] != "0"], k, largura)
                 torre.append(pos or (int(K.CAMA_X / 2), int(K.CAMA_Y - 50)))
         final = os.path.join(tmp, "final.3mf")
-        rel = corrige(exp, ref, final, n_orig, idx, proc_diff, "machine_end_gcode" if fim else "", torre)
+        fil_diffs = [";".join(K.mudancas_do_utilizador("filament", n)) for n, _, _ in fils]
+        maq_diff = ";".join(sorted(set(K.mudancas_do_utilizador("machine", K.MAQUINA)) | ({"machine_end_gcode"} if fim else set())))
+        rel = corrige(exp, ref, final, n_orig, idx, proc_diff, fil_diffs, maq_diff, torre)
 
         # ---- verificacoes
         mod_f = K.Modelo(zipfile.ZipFile(final))
@@ -453,9 +497,12 @@ def main():
         if extras:
             print("  tem:", ", ".join(extras))
         print("ADAPTADO :", destino)
+        teu = lambda t, n: f" (perfil teu, baseado em '{K.raiz_sistema(t, n)}')" if K.do_utilizador(t, n) else ""
         print(f"  impressora: {K.MODELO} (bico {K.BICO}, mesa {K.CAMA_X:g} x {K.CAMA_Y:g} x {K.ALTURA_MAX:g} mm"
-              f"{', com ACE' if K.MULTICOR else ', sem ACE'})" + (" | fim de impressao: levanta o bico" if fim else ""))
-        print("  perfil:", processo)
+              f"{', com ACE' if K.MULTICOR else ', sem ACE'})" + (" | fim de impressao: levanta o bico" if fim else "")
+              + (f" | maquina: '{K.MAQUINA}'" + teu("machine", K.MAQUINA) if K.do_utilizador("machine", K.MAQUINA) else ""))
+        print(f"  perfis: {'os teus, quando existem' if a.perfis == 'meus' else 'de origem da Anycubic'}")
+        print("  perfil:", processo + teu("process", processo))
         for key in sorted(mud):
             print(f"    {key}: {sis.get(key)} -> {mud[key]}")
         if ignorados:
@@ -463,7 +510,7 @@ def main():
         if limitadas:
             print(f"  velocidades do autor acima das da {K.MODELO} (ficam as da impressora):", ", ".join(limitadas))
         for i, (n, c, b) in enumerate(fils):
-            print(f"  filamento {i + 1}: {n.replace(K.SUF, '')} {c}  (era {b})")
+            print(f"  filamento {i + 1}: {n.replace(K.SUF, '')} {c}  (era {b})" + teu("filament", n))
         if k > 1:
             print("  torre de purga:", rel["prime_tower"], "| posicao por prato:", torre)
         for p, cs in sorted(por_prato.items()):

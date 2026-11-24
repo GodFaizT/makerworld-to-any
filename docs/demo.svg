@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="430" viewBox="0 0 900 430" role="img" aria-label="Exemplo: /kobrax adapta Anjo.3mf para a Kobra X e mostra tempo e gramas de cada prato">
+  <defs>
+    <linearGradient id="fundo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#151b23"/>
+      <stop offset="1" stop-color="#0f1419"/>
+    </linearGradient>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="429" rx="14" fill="url(#fundo)" stroke="#2a3442"/>
+  <rect x="0.5" y="0.5" width="899" height="40" rx="14" fill="#1c2430"/>
+  <rect x="0.5" y="26" width="899" height="15" fill="#1c2430"/>
+  <circle cx="26" cy="21" r="6.5" fill="#ff5f57"/>
+  <circle cx="48" cy="21" r="6.5" fill="#febc2e"/>
+  <circle cx="70" cy="21" r="6.5" fill="#28c840"/>
+  <text x="450" y="26" text-anchor="middle" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#8b98a9">Claude Code</text>
+
+  <g font-family="'Cascadia Code', Consolas, 'SF Mono', Menlo, monospace" font-size="16.5">
+    <text x="28" y="82"><tspan fill="#22c55e">❯</tspan><tspan x="48" fill="#e6edf3">/kobrax</tspan><tspan x="128" fill="#f0c674">"C:\Downloads\Anjo.3mf"</tspan></text>
+    <text y="122" fill="#8b98a9"><tspan x="28" fill="#38bdf8">●</tspan><tspan x="48">A adaptar para a Anycubic Kobra X…</tspan></text>
+    <text y="162"><tspan x="28" fill="#22c55e">✔</tspan><tspan x="48" fill="#22c55e">Pronto:</tspan><tspan x="130" fill="#e6edf3">Adaptado Kobra X\Anjo - Kobra X.3mf</tspan></text>
+    <text x="48" y="188" fill="#8b98a9">perfil 0.20mm Standard · PLA Matte · 2 cores na ACE</text>
+    <text y="228" fill="#e6edf3"><tspan x="48" fill="#8b98a9">prato 1</tspan><tspan x="150">corpo grande</tspan><tspan x="320" fill="#f8fafc" font-weight="bold">5h54</tspan><tspan x="400">92,0 g</tspan><tspan x="490" fill="#E8DBB7">●</tspan><tspan x="512">bege</tspan></text>
+    <text y="254" fill="#e6edf3"><tspan x="48" fill="#8b98a9">prato 2</tspan><tspan x="150">asas</tspan><tspan x="320" fill="#f8fafc" font-weight="bold">17 min</tspan><tspan x="400">8,3 g</tspan><tspan x="490" fill="#ffffff">●</tspan><tspan x="512">branco</tspan></text>
+    <text y="280" fill="#e6edf3"><tspan x="48" fill="#8b98a9">prato 3</tspan><tspan x="150">corpo pequeno</tspan><tspan x="320" fill="#f8fafc" font-weight="bold">2h40</tspan><tspan x="400">35,7 g</tspan><tspan x="490" fill="#E8DBB7">●</tspan><tspan x="512">bege</tspan></text>
+    <text y="306" fill="#e6edf3"><tspan x="48" fill="#8b98a9">prato 4</tspan><tspan x="150">asas pequenas</tspan><tspan x="320" fill="#f8fafc" font-weight="bold">9 min</tspan><tspan x="400">3,9 g</tspan><tspan x="490" fill="#ffffff">●</tspan><tspan x="512">branco</tspan></text>
+    <text y="346"><tspan x="48" fill="#22c55e">✔</tspan><tspan x="70" fill="#8b98a9">medidas iguais ao original · cabe na mesa · sem avisos</tspan></text>
+    <text y="386"><tspan x="28" fill="#22c55e">❯</tspan><tspan x="48" fill="#e6edf3" opacity="0.9">▌</tspan></text>
+  </g>
+</svg>

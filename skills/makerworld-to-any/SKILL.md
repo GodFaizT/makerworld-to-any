@@ -39,6 +39,24 @@ O utilizador pode chamar `/kobrax`, `/kobra4`, `/kobras1`, `/kobras1max`, `/kobr
 fixa) ou `/anycubic <impressora>`, seguido do caminho do `.3mf` ou de uma pasta e de pedidos extra. Esses comandos
 carregam esta skill: usar a impressora do comando e tratar os pedidos extra (tamanho, bico, filamento, cor).
 
+## Perfis: os da Anycubic ou os do utilizador
+
+- `--perfis sistema` (por omissao): perfis de origem da Anycubic para a impressora, o bico e o filamento.
+- `--perfis meus`: para cada perfil escolhido (impressora, processo, filamento) usa a versao que o utilizador
+  guardou no Anycubic Slicer Next, se tiver uma baseada nele (a mais recente); senao o da Anycubic. O que o
+  utilizador mudou no perfil dele (costura, arachne...) ganha aos valores "de intencao" do autor; as mudancas que o
+  autor fez de proposito (suportes, enchimento...) continuam a passar. Os perfis do utilizador so sao lidos.
+- `--listar-perfis` mostra os perfis do utilizador. Tambem se pode dar o nome de um perfil dele em `--impressora`,
+  `--processo` ou `--filamentos`.
+- Quando o utilizador diz "com os meus perfis" / "com as minhas definicoes": `--perfis meus`. A variavel
+  `MAKERWORLD_TO_ANY_PERFIS=meus` torna isso o normal.
+- Com `--processo` escolhido a mao, a altura de camada e as camadas de topo/fundo sao as desse perfil (nao as do autor).
+
+## Atualizar
+
+`/makerworld-update` (ou `python "<skill>/scripts/atualizar.py"`) atualiza a skill e os comandos para a ultima versao
+do GitHub; no plugin usa `claude plugin update`. Depois e preciso abrir uma sessao nova.
+
 ## Melhores definicoes por impressora
 
 Velocidades, aceleracoes, temperaturas, retracao e ventilacao vem dos perfis oficiais da Anycubic para a impressora,

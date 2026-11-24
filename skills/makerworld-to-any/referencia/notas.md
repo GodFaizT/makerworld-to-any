@@ -48,6 +48,15 @@ O `adaptar.py` ja trata tudo o que esta marcado com (auto).
 - Filamentos por impressora variam muito (Kobra 1 so tem Generic PLA/PETG/ABS; Kobra 2 Neo so Anycubic PLA/PETG):
   usa-se o mais proximo, Anycubic primeiro, depois Generic (auto).
 
+## Perfis do utilizador
+
+- Ficam em `%APPDATA%\AnycubicSlicerNext\user\<conta>\{machine,process,filament}\*.json` (mais um `.info`): so as
+  diferencas, com `"inherits": "<perfil de sistema>"` e `"from": "User"`.
+- Ao passar um perfil do utilizador a linha de comandos, o JSON (ja resolvido) tem de manter `inherits` = o perfil de
+  sistema base; com `inherits` vazio a CLI recusa com "process not compatible with printer" (so na exportacao de um
+  STL, o cubo de referencia) (auto).
+- `different_settings_to_system` inclui as mudancas do utilizador em relacao ao perfil de sistema (auto).
+
 ## Perfis
 
 - Perfis de sistema: `%APPDATA%\AnycubicSlicerNext\system\Anycubic\{machine,process,filament}\*.json` com heranca

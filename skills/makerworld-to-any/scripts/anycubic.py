@@ -23,9 +23,15 @@ ANY = os.environ.get("ANYCUBIC_SLICER", r"C:\Program Files\AnycubicSlicerNext\An
 PERFIS = os.environ.get("ANYCUBIC_PERFIS", os.path.join(os.environ.get("APPDATA", ""), "AnycubicSlicerNext", "system", "Anycubic"))
 # impressora por omissao (o nome do modelo basta: "Kobra X", "Kobra S1", "Kobra 3 Max"...)
 IMPRESSORA_OMISSAO = os.environ.get("MAKERWORLD_TO_ANY_IMPRESSORA", "Kobra X")
+# perfis do utilizador (guardados no Anycubic Slicer Next): user/<conta>/{machine,process,filament}/*.json
+PERFIS_UTILIZADOR = os.environ.get("ANYCUBIC_PERFIS_UTILIZADOR",
+                                   os.path.join(os.environ.get("APPDATA", ""), "AnycubicSlicerNext", "user"))
+# "sistema" = perfis de origem da Anycubic; "meus" = os do utilizador quando tem um baseado no perfil escolhido
+PERFIS_OMISSAO = os.environ.get("MAKERWORLD_TO_ANY_PERFIS", "sistema")
 
 # impressora de destino: usa_impressora() preenche isto a partir do perfil da maquina
 MAQUINA = "Anycubic Kobra X 0.4 nozzle"
+MAQUINA_SISTEMA = MAQUINA    # perfil de sistema em que a maquina se baseia (igual a MAQUINA se nao for do utilizador)
 MODELO = "Anycubic Kobra X"
 SUF = " @" + MAQUINA
 BICO = "0.4"
@@ -47,6 +53,13 @@ POR_PRATO = {"wipe_tower_x", "wipe_tower_y"}
 _IDX = None
 
 
+_ORIGEM = {}      # (tipo, nome) -> "sistema" | "utilizador"
+_DATA = {}        # (tipo, nome) -> data do ficheiro (para escolher o mais recente)
+META = {"name", "inherits", "from", "type", "setting_id", "filament_id", "instantiation", "is_custom_defined", "version",
+        "print_settings_id", "printer_settings_id", "filament_settings_id", "print_timestamp", "printer_timestamp",
+        "filament_timestamp", "updated_time", "base_id", "user_id", "compatible_printers", "compatible_prints"}
+
+
 def _indice():
     idx = {}
     for f in glob.glob(os.path.join(PERFIS, "*", "*.json")):
@@ -55,38 +68,97 @@ def _indice():
         except (ValueError, OSError):
             continue
         if isinstance(d, dict) and "name" in d:
-            idx[(os.path.basename(os.path.dirname(f)), d["name"])] = d
+            k = (os.path.basename(os.path.dirname(f)), d["name"])
+            idx[k], _ORIGEM[k] = d, "sistema"
     if not idx:
         raise SystemExit(f"Nao encontro os perfis do Anycubic Slicer Next em {PERFIS}")
+    for f in glob.glob(os.path.join(PERFIS_UTILIZADOR, "*", "*", "*.json")):
+        tipo = os.path.basename(os.path.dirname(f))
+        if tipo not in ("machine", "process", "filament"):
+            continue
+        try:
+            d = json.load(open(f, encoding="utf-8"))
+        except (ValueError, OSError):
+            continue
+        if not isinstance(d, dict) or "name" not in d or (tipo, d["name"]) in idx and _ORIGEM[(tipo, d["name"])] == "sistema":
+            continue
+        k, t = (tipo, d["name"]), os.path.getmtime(f)
+        if k not in idx or t > _DATA.get(k, 0):     # o mesmo nome em duas contas: fica o mais recente
+            idx[k], _ORIGEM[k], _DATA[k] = d, "utilizador", t
     return idx
 
 
-def existe(tipo, nome):
+def _idx():
     global _IDX
     _IDX = _IDX or _indice()
-    return (tipo, nome) in _IDX
+    return _IDX
+
+
+def existe(tipo, nome):
+    return (tipo, nome) in _idx()
 
 
 def nomes(tipo):
-    global _IDX
-    _IDX = _IDX or _indice()
-    return sorted(n for t, n in _IDX if t == tipo)
+    return sorted(n for t, n in _idx() if t == tipo)
+
+
+def do_utilizador(tipo, nome):
+    _idx()
+    return _ORIGEM.get((tipo, nome)) == "utilizador"
 
 
 def perfil(tipo, nome):
-    """Perfil de sistema do Anycubic com a heranca ('inherits') resolvida."""
-    global _IDX
-    _IDX = _IDX or _indice()
-    d = _IDX[(tipo, nome)]
-    out = dict(perfil(tipo, d["inherits"])) if d.get("inherits") else {}
+    """Perfil do Anycubic (de sistema ou do utilizador) com a heranca ('inherits') resolvida."""
+    d = _idx()[(tipo, nome)]
+    out = dict(perfil(tipo, d["inherits"])) if d.get("inherits") and existe(tipo, d["inherits"]) else {}
     out.update(d)
     return out
+
+
+def raiz_sistema(tipo, nome):
+    """Perfil de sistema em que um perfil (do utilizador) se baseia."""
+    vistos = set()
+    while do_utilizador(tipo, nome) and nome not in vistos:
+        vistos.add(nome)
+        pai = _idx()[(tipo, nome)].get("inherits")
+        if not pai or not existe(tipo, pai):
+            return None
+        nome = pai
+    return nome if existe(tipo, nome) else None
+
+
+def meus(tipo):
+    """[(nome, perfil de sistema base)] dos perfis do utilizador deste tipo, os mais recentes primeiro."""
+    out = [(n, raiz_sistema(t, n)) for (t, n) in _idx() if t == tipo and do_utilizador(t, n)]
+    return sorted(out, key=lambda x: -_DATA.get((tipo, x[0]), 0))
+
+
+def meu_para(tipo, nome_sistema):
+    """O perfil do utilizador mais recente baseado neste perfil de sistema (ou None)."""
+    return next((n for n, b in meus(tipo) if b == nome_sistema), None)
+
+
+def mudancas_do_utilizador(tipo, nome):
+    """Definicoes que o utilizador mudou em relacao ao perfil de sistema base (para different_settings_to_system)."""
+    base = raiz_sistema(tipo, nome)
+    if not do_utilizador(tipo, nome) or not base:
+        return []
+    final, sis = perfil(tipo, nome), perfil(tipo, base)
+    return sorted(k for k, v in final.items() if k not in META and not k.endswith("_settings_id") and sis.get(k) != v)
 
 
 def grava_perfil(caminho, tipo, nome, mudancas):
     d = perfil(tipo, nome)
     d.update(mudancas)
-    d.update({"inherits": "", "from": "system", "type": tipo})
+    if do_utilizador(tipo, nome):
+        # perfil do utilizador: tem de continuar a dizer em que perfil de sistema se baseia, senao a linha de
+        # comandos do Anycubic recusa-o ("process not compatible with printer")
+        d.update({"inherits": raiz_sistema(tipo, nome) or "", "from": "User", "type": tipo})
+    else:
+        d.update({"inherits": "", "from": "system", "type": tipo})
+    cp = d.get("compatible_printers")
+    if tipo != "machine" and isinstance(cp, list) and cp and MAQUINA not in cp:
+        d["compatible_printers"] = cp + [MAQUINA]    # maquina do utilizador: senao "process not compatible with printer"
     json.dump(d, open(caminho, "w", encoding="utf-8"), indent=1, ensure_ascii=False)
     return caminho
 
@@ -112,12 +184,10 @@ def _instanciavel(d):
 
 def maquinas():
     """{modelo: {bico: nome da maquina}} de todas as impressoras Anycubic do slicer."""
-    global _IDX
-    _IDX = _IDX or _indice()
     out = {}
-    for (t, n), d in _IDX.items():
+    for (t, n), d in _idx().items():
         m = re.match(r"(.+?) (\d+(?:\.\d+)?) nozzle$", n)
-        if t == "machine" and m and _instanciavel(d):
+        if t == "machine" and m and _instanciavel(d) and not do_utilizador(t, n):
             modelo = perfil("machine", n).get("printer_model") or m.group(1)
             out.setdefault(modelo, {})[format(float(m.group(2)), "g")] = n
     return out
@@ -152,8 +222,9 @@ def encontra_maquina(consulta=None, bico=None):
 
 def usa_impressora(maquina):
     """Passa a trabalhar para esta maquina: mesa, altura, passo entre pratos, ACE, sufixo dos perfis."""
-    global MAQUINA, MODELO, SUF, BICO, CAMA_X, CAMA_Y, ALTURA_MAX, PASSO_X, PASSO_Y, MULTICOR, RAPIDA
+    global MAQUINA, MAQUINA_SISTEMA, MODELO, SUF, BICO, CAMA_X, CAMA_Y, ALTURA_MAX, PASSO_X, PASSO_Y, MULTICOR, RAPIDA
     d = perfil("machine", maquina)
+    MAQUINA_SISTEMA = raiz_sistema("machine", maquina) or maquina
     pts = [tuple(float(v) for v in p.split("x")) for p in d.get("printable_area", ["0x0", "260x0", "260x260", "0x260"])]
     CAMA_X = max(p[0] for p in pts) - min(p[0] for p in pts)
     CAMA_Y = max(p[1] for p in pts) - min(p[1] for p in pts)
@@ -164,8 +235,8 @@ def usa_impressora(maquina):
         RAPIDA = float(primeiro(d.get("machine_max_speed_x", "500"))) >= 450
     except (TypeError, ValueError):
         RAPIDA = True
-    MAQUINA, SUF = maquina, " @" + maquina
-    MODELO = d.get("printer_model") or re.sub(r" \d+(\.\d+)? nozzle$", "", maquina)
+    MAQUINA, SUF = maquina, " @" + MAQUINA_SISTEMA
+    MODELO = d.get("printer_model") or re.sub(r" \d+(\.\d+)? nozzle$", "", MAQUINA_SISTEMA)
     BICO = format(float(primeiro(d.get("nozzle_diameter", "0.4"))), "g")
     return d
 
@@ -185,20 +256,24 @@ def impressora_do_projeto(j):
 
 
 def compativeis(tipo):
-    """{nome base: nome completo} dos perfis de processo/filamento desta maquina."""
-    global _IDX
-    _IDX = _IDX or _indice()
+    """{nome base: nome completo} dos perfis de SISTEMA de processo/filamento desta maquina."""
     out = {}
-    for (t, n), d in _IDX.items():
-        if t == tipo and _instanciavel(d) and (n.endswith(SUF) or MAQUINA in perfil(t, n).get("compatible_printers", [])):
+    for (t, n), d in _idx().items():
+        if t == tipo and _instanciavel(d) and not do_utilizador(t, n) and (
+                n.endswith(SUF) or MAQUINA_SISTEMA in perfil(t, n).get("compatible_printers", [])):
             out[n.split(" @")[0]] = n
     return out
+
+
+def meu_compativel(tipo, nome):
+    """True se for um perfil do utilizador baseado num perfil de sistema desta maquina."""
+    return do_utilizador(tipo, nome) and raiz_sistema(tipo, nome) in compativeis(tipo).values()
 
 
 def fim_gcode():
     """Fim de impressao. O de fabrica da Kobra X, Kobra 4 e S1 Max desliga com o bico pousado em cima da peca (fio e
     bolinha no topo): junta-se antes um levantamento de 5 mm e afasta-se a cabeca. None = o de fabrica ja levanta."""
-    fim = str(perfil("machine", MAQUINA).get("machine_end_gcode", ""))
+    fim = str(perfil("machine", MAQUINA).get("machine_end_gcode", ""))     # (o do utilizador, se for perfil dele)
     if re.search(r"G1\s+Z|max_layer_z|G91", fim):
         return None
     return ("M400\nG92 E0\n{if max_layer_z < max_print_height - 5}G1 Z{max_layer_z + 5} F900 ; levanta o bico da peca{endif}\n"
