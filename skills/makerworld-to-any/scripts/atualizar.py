@@ -95,17 +95,26 @@ def atualiza_pastas(rel):
             if os.path.isdir(destino):
                 shutil.rmtree(destino)
             shutil.copytree(os.path.join(ext, d), destino)
-        for d in OBSOLETAS:                              # so se for mesmo nosso (SKILL.md fala da MakerWorld to Any)
-            velha = os.path.join(BASE, d)
-            sk = os.path.join(velha, "SKILL.md")
-            if d not in pastas and os.path.isfile(sk) and "MakerWorld to Any" in open(sk, encoding="utf-8", errors="ignore").read():
-                shutil.rmtree(velha)
         return pastas
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def limpa_obsoletas():
+    """Apaga comandos antigos que mudaram de nome (so se forem mesmo da MakerWorld to Any)."""
+    for d in OBSOLETAS:
+        sk = os.path.join(BASE, d, "SKILL.md")
+        if os.path.isfile(sk) and "MakerWorld to Any" in open(sk, encoding="utf-8", errors="ignore").read():
+            shutil.rmtree(os.path.join(BASE, d))
+            print(f"Removido o comando antigo /{d}")
+
+
 def main():
+    if "--limpar" in sys.argv:
+        limpa_obsoletas()
+        return 0
+    if not em_plugin():
+        limpa_obsoletas()
     so_ver = "--verificar" in sys.argv
     local = versao_local()
     try:
@@ -123,6 +132,10 @@ def main():
     if em_plugin():
         return atualiza_plugin()
     pastas = atualiza_pastas(rel)
+    # a versao nova pode saber de mais comandos antigos para apagar: corre a limpeza dela
+    novo = os.path.join(BASE, "makerworld-to-any", "scripts", "atualizar.py")
+    if os.path.isfile(novo):
+        subprocess.run([sys.executable, novo, "--limpar"])
     print(f"Atualizado para a {remota}: {', '.join(sorted(pastas))} em {BASE}")
     print("Abre uma sessao nova do Claude Code para usar a versao nova.")
     return 0
