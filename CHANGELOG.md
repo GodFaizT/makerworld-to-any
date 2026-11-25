@@ -1,5 +1,16 @@
 # Novidades
 
+## 2.0.1 - 2026-11-25 · g-code de um projeto só com autorização
+
+- Ao mudar as cores ou o material de um projeto já adaptado, o g-code e os limites da máquina que vêm dentro do
+  ficheiro deixam de passar sozinhos: correm na impressora e qualquer ficheiro pode dizer que é "da tua impressora".
+  O relatório avisa; se foste tu que os afinaste, repete com `--manter-gcode`. O resto do que afinaste (acelerações,
+  velocidades, temperaturas…) continua a passar.
+- Um projeto com as definições estragadas já não é adaptado nem fatiado (antes podia seguir sem ser verificado).
+- Testes no GitHub com as versões novas das ações (`checkout` e `setup-python` v7).
+- A imagem do README passa a mostrar a conversa no Claude (o pedido e a resposta), em português e em inglês, com os
+  números de uma adaptação real.
+
 ## 2.0.0 - 2026-11-25 · pratos, cores por peça, desfazer e diagnóstico
 
 Projetos já adaptados passam a poder ser trabalhados sem voltar ao original, e a skill ficou testada de ponta a ponta.

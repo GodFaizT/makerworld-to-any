@@ -186,7 +186,8 @@ Pedido: `$ARGUMENTS`
    - "em PETG", "em PLA Silk" -> `--material PETG`; perfis exatos -> `--filamentos "Anycubic PLA;Anycubic PLA Silk"`.
 5. Sem ficheiro de saida altera o proprio projeto e guarda uma copia (`/any-desfazer` repoe). O projeto volta a
    passar pelo Anycubic com os perfis que ja tinha: a purga e recalculada para as cores novas, a torre de purga e
-   posta num sitio livre e os pratos sao fatiados outra vez.
+   posta num sitio livre e os pratos sao fatiados outra vez. Se o relatorio avisar que g-code ou limites da maquina
+   do projeto nao passaram, pergunta ao utilizador se foi ele que os afinou; so entao repete com `--manter-gcode`.
 6. Responde curto: que cor vai em que ranhura da ACE (os numeros finais, das linhas `filamento N:` do relatorio: um
    filamento que fique sem pecas sai e os seguintes descem um numero), o que mudou de filamento, tempo e gramas por
    prato (com as gramas de cada cor) e avisos. Mais de 4 cores nao cabem numa ACE; impressoras sem ACE so imprimem

@@ -25,8 +25,8 @@ checks the result by slicing it: you give it a `.3mf` and get a project that is 
 grams of every plate.
 
 <p align="center">
-  <img src="docs/demo.svg" alt="A real report: the example project adapted for the Kobra X, with profile, filaments, purge volumes, time, grams and cost per plate" width="860">
-  <br><sub>The actual report for the example project that ships with the skill (2 plates, 2 colours). Claude reads it and answers you in two or three lines.</sub>
+  <img src="docs/demo.en.svg" alt="Conversation in Claude: /kobrax with the example project and the answer, with the profile, ACE colours, time, grams and cost of each plate" width="860">
+  <br><sub>What it looks like in Claude. The numbers come from a real adaptation of the example project that ships with the skill (2 plates, 2 colours).</sub>
 </p>
 
 > **A note on language.** The skill was written in Portugal: commands, script options and reports are in Portuguese.

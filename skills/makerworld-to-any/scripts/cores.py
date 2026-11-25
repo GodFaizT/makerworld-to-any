@@ -42,6 +42,8 @@ def main():
     ap.add_argument("--cores", help='ex.: "#FFFFFF;#800020" (vazio = fica a que estava)')
     ap.add_argument("--filamentos", help='perfis por ordem, ex.: "Anycubic PLA;Anycubic PLA Silk"')
     ap.add_argument("--material", help='muda o material de todos, ex.: "PETG"')
+    ap.add_argument("--manter-gcode", action="store_true",
+                    help="mantem o g-code e os limites da maquina que o projeto traz (so se foste tu que os afinaste)")
     ap.add_argument("--sem-fatiar", dest="fatiar", action="store_false")
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args()
@@ -64,7 +66,7 @@ def main():
     destino = os.path.abspath(a.saida or a.projeto)
     rel = adaptar.adapta(adaptar.pedido(original=a.projeto, saida=os.path.dirname(destino), nome=os.path.basename(destino),
                                         substituir=True, atribuir=a.atribuir, cores=a.cores, filamentos=a.filamentos,
-                                        material=a.material, fatiar=a.fatiar))
+                                        material=a.material, fatiar=a.fatiar, manter_gcode=a.manter_gcode))
     if a.json:
         print(json.dumps(rel, indent=1, ensure_ascii=False))
     else:

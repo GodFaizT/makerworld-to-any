@@ -203,6 +203,44 @@ class PontaAPonta(unittest.TestCase):
         self.assertFalse(apoio.K.tem_pos_processamento(json.loads(apoio.le_zip(os.path.join(d, "cores.3mf"), "Metadata/project_settings.config"))))
         self.assertFalse(os.path.exists(marcador))
 
+    def test_gcode_que_vem_no_projeto_so_passa_com_manter_gcode(self):
+        d = apoio.pasta("e2e_gcode")
+        orig = apoio.projeto_bambu(os.path.join(d, "Exemplo.3mf"))
+        rc, out = corre("adaptar.py", orig, "--impressora", "Kobra X", "--sem-fatiar")
+        self.assertEqual(rc, 0, out)
+        ada = os.path.join(d, "Exemplo - Kobra X.3mf")
+        MARCA = "; g-code que veio no ficheiro (teste)"
+
+        def poe(j):           # como um ficheiro "da Kobra X" partilhado por outra pessoa, com g-code proprio
+            j["machine_start_gcode"] = MARCA + "\n" + j["machine_start_gcode"]
+            j["filament_start_gcode"] = [MARCA, j["filament_start_gcode"][1]]
+            j["machine_max_speed_x"] = ["9000"] * len(j["machine_max_speed_x"])
+            dts = j["different_settings_to_system"]
+            dts[1] = "filament_start_gcode"
+            dts[-1] = ";".join(sorted({x for x in dts[-1].split(";") if x} | {"machine_start_gcode", "machine_max_speed_x"}))
+        apoio.muda_definicoes(ada, poe)
+        sem = os.path.join(d, "sem.3mf")
+        rc, out = corre("cores.py", ada, sem, "--cores", ";#232C7C", "--sem-fatiar", "--json")
+        self.assertEqual(rc, 0, out)
+        rel = json.loads(out)
+        self.assertEqual(sorted(rel["nao_passou"]["seguranca"]), ["filament_start_gcode (filamento 1)", "machine_max_speed_x",
+                                                                 "machine_start_gcode"])
+        self.assertTrue(any("--manter-gcode" in a for a in rel["avisos"]), rel["avisos"])
+        j = json.loads(apoio.le_zip(sem, "Metadata/project_settings.config"))
+        self.assertNotIn(MARCA, j["machine_start_gcode"])
+        self.assertNotIn(MARCA, json.dumps(j["filament_start_gcode"]))
+        self.assertNotEqual(apoio.K.primeiro(j["machine_max_speed_x"]), "9000")
+        self.assertIn("levanta o bico", j["machine_end_gcode"])                     # o fim de impressao da skill fica
+        # com autorizacao explicita (o utilizador diz que o g-code e dele) passa
+        com = os.path.join(d, "com.3mf")
+        rc, out = corre("cores.py", ada, com, "--cores", ";#232C7C", "--manter-gcode", "--sem-fatiar", "--json")
+        self.assertEqual(rc, 0, out)
+        rel = json.loads(out)
+        self.assertEqual(rel["nao_passou"]["seguranca"], [])
+        j = json.loads(apoio.le_zip(com, "Metadata/project_settings.config"))
+        self.assertIn(MARCA, j["machine_start_gcode"])
+        self.assertIn(MARCA, json.dumps(j["filament_start_gcode"]))
+
     def test_custo_com_precos_guardados(self):
         d = apoio.pasta("e2e_custo")
         rc, out = corre("perfil.py", "--preco-kg", "PLA=20;*=30", "--preco-hora", "1")

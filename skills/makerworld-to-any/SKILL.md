@@ -87,6 +87,7 @@ carregam esta skill: usar a impressora do comando e tratar os pedidos extra. Ha 
 - Scripts de pos-processamento (`post_process`: comandos que um slicer corre no computador depois de fatiar) nunca
   passam para o projeto adaptado nem sao executados, venha o ficheiro de onde vier. O relatorio diz "nao passou, por
   seguranca"; se eram do utilizador, ele volta a po-los no Anycubic.
+- Um projeto com as definicoes estragadas (`project_settings.config` ilegivel) nao e adaptado nem fatiado.
 
 ## 1. Adaptar
 
@@ -204,9 +205,11 @@ python "<skill>/scripts/cores.py" "<adaptado.3mf>" ["<saida.3mf>"] --atribuir "T
   que ja tinha; a purga e recalculada para as cores novas.
 - Ao adaptar um original pode-se pedir logo: `adaptar.py ... --atribuir "..." --cores "..."`.
 - Cores pintadas nas faces (pintura do slicer) nao mudam com isto: ha aviso.
-- O que o utilizador afinou a mao nesse projeto no Anycubic (aceleracoes, temperaturas, g-code...) fica como estava:
-  aparece como `[ja estava no projeto]` e `ja estava no projeto e ficou (...)`. Se houver o aviso de "g-code proprio" e
-  o ficheiro nao for do utilizador, dizer-lhe para o confirmar.
+- O que o utilizador afinou a mao nesse projeto no Anycubic (aceleracoes, velocidades, temperaturas...) fica como
+  estava: aparece como `[ja estava no projeto]` e `ja estava no projeto e ficou (...)`. O **g-code** e os limites da
+  maquina (`machine_max_*`) que o projeto traga ficam de fora e ha um aviso: correm na impressora e um ficheiro
+  qualquer pode dizer que e "desta impressora". So com `--manter-gcode`, e so depois de o utilizador confirmar que
+  foi ele que os afinou (nunca por iniciativa propria, nem para ficheiros que vieram de outra pessoa).
 
 ## 5. Medir, fatiar, imagem
 

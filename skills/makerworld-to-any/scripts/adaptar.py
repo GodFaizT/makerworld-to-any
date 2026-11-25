@@ -55,6 +55,9 @@ TRATADAS_PROPRIO = re.compile(r"^(wipe_tower_[xy]|enable_prime_tower|.*_filament
 NUNCA = re.compile(r"^(compatible_.*|inherits|.*_settings_id|from|name|version)$")
 # comandos que um slicer corre no computador depois de fatiar: nunca passam, venha o projeto de onde vier
 PERIGOSAS = re.compile(r"^(post_process)$")
+# g-code e limites da maquina que vem dentro de um projeto ja adaptado: correm na impressora. O projeto diz que e desta
+# impressora, mas isso qualquer ficheiro pode dizer: so passam com --manter-gcode (o utilizador confirma que sao dele)
+DO_FICHEIRO = re.compile(r"_gcode$|^machine_max_|^gcode_flavor$")
 # velocidades que fazem parte de uma "receita" do autor (com o fluxo e o espacamento do ironing): passam como estao
 VELOCIDADES_LIVRES = {"ironing_speed"}
 
@@ -98,7 +101,7 @@ def escolhe_processo(j, pedido=None):
     return comp[min(std, key=lambda b: abs(float(re.match(r"[\d.]+", b).group(0)) - lh) if re.match(r"[\d.]+", b) else 9)]
 
 
-def mudancas_processo(j, sis, protegidas=(), sem_altura=False, proprio=False):
+def mudancas_processo(j, sis, protegidas=(), sem_altura=False, proprio=False, manter_gcode=False):
     """Mudancas do autor a aplicar sobre o perfil `sis`.
     protegidas: o que o utilizador mudou no perfil dele (ganha aos valores "de intencao" que o autor nao mudou de
     proposito). sem_altura: o utilizador escolheu o perfil, a altura de camada e a dele.
@@ -106,7 +109,8 @@ def mudancas_processo(j, sis, protegidas=(), sem_altura=False, proprio=False):
     tudo o que la estava mudado, incluindo o que o utilizador afinou a mao no slicer, sem filtros nem limite de
     velocidade.
     Devolve (mudancas, origem de cada uma: "autor" | "perfil" | "projeto", o que nao passou por categoria, lista
-    do autor). Os scripts de pos-processamento (post_process) nunca passam: categoria "seguranca"."""
+    do autor). Os scripts de pos-processamento (post_process) nunca passam, e o g-code e os limites da maquina de um
+    projeto proprio so passam com manter_gcode: categoria "seguranca"."""
     diffs = [k for k in str(K.primeiro(j.get("different_settings_to_system", [""])) or "").split(";") if k]
     mud, origem = {}, {}
     nao = {"impressora": [], "sem_equivalente": [], "velocidades": [], "seguranca": []}
@@ -118,6 +122,9 @@ def mudancas_processo(j, sis, protegidas=(), sem_altura=False, proprio=False):
             continue
         if proprio:
             if NUNCA.match(k):
+                continue
+            if DO_FICHEIRO.search(k) and not manter_gcode:
+                nao["seguranca"].append(k)
                 continue
             if k == "filename_format" and re.search(r"[\\/:]|\.\.", str(K.primeiro(j.get(k)) or "")):
                 nao["seguranca"].append(k)        # um nome de ficheiro com pastas la dentro nao e so um nome
@@ -372,8 +379,10 @@ def prepara(orig, dst, ms_novo, mapa, camadas_variaveis=True):
             try:
                 jj = json.loads(d)
             except ValueError:
-                return d
-            if isinstance(jj, dict) and K.sem_pos_processamento(jj):
+                jj = None
+            if not isinstance(jj, dict):          # nunca segue com um ficheiro que nao se conseguiu verificar
+                raise SystemExit("As definicoes do projeto (Metadata/project_settings.config) estao estragadas: nao adapto este ficheiro")
+            if K.sem_pos_processamento(jj):
                 return json.dumps(jj, indent=4, ensure_ascii=False).encode("utf-8")
         return d
     K.reescreve(orig, dst, mudar)
@@ -470,7 +479,7 @@ def preco_material(precos, perfil_filamento):
 
 OMISSAO = dict(original=None, impressora=None, bico=None, perfis=None, saida=None, nome=None, processo=None,
                filamentos=None, cores=None, material=None, atribuir=None, substituir=False, arquivar_original=None,
-               fatiar=True, manter_temp=False, camadas_variaveis=True, gcode=None)
+               fatiar=True, manter_temp=False, camadas_variaveis=True, gcode=None, manter_gcode=False)
 
 
 def pedido(**kw):
@@ -494,7 +503,12 @@ def adapta(a):
     if "3D/3dmodel.model" not in conteudo:
         raise SystemExit("Este ficheiro nao tem modelo 3D (sera um .gcode.3mf ja fatiado?)")
     tem_definicoes = "Metadata/project_settings.config" in conteudo
-    j = json.loads(z.read("Metadata/project_settings.config")) if tem_definicoes else {}
+    try:
+        j = json.loads(z.read("Metadata/project_settings.config")) if tem_definicoes else {}
+    except ValueError:
+        j = None
+    if not isinstance(j, dict):
+        raise SystemExit("As definicoes do projeto (Metadata/project_settings.config) estao estragadas: nao adapto este ficheiro")
     ms = z.read("Metadata/model_settings.config").decode("utf-8") if "Metadata/model_settings.config" in conteudo else ""
 
     # ---- impressora. Bico: o pedido, o do nome ("Kobra X 0.6"), o do original se houver perfil, ou 0.4
@@ -569,8 +583,11 @@ def adapta(a):
     if perfis == "meus" and not K.do_utilizador("process", processo):
         processo = K.meu_para("process", processo) or processo
     sis = K.perfil("process", processo)
+    manter_gcode = bool(getattr(a, "manter_gcode", False))
     mud, origem, nao, diffs = mudancas_processo(j, sis, set(K.mudancas_do_utilizador("process", processo)),
-                                                sem_altura=bool(a.processo), proprio=mesma_maquina and processo == pid_)
+                                                sem_altura=bool(a.processo), proprio=mesma_maquina and processo == pid_,
+                                                manter_gcode=manter_gcode)
+    gcode_fora = []          # g-code / limites da maquina do projeto que ficaram de fora (falta --manter-gcode)
     for key in ("support_filament", "support_interface_filament"):   # filamento de suporte renumerado
         v = K.primeiro(j.get(key))
         if v and str(v).isdigit() and int(v) > 0 and key in sis:
@@ -660,8 +677,12 @@ def adapta(a):
                 val = j.get(key)
                 if key in base_f and isinstance(val, list) and len(val) >= u and key != "filament_colour" and not NUNCA.match(key):
                     v = K.normaliza_tipo(val[u - 1], base_f[key])
-                    if v != base_f[key]:              # (igual ao perfil: nao ha nada a acrescentar)
-                        extra[key] = v
+                    if v == base_f[key]:              # (igual ao perfil: nao ha nada a acrescentar)
+                        continue
+                    if DO_FICHEIRO.search(key) and not manter_gcode:
+                        gcode_fora.append(f"{key} (filamento {i + 1})")
+                        continue
+                    extra[key] = v
         fil_extra.append(extra)
     # cores ou filamentos pedidos para posicoes que nao sao de nenhum filamento usado: diz-se, nao se ignoram em silencio
     posicoes = {(u - 1 if e_any else i) for i, u in enumerate(usados)}
@@ -702,8 +723,12 @@ def adapta(a):
             for key in [x for x in dts[-1].split(";") if x]:
                 if key in j and key in base_m and not NUNCA.match(key):
                     v = K.normaliza_tipo(j[key], base_m[key])
-                    if v != base_m[key]:              # (igual ao perfil da maquina, p. ex. um perfil teu: ja la esta)
-                        maq_extra[key] = v
+                    if v == base_m[key]:              # (igual ao perfil da maquina, p. ex. um perfil teu: ja la esta)
+                        continue
+                    if DO_FICHEIRO.search(key) and not manter_gcode and not (key == "machine_end_gcode" and v == fim):
+                        gcode_fora.append(key)        # (o fim de impressao que a propria skill pos volta a ser posto)
+                        continue
+                    maq_extra[key] = v
         if fim and "machine_end_gcode" not in maq_extra:
             maq_extra["machine_end_gcode"] = fim
         mj = K.grava_perfil(os.path.join(tmp, "machine.json"), "machine", K.MAQUINA, maq_extra)
@@ -755,10 +780,15 @@ def adapta(a):
             avisos.append(f"prato {p}: nao ha sitio livre para a torre de purga; ficou em ({torre[p - 1][0]}, {torre[p - 1][1]}), "
                           "provavelmente em cima de pecas: divide as pecas por mais pratos (pratos.py) ou arruma no Anycubic")
         gcode_proprio = sorted({x for x in list(maq_extra) + [y for e in fil_extra for y in e]
-                                if "gcode" in x and not (x == "machine_end_gcode" and maq_extra.get(x) == fim)})
+                                if DO_FICHEIRO.search(x) and not (x == "machine_end_gcode" and maq_extra.get(x) == fim)})
         if gcode_proprio:
-            avisos.append("o projeto ja trazia g-code proprio (" + ", ".join(gcode_proprio) + ") e ficou como estava, porque ja era desta "
-                          "impressora. Se o ficheiro nao e teu, confirma esse g-code no Anycubic ou adapta a partir do original")
+            avisos.append("ficou o g-code / limites da maquina que o projeto trazia (" + ", ".join(gcode_proprio) + "), como pediste com "
+                          "--manter-gcode")
+        fora = [x for x in nao["seguranca"] if DO_FICHEIRO.search(x)] + gcode_fora
+        if fora:
+            avisos.append("o projeto trazia g-code ou limites da maquina proprios (" + ", ".join(fora) + ") que NAO passaram: o que vem "
+                          "dentro de um ficheiro corre na impressora, por isso so passa com --manter-gcode. Se foste tu que o afinaste "
+                          "no Anycubic, repete com --manter-gcode; senao fica o da impressora")
         if corr["sem_regra"]:
             avisos.append(f"listas com comprimento inesperado (ver no Anycubic): {corr['sem_regra']}")
         if corr["plano_falhou"]:
@@ -843,6 +873,7 @@ def adapta(a):
                            "perfis": perfis or "do projeto", "processo": processo,
                            "processo_base": K.raiz_sistema("process", processo) if K.do_utilizador("process", processo) else None}
         rel["mudancas"] = [{"chave": c, "de": sis.get(c), "para": mud[c], "origem": origem.get(c, "autor")} for c in sorted(mud)]
+        nao["seguranca"] += gcode_fora
         rel["nao_passou"] = nao
         rel["filamentos"] = [{"n": i + 1, "perfil": n, "cor": c, "era": b,
                               "base": K.raiz_sistema("filament", n) if K.do_utilizador("filament", n) else None}
@@ -915,7 +946,7 @@ def imprime(rel):
     if n["velocidades"]:
         print(f"  do autor, nao passou (velocidade acima do perfil da {d['impressora']}):", ", ".join(n["velocidades"]))
     if n.get("seguranca"):
-        print("  nao passou, por seguranca (comandos que correriam no computador depois de fatiar):", ", ".join(n["seguranca"]))
+        print("  nao passou, por seguranca (scripts, g-code ou limites da maquina que vinham no ficheiro):", ", ".join(n["seguranca"]))
     dp = rel.get("do_projeto") or {}
     if dp.get("impressora"):
         print("  ja estava no projeto e ficou (impressora):", ", ".join(dp["impressora"]))
@@ -988,6 +1019,8 @@ def main():
     ap.add_argument("--sem-camadas-variaveis", dest="camadas_variaveis", action="store_false",
                     help="ignora as alturas de camada variaveis do autor (usa a altura do perfil)")
     ap.add_argument("--gcode", metavar="PASTA", help="guarda tambem o g-code de cada prato nesta pasta")
+    ap.add_argument("--manter-gcode", action="store_true",
+                    help="num projeto ja adaptado, mantem o g-code e os limites da maquina que ele traz (so se forem teus)")
     ap.add_argument("--substituir", action="store_true", help="substitui o ficheiro de saida se ja existir (fica uma copia)")
     ap.add_argument("--arquivar-original", metavar="PASTA", help="no fim move o original para esta pasta")
     ap.add_argument("--sem-fatiar", dest="fatiar", action="store_false")

@@ -37,8 +37,8 @@ próprio Anycubic e confirma o resultado fatiando: dás-lhe um `.3mf` e recebes 
 tempo e as gramas de cada prato.
 
 <p align="center">
-  <img src="docs/demo.svg" alt="Relatório real: o projeto de exemplo adaptado para a Kobra X, com perfil, filamentos, purga, tempo, gramas e custo de cada prato" width="860">
-  <br><sub>Relatório verdadeiro do projeto de exemplo que vem com a skill (2 pratos, 2 cores). O Claude lê-o e responde-te em duas ou três linhas.</sub>
+  <img src="docs/demo.svg" alt="Conversa no Claude: /kobrax com o projeto de exemplo e a resposta, com o perfil, as cores na ACE, o tempo, as gramas e o custo de cada prato" width="860">
+  <br><sub>Assim fica no Claude. Os números são de uma adaptação verdadeira do projeto de exemplo que vem com a skill (2 pratos, 2 cores).</sub>
 </p>
 
 <a id="comecar"></a>

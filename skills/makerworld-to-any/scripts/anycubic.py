@@ -705,12 +705,17 @@ def fatia(projeto, pasta, cwd, avisos=None):
     """Fatia todos os pratos e devolve um resumo por prato (os .gcode ficam em `pasta`).
     Se o projeto tiver scripts de pos-processamento fatia-se uma copia sem eles (a linha de comandos do Anycubic
     recusa-os, e a skill nao corre comandos que venham dentro de um projeto); fica um aviso em `avisos`."""
-    os.makedirs(pasta, exist_ok=True)
     try:
         with zipfile.ZipFile(projeto) as z:
-            limpar = tem_pos_processamento(json.loads(z.read("Metadata/project_settings.config")))
-    except (KeyError, ValueError, OSError, zipfile.BadZipFile):
-        limpar = False
+            jp = json.loads(z.read("Metadata/project_settings.config"))
+    except KeyError:
+        jp = {}                                # 3MF sem definicoes: nao ha nada para tirar
+    except (ValueError, OSError, zipfile.BadZipFile):
+        jp = None
+    if not isinstance(jp, dict):               # nao se fatia o que nao se conseguiu verificar
+        raise SystemExit(f"Nao consegui ler as definicoes de {os.path.basename(projeto)} (ficheiro estragado): nao fatio")
+    limpar = tem_pos_processamento(jp)
+    os.makedirs(pasta, exist_ok=True)
     if limpar:
         copia = os.path.join(pasta, "sem_pos_processamento.3mf")
 
@@ -809,15 +814,19 @@ def colisoes_torre(res, por_prato, folga=2.0, pegadas=None):
 
 def reescreve(src, dst, mudar):
     """Copia um 3MF mudando ficheiros: mudar(nome, bytes) -> bytes | None (None = apagar)."""
-    zi = zipfile.ZipFile(src)
     tmp = dst + ".tmp"
-    zo = zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED)
-    for it in zi.infolist():
-        d = mudar(it.filename, zi.read(it.filename))
-        if d is not None:
-            zo.writestr(it, d)
-    zo.close()
-    zi.close()
+    try:
+        with zipfile.ZipFile(src) as zi, zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as zo:
+            for it in zi.infolist():
+                d = mudar(it.filename, zi.read(it.filename))
+                if d is not None:
+                    zo.writestr(it, d)
+    except BaseException:                      # (incluindo SystemExit de uma verificacao): nao fica meio ficheiro
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass
+        raise
     os.replace(tmp, dst)
 
 

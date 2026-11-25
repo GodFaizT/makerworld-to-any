@@ -99,8 +99,9 @@ Os scripts ja tratam tudo o que esta marcado com (auto). Depois de uma atualizac
 - `different_settings_to_system` inclui as mudancas do utilizador em relacao ao perfil de sistema (auto).
 - Projeto que ja e desta impressora (mudar cores ou material de um adaptado): o que esta em
   `different_settings_to_system` ([processo, filamento 1..n, impressora]) e do utilizador e passa tudo, sem os
-  filtros dos originais (aceleracoes, velocidades acima do perfil, temperaturas, g-code da impressora) - menos
-  `post_process`. O g-code proprio que fique da um aviso.
+  filtros dos originais (aceleracoes, velocidades acima do perfil, temperaturas) - menos `post_process`, que nunca
+  passa, e o g-code e os `machine_max_*`, que correm na impressora e so passam com `--manter-gcode` (qualquer ficheiro
+  pode dizer que e "desta impressora"). O fim de impressao que a propria skill poe nao conta: volta a ser posto.
 
 ## Perfis
 

@@ -161,6 +161,23 @@ class Processo(unittest.TestCase):
         self.assertEqual(adaptar.mudancas_processo(j, sis)[2]["seguranca"], ["post_process"])
         self.assertEqual(adaptar.mudancas_processo(self.projeto(post_process=[""]), sis)[2]["seguranca"], [])
 
+    def test_gcode_de_um_projeto_proprio_so_passa_com_autorizacao(self):
+        # um ficheiro qualquer pode dizer que e "desta impressora": o g-code e os limites da maquina que traz correm na
+        # impressora, por isso so passam com manter_gcode (o utilizador confirma que sao dele)
+        sis = dict(self.sis, time_lapse_gcode="", machine_max_speed_x=["500"])
+        j = self.projeto(mudou=["time_lapse_gcode", "machine_max_speed_x", "sparse_infill_density"], time_lapse_gcode="M117 ola",
+                         machine_max_speed_x=["9000"], sparse_infill_density="10%")
+        mud, _, nao, _ = adaptar.mudancas_processo(j, sis, proprio=True)
+        self.assertEqual(mud, {"sparse_infill_density": "10%"})
+        self.assertEqual(sorted(nao["seguranca"]), ["machine_max_speed_x", "time_lapse_gcode"])
+        mud, _, nao, _ = adaptar.mudancas_processo(j, sis, proprio=True, manter_gcode=True)
+        self.assertEqual(mud, {"sparse_infill_density": "10%", "time_lapse_gcode": "M117 ola", "machine_max_speed_x": ["9000"]})
+        self.assertEqual(nao["seguranca"], [])
+        # e o post_process nem com autorizacao
+        j = self.projeto(mudou=["post_process"], post_process=["x.bat"])
+        self.assertEqual(adaptar.mudancas_processo(j, dict(sis, post_process=[]), proprio=True, manter_gcode=True)[2]["seguranca"],
+                         ["post_process"])
+
     def test_formato_do_nome_do_ficheiro_so_passa_se_for_um_nome(self):
         sis = dict(self.sis, filename_format="{input_filename_base}.gcode")
         bom = self.projeto(mudou=["filename_format"], filename_format="{input_filename_base}_{print_time}.gcode")
@@ -231,6 +248,27 @@ class Pedido(unittest.TestCase):
         with self.assertRaises(SystemExit) as e:
             adaptar.adapta(adaptar.pedido(original=fatiado))
         self.assertIn("nao tem modelo 3D", str(e.exception))
+
+    def test_definicoes_estragadas_param_tudo(self):
+        # um project_settings que nao se consegue ler nao se consegue verificar: nao segue para o slicer
+        d = apoio.pasta("estragado")
+        orig = apoio.projeto_bambu(os.path.join(d, "Vaso.3mf"))
+
+        def estraga(nome, dados):
+            return b'{"post_process": ["x.bat"], ' if nome == "Metadata/project_settings.config" else dados
+        K.reescreve(orig, orig, estraga)
+        with self.assertRaises(SystemExit) as e:
+            adaptar.adapta(adaptar.pedido(original=orig))
+        self.assertIn("estragadas", str(e.exception))
+        with zipfile.ZipFile(orig) as z:
+            ms = z.read("Metadata/model_settings.config").decode("utf-8")
+        with self.assertRaises(SystemExit) as e:
+            adaptar.prepara(orig, os.path.join(d, "entrada.3mf"), ms, {})
+        self.assertIn("estragadas", str(e.exception))
+        with self.assertRaises(SystemExit) as e:
+            K.fatia(orig, os.path.join(d, "fatiado"), d)         # para antes de chamar o slicer
+        self.assertIn("estragado", str(e.exception))
+        self.assertEqual(sorted(os.listdir(d)), ["Vaso.3mf"])                   # nem meio ficheiro ficou para tras
 
     def test_nao_substitui_sem_pedir(self):
         d = apoio.pasta("existe")
