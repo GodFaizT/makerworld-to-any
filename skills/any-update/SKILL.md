@@ -1,6 +1,6 @@
 ---
 name: any-update
-description: "Comando /any-update: atualiza a MakerWorld to Any (skill e comandos /kobrax, /kobras1, ...) para a ultima versao publicada no GitHub. Feito pela Megatic."
+description: "Comando /any-update: atualiza a MakerWorld to Any (skill e comandos /kobrax, /kobras1, ...) para a ultima versao publicada no GitHub. Feito pela Megatic. EN: update the skill and its commands to the latest release."
 argument-hint: "[--verificar]"
 disable-model-invocation: true
 ---
@@ -10,12 +10,14 @@ disable-model-invocation: true
 Pedido: `$ARGUMENTS`
 
 1. A skill principal esta na pasta irma desta: `<Base directory desta skill>/../makerworld-to-any`.
-   Corre: `python "<essa pasta>/scripts/atualizar.py" $ARGUMENTS` (ou `py -3`).
+   Os scripts estao em `<essa pasta>/scripts/` e correm com `python` (ou `py -3`).
+   Corre: `atualizar.py $ARGUMENTS`.
    - Instalada como plugin: o script usa `claude plugin update`; se o `claude` nao estiver no PATH, diz ao
      utilizador para correr `/plugin marketplace update makerworld-to-any` e
      `/plugin update makerworld-to-any@makerworld-to-any`.
    - Instalada como skill: o script descarrega o ZIP da ultima release do GitHub (GodFaizT/makerworld-to-any) e
      substitui so as pastas da skill e dos comandos.
 2. Responde curto: versao que tinha -> versao nova e as novidades principais (ou que ja tem a ultima).
-3. Se atualizou: lembrar de abrir uma sessao nova do Claude Code (as skills carregam no arranque).
+3. Se atualizou: lembrar de abrir uma sessao nova do Claude Code (as skills carregam no arranque) e sugerir
+   `/any-diagnostico teste` para confirmar que ficou tudo a funcionar.
 4. Se falhar (sem internet, GitHub em baixo): dizer o erro e sugerir `npx github:GodFaizT/makerworld-to-any`.

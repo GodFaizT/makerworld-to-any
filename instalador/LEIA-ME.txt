@@ -1,0 +1,33 @@
+MakerWorld to Any (makerworld-to-any) - skill do Claude Code
+Feito pela Megatic - https://megatic.pt
+https://github.com/GodFaizT/makerworld-to-any
+
+Adapta projetos 3MF do Bambu Studio / MakerWorld para impressoras Anycubic
+(Kobra X, Kobra 4, Kobra S1, S1 Max, Kobra 3, 3 Max, Kobra 2, Kobra 1) no Anycubic Slicer Next,
+com os perfis de cada impressora, e fatia para dar tempo e gramas.
+
+Instalar
+--------
+1. Descompactar este zip.
+2. Duplo clique em instalar.bat (copia as pastas para %USERPROFILE%\.claude\skills\).
+3. Abrir uma sessao nova do Claude Code.
+
+Comandos
+--------
+  /kobrax "C:\...\modelo.3mf"                  adaptar para a Kobra X
+  /kobra4, /kobras1, /kobras1max, /kobra3, /kobra3max
+  /anycubic Kobra 2 Neo "C:\...\modelo.3mf"    qualquer outra Anycubic
+      depois do ficheiro podes juntar pedidos: "com 10 cm", "bico 0.6", "em PETG", "dourado",
+      "com os meus perfis", "guarda o g-code"
+
+  /any-pratos "C:\...\adaptado.3mf"            mover objetos entre pratos, um por prato, afastar pecas
+  /any-cores "C:\...\adaptado.3mf"             cores por peca, juntar uma cor, mudar o material
+  /any-desfazer                                repor a versao anterior de um ficheiro
+  /any-perfil                                  os teus perfis, impressora, pastas e precos
+  /any-diagnostico teste                       confirmar que esta tudo a funcionar
+  /any-update                                  atualizar para a ultima versao
+
+Ou pede simplesmente: "adapta este ficheiro para a kobra x: ..."
+
+Precisa do Anycubic Slicer Next (C:\Program Files\AnycubicSlicerNext) e do Python 3.
+O numpy e opcional (pip install numpy): mede a folga real entre pecas e deixa afasta-las.

@@ -1,0 +1,36 @@
+name: Testes
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  testes:
+    name: Python ${{ matrix.python }} · ${{ matrix.os }}${{ matrix.numpy && ' · numpy' || '' }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: windows-latest, python: "3.13", numpy: true }
+          - { os: windows-latest, python: "3.8", numpy: false }
+          - { os: ubuntu-latest, python: "3.11", numpy: true }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: numpy (opcional)
+        if: matrix.numpy
+        run: python -m pip install numpy
+      # Os testes usam perfis falsos: nao precisam do Anycubic Slicer Next (os de ponta a ponta sao saltados).
+      - name: Testes
+        run: python -W error::ResourceWarning -m unittest discover -s tests -t tests -v
+      - name: Verificacoes do repositorio
+        run: python tools/verifica.py
+      - name: Instalador
+        run: node bin/instalar.js --destino "${{ runner.temp }}/skills"

@@ -6,3 +6,5 @@ node_modules/
 *.gcode
 .DS_Store
 Thumbs.db
+dist/
+*.local.txt

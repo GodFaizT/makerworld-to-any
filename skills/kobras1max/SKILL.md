@@ -1,7 +1,7 @@
 ---
 name: kobras1max
-description: "Comando /kobras1max: adapta um 3MF do MakerWorld / Bambu Studio para a Anycubic Kobra S1 Max (MakerWorld to Any, Megatic). Uso: /kobras1max <ficheiro.3mf ou pasta> [pedidos extra]"
-argument-hint: "<ficheiro.3mf ou pasta> [ex.: com 10 cm, bico 0.6, PLA Silk dourado]"
+description: "Comando /kobras1max: adapta um 3MF do MakerWorld / Bambu Studio para a Anycubic Kobra S1 Max (MakerWorld to Any, Megatic). Uso: /kobras1max <ficheiro.3mf ou pasta> [pedidos extra]. EN: adapt a MakerWorld / Bambu Studio 3MF for the Anycubic Kobra S1 Max."
+argument-hint: "<ficheiro.3mf ou pasta> [ex.: com 10 cm, bico 0.6, em PETG, dourado]"
 disable-model-invocation: true
 ---
 
@@ -15,10 +15,14 @@ Pedido: `$ARGUMENTS`
    pedidos pedirem).
 3. O pedido comeca pelo caminho do ficheiro `.3mf` (com ou sem aspas, pode ter espacos); o resto sao pedidos extra:
    tamanho ("com 10 cm" -> `escalar.py` depois de adaptar), bico ("bico 0.6" -> `--bico 0.6`), material
-   ("em PETG", "em PLA Silk" -> `--material PETG`), cor ("dourado" -> `--cores "#D4AF37"`), perfis ("com os meus
-   perfis" -> `--perfis meus`), perfil de impressao ("0.16 high quality" -> `--processo`), etc.
+   ("em PETG", "em PLA Silk" -> `--material PETG`), cor ("dourado" -> `--cores "#D4AF37"`), cores por peca ("o nome a
+   azul e o resto a branco" -> `cores.py --atribuir` depois de adaptar), pratos ("o corpo num prato e a barra noutro"
+   -> `pratos.py --mover` depois de adaptar), perfis ("com os meus perfis" -> `--perfis meus`), perfil de impressao
+   ("0.16 high quality" -> `--processo`), "guarda o g-code" -> `--gcode <pasta>`, "sem camadas variaveis" ->
+   `--sem-camadas-variaveis`.
 4. Se o caminho for uma **pasta**, adapta um a um todos os `.3mf` dessa pasta (sem subpastas), menos os que ja sao
    adaptados (acabam em ` - <impressora>.3mf`).
 5. Se nao houver caminho, ou o ficheiro nao existir, ve so a pasta indicada ou a pasta atual (nunca o disco todo):
    se houver um unico `.3mf` parecido usa-o; senao pergunta qual.
-6. No fim responde como a skill manda: onde ficou, tempo e gramas de cada prato, cores e avisos.
+6. No fim responde como a skill manda: onde ficou, tempo e gramas de cada prato, cores, custo (se houver precos) e
+   avisos.

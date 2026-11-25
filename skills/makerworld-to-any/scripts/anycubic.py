@@ -3,43 +3,112 @@
 Converte projetos 3MF do Bambu Studio / MakerWorld para impressoras Anycubic (Kobra X, Kobra S1, Kobra 3, Kobra 4,
 ...) com a linha de comandos do proprio Anycubic Slicer Next (testado com a 2.0.0.3) e verifica o resultado
 fatiando. A impressora de destino escolhe-se com usa_impressora(); tamanho da mesa, perfis e filamentos vem dos
-perfis de sistema do Anycubic. So precisa da biblioteca padrao do Python (o numpy acelera, se existir).
+perfis de sistema do Anycubic. So precisa da biblioteca padrao do Python (o numpy acelera e permite medir folgas).
 """
 import glob
+import html
 import json
 import math
 import os
 import re
+import shutil
 import struct
 import subprocess
+import sys
+import time
 import zipfile
 
 try:
     import numpy as np
-except ImportError:  # funciona sem numpy, so mais devagar em malhas grandes
+except ImportError:  # funciona sem numpy: mais devagar e sem folgas reais entre pecas
     np = None
+
+
+def saida_utf8():
+    """Nomes de objetos fora do cp1252 (chines, emoji...) rebentavam o print no Windows quando a saida e um pipe."""
+    for f in (sys.stdout, sys.stderr):
+        try:
+            f.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError, OSError):
+            pass
+
+
+saida_utf8()
+
+AQUI = os.path.dirname(os.path.abspath(__file__))
+TESTADO_COM = "2.0.0.3"       # versao do Anycubic Slicer Next com que a skill foi testada
+
+
+def le_json(caminho):
+    with open(caminho, encoding="utf-8-sig") as f:      # utf-8-sig: aceita a marca (BOM) que o Bloco de notas pode por
+        return json.load(f)
+
+
+def grava_json(caminho, dados, indent=1):
+    with open(caminho, "w", encoding="utf-8") as f:
+        json.dump(dados, f, indent=indent, ensure_ascii=False)
+
+
+def versao():
+    try:
+        with open(os.path.join(os.path.dirname(AQUI), "VERSION"), encoding="utf-8") as f:
+            return f.read().strip()
+    except OSError:
+        return "?"
+
 
 ANY = os.environ.get("ANYCUBIC_SLICER", r"C:\Program Files\AnycubicSlicerNext\AnycubicSlicerNext.exe")
 PERFIS = os.environ.get("ANYCUBIC_PERFIS", os.path.join(os.environ.get("APPDATA", ""), "AnycubicSlicerNext", "system", "Anycubic"))
-# impressora por omissao (o nome do modelo basta: "Kobra X", "Kobra S1", "Kobra 3 Max"...)
 # preferencias guardadas com /any-perfil (fora da pasta da skill, para nao se perderem ao atualizar)
 CONFIG = os.environ.get("MAKERWORLD_TO_ANY_CONFIG") or os.path.join(
     os.environ.get("APPDATA") or os.path.join(os.path.expanduser("~"), ".config"), "makerworld-to-any", "config.json")
+PASTA_DADOS = os.path.dirname(CONFIG)
+
+
+_AVISOU_CONFIG = False
+
+
+def _config_estragada():
+    """True se o ficheiro de preferencias existe mas nao se consegue ler (editado a mao com um erro)."""
+    if not os.path.isfile(CONFIG):
+        return False
+    try:
+        return not isinstance(le_json(CONFIG), dict)
+    except ValueError:
+        return True
+    except OSError:
+        return False
 
 
 def le_config():
+    global _AVISOU_CONFIG
     try:
-        d = json.load(open(CONFIG, encoding="utf-8"))
-        return d if isinstance(d, dict) else {}
-    except (OSError, ValueError):
+        d = le_json(CONFIG)
+        if isinstance(d, dict):
+            return d
+    except OSError:
         return {}
+    except ValueError:
+        pass
+    if not _AVISOU_CONFIG:                # preferencias ilegiveis: diz-se, em vez de as ignorar em silencio
+        _AVISOU_CONFIG = True
+        print(f"AVISO: nao consegui ler as preferencias em {CONFIG} (ficheiro estragado): estou a usar os valores por omissao",
+              file=sys.stderr)
+    return {}
 
 
 def grava_config(**valores):
+    """Guarda preferencias; um valor None apaga essa chave."""
+    if _config_estragada():               # nao se escreve por cima do que la estava sem ficar uma copia
+        shutil.copy2(CONFIG, CONFIG + ".estragado")
     d = le_config()
-    d.update({k: v for k, v in valores.items() if v is not None})
-    os.makedirs(os.path.dirname(CONFIG), exist_ok=True)
-    json.dump(d, open(CONFIG, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
+    for k, v in valores.items():
+        if v is None:
+            d.pop(k, None)
+        else:
+            d[k] = v
+    os.makedirs(PASTA_DADOS, exist_ok=True)
+    grava_json(CONFIG, d, 2)
     return d
 
 
@@ -64,7 +133,7 @@ CAMA_X = CAMA_Y = 260.0      # mesa (mm)
 ALTURA_MAX = 260.0
 PASSO_X = PASSO_Y = 312.0    # distancia entre pratos num projeto do Anycubic (mesa x 1.2)
 MULTICOR = True              # tem ACE (troca de filamento automatica)
-RAPIDA = True                # impressora da classe das Bambu (>= 450 mm/s): aceita as velocidades do autor
+VOLUME_BICO = 79.0           # nozzle_volume do perfil: parte fixa da purga numa troca de cor
 
 # filamento por funcao (Bambu 2.x): tambem contam como "usados" e tem de ser renumerados
 CHAVES_FIL = ("support_filament", "support_interface_filament", "wall_filament", "sparse_infill_filament",
@@ -73,11 +142,17 @@ CHAVES_FIL = ("support_filament", "support_interface_filament", "wall_filament",
 POR_PRATO = {"wipe_tower_x", "wipe_tower_y"}
 
 
+def pasta_config(chave):
+    """Pasta guardada nas preferencias ('saida', 'originais'), com {impressora} trocado pelo modelo. None se nao ha."""
+    v = le_config().get(chave)
+    if not v:
+        return None
+    return os.path.expandvars(os.path.expanduser(str(v))).replace("{impressora}", nome_curto())
+
+
 # ----------------------------------------------------------------------------------------- perfis
 
 _IDX = None
-
-
 _ORIGEM = {}      # (tipo, nome) -> "sistema" | "utilizador"
 _DATA = {}        # (tipo, nome) -> data do ficheiro (para escolher o mais recente)
 META = {"name", "inherits", "from", "type", "setting_id", "filament_id", "instantiation", "is_custom_defined", "version",
@@ -89,7 +164,7 @@ def _indice():
     idx = {}
     for f in glob.glob(os.path.join(PERFIS, "*", "*.json")):
         try:
-            d = json.load(open(f, encoding="utf-8"))
+            d = le_json(f)
         except (ValueError, OSError):
             continue
         if isinstance(d, dict) and "name" in d:
@@ -102,7 +177,7 @@ def _indice():
         if tipo not in ("machine", "process", "filament"):
             continue
         try:
-            d = json.load(open(f, encoding="utf-8"))
+            d = le_json(f)
         except (ValueError, OSError):
             continue
         if not isinstance(d, dict) or "name" not in d or (tipo, d["name"]) in idx and _ORIGEM[(tipo, d["name"])] == "sistema":
@@ -184,7 +259,7 @@ def grava_perfil(caminho, tipo, nome, mudancas):
     cp = d.get("compatible_printers")
     if tipo != "machine" and isinstance(cp, list) and cp and MAQUINA not in cp:
         d["compatible_printers"] = cp + [MAQUINA]    # maquina do utilizador: senao "process not compatible with printer"
-    json.dump(d, open(caminho, "w", encoding="utf-8"), indent=1, ensure_ascii=False)
+    grava_json(caminho, d)
     return caminho
 
 
@@ -247,7 +322,7 @@ def encontra_maquina(consulta=None, bico=None):
 
 def usa_impressora(maquina):
     """Passa a trabalhar para esta maquina: mesa, altura, passo entre pratos, ACE, sufixo dos perfis."""
-    global MAQUINA, MAQUINA_SISTEMA, MODELO, SUF, BICO, CAMA_X, CAMA_Y, ALTURA_MAX, PASSO_X, PASSO_Y, MULTICOR, RAPIDA
+    global MAQUINA, MAQUINA_SISTEMA, MODELO, SUF, BICO, CAMA_X, CAMA_Y, ALTURA_MAX, PASSO_X, PASSO_Y, MULTICOR, VOLUME_BICO
     d = perfil("machine", maquina)
     MAQUINA_SISTEMA = raiz_sistema("machine", maquina) or maquina
     pts = [tuple(float(v) for v in p.split("x")) for p in d.get("printable_area", ["0x0", "260x0", "260x260", "0x260"])]
@@ -257,9 +332,9 @@ def usa_impressora(maquina):
     PASSO_X, PASSO_Y = CAMA_X * 1.2, CAMA_Y * 1.2
     MULTICOR = len(str(d.get("change_filament_gcode", "")).strip()) > 20
     try:
-        RAPIDA = float(primeiro(d.get("machine_max_speed_x", "500"))) >= 450
+        VOLUME_BICO = float(primeiro(d.get("nozzle_volume", "0")) or 0)
     except (TypeError, ValueError):
-        RAPIDA = True
+        VOLUME_BICO = 0.0
     MAQUINA, SUF = maquina, " @" + MAQUINA_SISTEMA
     MODELO = d.get("printer_model") or re.sub(r" \d+(\.\d+)? nozzle$", "", MAQUINA_SISTEMA)
     BICO = format(float(primeiro(d.get("nozzle_diameter", "0.4"))), "g")
@@ -316,12 +391,26 @@ def corre_cli(args, cwd, timeout=3600):
     return r.returncode, (r.stdout or "") + (r.stderr or "")
 
 
+DICAS_CLI = {
+    "Variable layer height is not supported with Organic supports":
+        "alturas de camada variaveis nao dao com suportes em arvore organica: usa --sem-camadas-variaveis, ou outro estilo de suportes",
+    "process not compatible with printer": "o perfil de impressao nao e desta impressora (ve --listar-perfis)",
+    "Loading of a model file failed": "o Anycubic nao conseguiu ler o modelo (ficheiro estragado ou formato que ele nao conhece)",
+    "is too close to exclusion area": "ha pecas em cima da zona proibida da mesa: afasta-as com pratos.py --centrar ou --afastar",
+    "is laid over the boundary of plate": "ha pecas fora da mesa: reduz com escalar.py ou arruma com pratos.py",
+    "postprocess not supported": "o projeto tem scripts de pos-processamento (post_process): a linha de comandos do Anycubic nao os aceita",
+}
+
+
 def explica_rc(rc, log):
     dica = ""
     if rc in (139, -11, 3221225477, -1073741819):
         dica = (" (o Anycubic rebentou: causas conhecidas = nomes de prato nao vazios [ja tratado], malha a meio da"
                 " mesa abaixo de z=0, ou ficheiro de perfil com caminho errado)")
-    linhas = [l for l in log.splitlines() if "error" in l.lower() or "fail" in l.lower()][-8:]
+    linhas = [l for l in log.splitlines() if ("error" in l.lower() or "fail" in l.lower()) and "calc_exclude_triangles" not in l][-8:]
+    for sinal, ajuda in DICAS_CLI.items():
+        if sinal in log:
+            dica += "\n  -> " + ajuda
     return f"codigo {rc}{dica}\n" + "\n".join(linhas)
 
 
@@ -331,7 +420,7 @@ def exporta(entrada, saida, maquina_json, processo_json, filamentos_json, cwd):
             "--outputdir", os.path.dirname(saida), entrada]
     rc, log = corre_cli(args, cwd)
     if rc != 0 or not os.path.exists(saida):
-        raise RuntimeError("O Anycubic falhou a exportar: " + explica_rc(rc, log))
+        raise SystemExit("O Anycubic falhou a exportar: " + explica_rc(rc, log))
 
 
 def cubo_stl(caminho, lado=10.0):
@@ -378,7 +467,8 @@ def fmt_matriz(m):
 
 
 class Modelo:
-    """Le a estrutura de um 3MF (objetos, componentes, itens) e mede caixas no mundo."""
+    """Le a estrutura de um 3MF (objetos, componentes, itens) e mede caixas no mundo.
+    So contam as pecas normais: modificadores, pecas negativas e bloqueadores de suportes nao se imprimem."""
 
     def __init__(self, z):
         self.z = z
@@ -398,12 +488,18 @@ class Modelo:
             ia = atributos(it.group(1))
             self.itens.append({"oid": ia["objectid"], "T": matriz(ia.get("transform")), "printable": ia.get("printable", "1")})
         self._cache = {}
+        self._cache_f = {}
         try:
             ms = z.read("Metadata/model_settings.config").decode("utf-8")
         except KeyError:
             ms = ""
-        self.nomes = dict(re.findall(r'<object id="(\d+)">\s*<metadata key="name" value="([^"]*)"', ms))
+        self.ms = ms
+        self.nomes = {i: html.unescape(n) for i, n in re.findall(r'<object id="(\d+)">\s*<metadata key="name" value="([^"]*)"', ms)}
         self.n_pratos = max(1, len(re.findall(r"<plate>", ms)))
+        self.tipos = {}      # (objeto, peca) -> normal_part | modifier_part | negative_part | support_blocker...
+        for o in re.finditer(r'<object id="(\d+)">(.*?)</object>', ms, re.S):
+            for p in re.finditer(r'<part id="(\d+)" subtype="(\w+)"', o.group(2)):
+                self.tipos[(o.group(1), p.group(1))] = p.group(2)
 
     def _vertices(self, path, oid):
         if path not in self._cache:
@@ -417,35 +513,74 @@ class Modelo:
             self._cache[path] = d
         return self._cache[path].get(oid)
 
-    def _caixa(self, oid, T, prof=0):
-        lo, hi = [math.inf] * 3, [-math.inf] * 3
+    def _triangulos(self, path, oid):
+        if path not in self._cache_f:
+            t = self.z.read(path).decode("utf-8")
+            d = {}
+            for m in re.finditer(r'<object\s([^>]*)>(.*?)</object>', t, re.S):
+                tm = re.search(r"<triangles>(.*?)</triangles>", m.group(2), re.S)
+                if tm:
+                    fs = re.findall(r'<triangle\s+v1="(\d+)"\s+v2="(\d+)"\s+v3="(\d+)"', tm.group(1))
+                    d[atributos(m.group(1))["id"]] = np.array(fs, np.int64).reshape(-1, 3)
+            self._cache_f[path] = d
+        return self._cache_f[path].get(oid)
+
+    def _folhas(self, oid, T, raiz=None, prof=0):
+        """(path, id da malha, transformacao, tipo da peca) de cada malha do objeto."""
+        raiz = raiz or oid
         for path, sid, C in self.objs.get(oid, []):
             M = compoe(T, C)
             if path == "3D/3dmodel.model" and sid in self.objs and sid != oid and prof < 5 and self._vertices(path, sid) is None:
-                l2, h2 = self._caixa(sid, M, prof + 1)
+                yield from self._folhas(sid, M, raiz, prof + 1)
             else:
-                V = self._vertices(path, sid)
-                if V is None or len(V) == 0:
-                    continue
-                if np is not None:
-                    W = V @ np.array(M[:9]).reshape(3, 3) + np.array(M[9:])
-                    l2, h2 = W.min(0).tolist(), W.max(0).tolist()
-                else:
-                    W = [(x * M[0] + y * M[3] + z * M[6] + M[9], x * M[1] + y * M[4] + z * M[7] + M[10],
-                          x * M[2] + y * M[5] + z * M[8] + M[11]) for x, y, z in V]
-                    l2 = [min(p[i] for p in W) for i in range(3)]
-                    h2 = [max(p[i] for p in W) for i in range(3)]
+                yield path, sid, M, self.tipos.get((raiz, sid), "normal_part")
+
+    def _caixa(self, oid, T):
+        folhas = list(self._folhas(oid, T))
+        normais = [f for f in folhas if f[3] == "normal_part"] or folhas
+        lo, hi = [math.inf] * 3, [-math.inf] * 3
+        for path, sid, M, _ in normais:
+            V = self._vertices(path, sid)
+            if V is None or len(V) == 0:
+                continue
+            if np is not None:
+                W = V @ np.array(M[:9]).reshape(3, 3) + np.array(M[9:])
+                l2, h2 = W.min(0).tolist(), W.max(0).tolist()
+            else:
+                W = [(x * M[0] + y * M[3] + z * M[6] + M[9], x * M[1] + y * M[4] + z * M[7] + M[10],
+                      x * M[2] + y * M[5] + z * M[8] + M[11]) for x, y, z in V]
+                l2 = [min(p[i] for p in W) for i in range(3)]
+                h2 = [max(p[i] for p in W) for i in range(3)]
             lo = [min(a, b) for a, b in zip(lo, l2)]
             hi = [max(a, b) for a, b in zip(hi, h2)]
+        if math.inf in lo:
+            lo = hi = [0.0, 0.0, 0.0]
         return lo, hi
 
     def caixas(self):
         out = []
-        for it in self.itens:
+        for i, it in enumerate(self.itens):
             lo, hi = self._caixa(it["oid"], it["T"])
-            out.append(dict(it, nome=self.nomes.get(it["oid"], "objeto " + it["oid"]), lo=lo, hi=hi,
+            out.append(dict(it, i=i, nome=self.nomes.get(it["oid"], "objeto " + it["oid"]), lo=lo, hi=hi,
                             tam=[h - l for l, h in zip(lo, hi)]))
         return out
+
+    def malha_item(self, i, T=None):
+        """(vertices no mundo, triangulos) das pecas normais do item i. Precisa do numpy."""
+        it = self.itens[i]
+        folhas = list(self._folhas(it["oid"], T or it["T"]))
+        normais = [f for f in folhas if f[3] == "normal_part"] or folhas
+        Vs, Fs, base = [], [], 0
+        for path, sid, M, _ in normais:
+            V, F = self._vertices(path, sid), self._triangulos(path, sid)
+            if V is None or F is None or len(V) == 0 or len(F) == 0:
+                continue
+            Vs.append(V @ np.array(M[:9]).reshape(3, 3) + np.array(M[9:]))
+            Fs.append(F + base)
+            base += len(V)
+        if not Vs:
+            return np.zeros((0, 3)), np.zeros((0, 3), np.int64)
+        return np.vstack(Vs), np.vstack(Fs)
 
 
 def colunas(n):
@@ -460,11 +595,16 @@ def origem_prato(i, n):
 
 
 def prato_de(caixa, n):
+    """Prato (1..n) em que esta o centro da caixa. Um objeto fora da grelha de pratos conta para o prato mais proximo
+    (e aparece depois no aviso de pecas fora da mesa), em vez de dar um numero de prato que nao existe."""
     cx = (caixa["lo"][0] + caixa["hi"][0]) / 2
     cy = (caixa["lo"][1] + caixa["hi"][1]) / 2
+    c = colunas(n)
     col = math.floor((cx + (PASSO_X - CAMA_X) / 2) / PASSO_X)
     lin = math.floor((CAMA_Y + (PASSO_Y - CAMA_Y) / 2 - cy) / PASSO_Y)
-    return lin * colunas(n) + col + 1
+    col = min(max(col, 0), c - 1)
+    lin = min(max(lin, 0), math.ceil(n / c) - 1)
+    return min(lin * c + col + 1, n)
 
 
 def caixas_por_prato(modelo):
@@ -481,7 +621,8 @@ def caixas_por_prato(modelo):
 
 
 def avisos_mesa(por_prato, folga=0.5, sobreposicao=False):
-    """Pecas fora da mesa / abaixo de z=0; com sobreposicao=True tambem caixas que se cruzam (depois de escalar)."""
+    """Pecas fora da mesa / abaixo de z=0. Com sobreposicao=True tambem caixas que se cruzam (so quando nao ha numpy
+    para medir a folga real com distancias.avisos_folgas)."""
     av = []
     for p, cs in sorted(por_prato.items()):
         for c in cs:
@@ -515,15 +656,20 @@ def sep(a, b):
     return max(dx, dy) if dx == 0 or dy == 0 else math.hypot(dx, dy)
 
 
-def posicao_torre(rects, n_fil, largura=35.0, folga=10.0):
+def posicao_torre(rects, n_fil, largura=35.0, folga=10.0, livre=None):
     """Canto (wipe_tower_x, wipe_tower_y) da torre de purga, livre das pecas e o mais perto do centro.
-    Pegada medida numa Kobra X: x de X-6 a X+largura+1, y de Y-7.5 a Y+20 com 2 cores (cresce com mais cores)."""
+    Pegada medida numa Kobra X: x de X-6 a X+largura+1, y de Y-7.5 a Y+20 com 2 cores (cresce com mais cores).
+    livre(x0, y0, x1, y1) -> bool testa as pegadas reais (distancias.Pegadas.livre); sem isso usam-se as caixas."""
     fundo = 22 + 10 * max(0, n_fil - 2)
     melhor = None
     for X in range(12, int(CAMA_X - largura - 6), 2):
         for Y in range(12, int(CAMA_Y - fundo - 4), 2):
             tr = (X - 8, Y - 8, X + largura + 3, Y + fundo)
-            if all(sep(tr, r) >= folga for r in rects):
+            if livre is not None:
+                ok = livre(tr[0] - folga, tr[1] - folga, tr[2] + folga, tr[3] + folga)
+            else:
+                ok = all(sep(tr, r) >= folga for r in rects)
+            if ok:
                 d = math.hypot(X + largura / 2 - CAMA_X / 2, Y + fundo / 2 - CAMA_Y / 2)
                 if melhor is None or d < melhor[0]:
                     melhor = (d, X, Y)
@@ -532,14 +678,63 @@ def posicao_torre(rects, n_fil, largura=35.0, folga=10.0):
 
 # ---------------------------------------------------------------------------------------- fatiar
 
-def fatia(projeto, pasta, cwd):
-    """Fatia todos os pratos e devolve um resumo por prato."""
+def tempo_segundos(texto):
+    """'1d 2h 3m 4s' -> segundos."""
+    s = 0
+    for n, u in re.findall(r"(\d+)\s*([dhms])", texto or ""):
+        s += int(n) * {"d": 86400, "h": 3600, "m": 60, "s": 1}[u]
+    return s
+
+
+def tem_pos_processamento(j):
+    """True se o projeto traz scripts de pos-processamento (post_process): comandos que um slicer corre no computador
+    depois de fatiar. A skill nunca os passa nem os executa."""
+    v = j.get("post_process")
+    return bool([x for x in (v if isinstance(v, list) else [v]) if str(x or "").strip()])
+
+
+def sem_pos_processamento(j):
+    """Tira os scripts de pos-processamento de um project_settings (devolve True se tirou algum)."""
+    if not tem_pos_processamento(j):
+        return False
+    j["post_process"] = [] if isinstance(j.get("post_process"), list) else ""
+    return True
+
+
+def fatia(projeto, pasta, cwd, avisos=None):
+    """Fatia todos os pratos e devolve um resumo por prato (os .gcode ficam em `pasta`).
+    Se o projeto tiver scripts de pos-processamento fatia-se uma copia sem eles (a linha de comandos do Anycubic
+    recusa-os, e a skill nao corre comandos que venham dentro de um projeto); fica um aviso em `avisos`."""
     os.makedirs(pasta, exist_ok=True)
+    try:
+        with zipfile.ZipFile(projeto) as z:
+            limpar = tem_pos_processamento(json.loads(z.read("Metadata/project_settings.config")))
+    except (KeyError, ValueError, OSError, zipfile.BadZipFile):
+        limpar = False
+    if limpar:
+        copia = os.path.join(pasta, "sem_pos_processamento.3mf")
+
+        def mudar(nome, d):
+            if nome != "Metadata/project_settings.config":
+                return d
+            j = json.loads(d)
+            sem_pos_processamento(j)
+            return json.dumps(j, indent=4, ensure_ascii=False).encode("utf-8")
+        reescreve(projeto, copia, mudar)
+        projeto = copia
+        if avisos is not None:
+            avisos.append("o projeto tem scripts de pos-processamento (post_process): o tempo e as gramas foram calculados sem eles "
+                          "(a skill nunca corre comandos que venham dentro de um projeto)")
     rc, log = corre_cli(["--slice", "0", "--outputdir", pasta, projeto], cwd)
     gs = sorted(glob.glob(os.path.join(pasta, "plate_*.gcode")), key=lambda f: int(re.findall(r"\d+", os.path.basename(f))[0]))
     if rc != 0 or not gs:
-        raise RuntimeError("O Anycubic falhou a fatiar: " + explica_rc(rc, log))
-    return {int(re.findall(r"\d+", os.path.basename(g))[0]): resumo_gcode(g) for g in gs}
+        raise SystemExit("O Anycubic falhou a fatiar: " + explica_rc(rc, log))
+    out = {}
+    for g in gs:
+        r = resumo_gcode(g)
+        r["ficheiro"] = g
+        out[int(re.findall(r"\d+", os.path.basename(g))[0])] = r
+    return out
 
 
 def resumo_gcode(caminho):
@@ -573,6 +768,8 @@ def resumo_gcode(caminho):
                     e = caixas.setdefault(k, [x, y, x, y])
                     e[0], e[1], e[2], e[3] = min(e[0], x), min(e[1], y), max(e[2], x), max(e[3], y)
     r.update(caixas)
+    r["segundos"] = tempo_segundos(r["tempo"])
+    r["camada_media"] = round(r["altura"] / r["camadas"], 3) if r["altura"] and r["camadas"] else None
     return r
 
 
@@ -588,12 +785,19 @@ def texto_resumo(res, cores=None):
     return "\n".join(linhas)
 
 
-def colisoes_torre(res, por_prato, folga=2.0):
+def colisoes_torre(res, por_prato, folga=2.0, pegadas=None):
+    """A torre de purga (medida no g-code) em cima ou encostada a pecas. pegadas = {prato: distancias.Pegadas} testa
+    a forma real das pecas; sem isso usam-se as caixas."""
     av = []
     for p, r in res.items():
         if not r.get("torre"):
             continue
         t = r["torre"]
+        if pegadas and pegadas.get(p) is not None:
+            if not pegadas[p].livre(t[0] - folga, t[1] - folga, t[2] + folga, t[3] + folga):
+                av.append(f"prato {p}: a torre de purga (x {t[0]:.0f}..{t[2]:.0f}, y {t[1]:.0f}..{t[3]:.0f}) "
+                          f"esta encostada ou por cima de uma peca")
+            continue
         for c in por_prato.get(p, []):
             if sep(tuple(t), ret(c)) < folga:
                 av.append(f"prato {p}: a torre de purga (x {t[0]:.0f}..{t[2]:.0f}, y {t[1]:.0f}..{t[3]:.0f}) "
@@ -615,3 +819,47 @@ def reescreve(src, dst, mudar):
     zo.close()
     zi.close()
     os.replace(tmp, dst)
+
+
+# ------------------------------------------------------------------------------ copias de seguranca
+
+MAX_COPIAS = 30
+
+
+def _indice_copias():
+    try:
+        d = le_json(os.path.join(PASTA_DADOS, "copias", "indice.json"))
+        return d if isinstance(d, list) else []
+    except (OSError, ValueError):
+        return []
+
+
+def copias():
+    """Copias de seguranca guardadas (a mais recente primeiro): [{quando, original, copia, motivo}]."""
+    return [c for c in reversed(_indice_copias()) if os.path.exists(c.get("copia", ""))]
+
+
+def guarda_copia(caminho, motivo=""):
+    """Antes de substituir um ficheiro: guarda-o em <dados>/copias (as ultimas 30) e devolve o caminho da copia.
+    None se o ficheiro ainda nao existia."""
+    if not caminho or not os.path.isfile(caminho):
+        return None
+    pasta = os.path.join(PASTA_DADOS, "copias")
+    os.makedirs(pasta, exist_ok=True)
+    quando = time.strftime("%Y-%m-%d %H:%M:%S")
+    base = time.strftime("%Y%m%d-%H%M%S") + "__" + os.path.basename(caminho)
+    destino, n = os.path.join(pasta, base), 1
+    while os.path.exists(destino):
+        n += 1
+        destino = os.path.join(pasta, f"{n}_{base}")
+    shutil.copy2(caminho, destino)
+    idx = _indice_copias()
+    idx.append({"quando": quando, "original": os.path.abspath(caminho), "copia": destino, "motivo": motivo})
+    for velho in idx[:-MAX_COPIAS]:
+        try:
+            os.remove(velho["copia"])
+        except OSError:
+            pass
+    idx = idx[-MAX_COPIAS:]
+    grava_json(os.path.join(pasta, "indice.json"), idx)
+    return destino

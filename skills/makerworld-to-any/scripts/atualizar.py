@@ -19,6 +19,12 @@ import tempfile
 import urllib.request
 import zipfile
 
+for _f in (sys.stdout, sys.stderr):      # as novidades da release podem ter caracteres fora do cp1252
+    try:
+        _f.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError, OSError):
+        pass
+
 REPO = "GodFaizT/makerworld-to-any"
 PLUGIN = "makerworld-to-any@makerworld-to-any"
 AQUI = os.path.dirname(os.path.abspath(__file__))
@@ -30,7 +36,8 @@ OBSOLETAS = ["makerworld-update"]   # comandos que mudaram de nome (makerworld-u
 
 def versao_local():
     try:
-        return open(os.path.join(SKILL, "VERSION"), encoding="utf-8").read().strip()
+        with open(os.path.join(SKILL, "VERSION"), encoding="utf-8") as f:
+            return f.read().strip()
     except OSError:
         return "0"
 
@@ -104,7 +111,11 @@ def limpa_obsoletas():
     """Apaga comandos antigos que mudaram de nome (so se forem mesmo da MakerWorld to Any)."""
     for d in OBSOLETAS:
         sk = os.path.join(BASE, d, "SKILL.md")
-        if os.path.isfile(sk) and "MakerWorld to Any" in open(sk, encoding="utf-8", errors="ignore").read():
+        if not os.path.isfile(sk):
+            continue
+        with open(sk, encoding="utf-8", errors="ignore") as f:
+            nosso = "MakerWorld to Any" in f.read()
+        if nosso:
             shutil.rmtree(os.path.join(BASE, d))
             print(f"Removido o comando antigo /{d}")
 

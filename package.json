@@ -1,7 +1,7 @@
 {
   "name": "makerworld-to-any",
-  "version": "1.6.0",
-  "description": "Adapta projetos 3MF do Bambu Studio / MakerWorld para impressoras Anycubic (Kobra X, S1, Kobra 3, Kobra 4...) no Anycubic Slicer Next: perfis, filamentos, cores, torre de purga, tamanho e verificacao fatiando. Feito pela Megatic.",
+  "version": "2.0.0",
+  "description": "Adapta projetos 3MF do Bambu Studio / MakerWorld para impressoras Anycubic (Kobra X, S1, Kobra 3, Kobra 4...) no Anycubic Slicer Next: perfis, filamentos, cores por peca, pratos, torre de purga, tamanho, custo e verificacao fatiando. Feito pela Megatic.",
   "bin": {
     "makerworld-to-any": "bin/instalar.js"
   },
@@ -10,10 +10,13 @@
     "skills/",
     ".claude-plugin/",
     "README.md",
+    "README.en.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "scripts": {
-    "test": "node bin/instalar.js --verificar"
+    "test": "python -m unittest discover -s tests -t tests",
+    "verificar": "python tools/verifica.py && node bin/instalar.js --verificar"
   },
   "keywords": [
     "claude-code",

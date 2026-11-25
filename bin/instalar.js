@@ -124,8 +124,9 @@ try {
 verificar();
 console.log(`
   Abre uma sessao nova do Claude Code e usa, por exemplo:
-    ${cor("36", '/kobrax "C:\...\modelo.3mf"')}
-    ${cor("36", '/kobras1 "C:\...\modelo.3mf" com 10 cm')}
-    ${cor("36", '/anycubic Kobra 2 Neo "C:\...\modelo.3mf"')}
+    ${cor("36", '/kobrax "C:\\...\\modelo.3mf"')}
+    ${cor("36", '/kobras1 "C:\\...\\modelo.3mf" com 10 cm')}
+    ${cor("36", '/anycubic Kobra 2 Neo "C:\\...\\modelo.3mf"')}
+    ${cor("36", "/any-diagnostico teste")}   confirma que esta tudo a funcionar
   ou pede simplesmente ${cor("36", '"adapta este ficheiro para a kobra x: ..."')}.
 `);

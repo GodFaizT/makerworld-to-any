@@ -6,11 +6,12 @@
 
 <p align="center">
   <b>Projetos do MakerWorld prontos a imprimir na tua Anycubic, com um comando.</b><br>
-  <sub>Skill do Claude Code · feita pela <a href="https://megatic.pt"><b>Megatic</b></a></sub>
+  <sub>Skill do Claude Code · feita pela <a href="https://megatic.pt"><b>Megatic</b></a> · <a href="README.en.md">🇬🇧 English</a></sub>
 </p>
 
 <p align="center">
   <a href="https://github.com/GodFaizT/makerworld-to-any/releases/latest"><img alt="Versão" src="https://img.shields.io/github/v/release/GodFaizT/makerworld-to-any?label=vers%C3%A3o&color=38BDF8"></a>
+  <a href="https://github.com/GodFaizT/makerworld-to-any/actions/workflows/testes.yml"><img alt="Testes" src="https://github.com/GodFaizT/makerworld-to-any/actions/workflows/testes.yml/badge.svg"></a>
   <img alt="Claude Code skill" src="https://img.shields.io/badge/Claude%20Code-skill-D97757?logo=claude&logoColor=white">
   <img alt="Anycubic Slicer Next" src="https://img.shields.io/badge/Anycubic%20Slicer%20Next-2.0-1E88E5">
   <img alt="Windows" src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?logo=windows&logoColor=white">
@@ -21,15 +22,12 @@
 <p align="center">
   <a href="#comecar"><b>Começar</b></a> ·
   <a href="#comandos"><b>Comandos</b></a> ·
+  <a href="#depois"><b>Pratos e cores</b></a> ·
   <a href="#impressoras"><b>Impressoras</b></a> ·
   <a href="#perfis"><b>Perfis</b></a> ·
   <a href="#filamentos"><b>Filamentos</b></a> ·
-  <a href="#atualizar"><b>Atualizar</b></a> ·
+  <a href="#preferencias"><b>Pastas e custo</b></a> ·
   <a href="#perguntas"><b>Perguntas</b></a>
-</p>
-
-<p align="center">
-  <img src="docs/demo.svg" alt="Exemplo: /kobrax adapta um 3MF do MakerWorld para a Kobra X e mostra tempo e gramas de cada prato" width="820">
 </p>
 
 Os modelos do [MakerWorld](https://makerworld.com) são feitos no Bambu Studio para impressoras Bambu Lab. Abertos
@@ -37,6 +35,11 @@ no **Anycubic Slicer Next** perdem perfis, ficam com filamentos da Bambu com tem
 de purga e às vezes até rebentam o programa. A **MakerWorld to Any** trata disso tudo com a linha de comandos do
 próprio Anycubic e confirma o resultado fatiando: dás-lhe um `.3mf` e recebes um projeto pronto a imprimir, com o
 tempo e as gramas de cada prato.
+
+<p align="center">
+  <img src="docs/demo.svg" alt="Relatório real: o projeto de exemplo adaptado para a Kobra X, com perfil, filamentos, purga, tempo, gramas e custo de cada prato" width="860">
+  <br><sub>Relatório verdadeiro do projeto de exemplo que vem com a skill (2 pratos, 2 cores). O Claude lê-o e responde-te em duas ou três linhas.</sub>
+</p>
 
 <a id="comecar"></a>
 
@@ -61,6 +64,9 @@ tempo e as gramas de cada prato.
 
 Pronto: fica `Vaso - Kobra X.3mf` ao lado do original, já verificado, com tempo e gramas de cada prato. 🎉
 
+Para confirmar que está tudo no sítio: `/any-diagnostico teste` (adapta e fatia um projeto de exemplo em menos de um
+minuto).
+
 <details>
 <summary><b>Outras formas de instalar</b> (npx, ZIP, app do Claude)</summary>
 
@@ -74,6 +80,8 @@ Pronto: fica `Vaso - Kobra X.3mf` ao lado do original, já verificado, com tempo
 | **App Claude (separador _Code_)** | É o Claude Code dentro da app: instala o plugin como acima. Funciona tudo. |
 | **Chat do claude.ai / da app** | Carrega `makerworld-to-any-skill.zip` em **Definições → Capacidades → Skills**. O chat corre num servidor sem o Anycubic Slicer Next: o Claude explica e aconselha, mas não adapta nem fatia. |
 
+O `numpy` é opcional (`pip install numpy`): com ele a skill mede a folga real entre peças e consegue afastá-las.
+
 </details>
 
 <a id="comandos"></a>
@@ -85,27 +93,77 @@ o que mais queres em português normal.
 
 | Comando | Para |
 |---|---|
-| `/kobrax <ficheiro>` | Anycubic **Kobra X** |
-| `/kobra4 <ficheiro>` | Anycubic **Kobra 4** |
-| `/kobras1 <ficheiro>` | Anycubic **Kobra S1** |
-| `/kobras1max <ficheiro>` | Anycubic **Kobra S1 Max** |
-| `/kobra3 <ficheiro>` | Anycubic **Kobra 3** |
-| `/kobra3max <ficheiro>` | Anycubic **Kobra 3 Max** |
+| `/kobrax <ficheiro>` | adaptar para a Anycubic **Kobra X** |
+| `/kobra4` · `/kobras1` · `/kobras1max` · `/kobra3` · `/kobra3max` | o mesmo para a **Kobra 4**, **S1**, **S1 Max**, **Kobra 3** e **3 Max** |
 | `/anycubic <impressora> <ficheiro>` | qualquer outra: Kobra 2 Neo, Kobra 3 V2, Kobra 1… |
-| `/any-perfil [meus \| anycubic] [impressora …]` | escolher os perfis e a impressora por omissão |
+| `/any-pratos <adaptado>` | arrumar pratos: mover objetos, um por prato, juntar, afastar peças |
+| `/any-cores <adaptado>` | cores por peça, juntar uma cor, mudar cores ou o material |
+| `/any-desfazer [ficheiro]` | repor a versão anterior de um ficheiro |
+| `/any-perfil` | os teus perfis, a tua impressora, pastas e preços |
+| `/any-diagnostico [teste]` | ver se está tudo a funcionar |
 | `/any-update` | atualizar a skill e os comandos |
 
 ```text
 /kobrax "C:\Downloads\Vaso.3mf"
-/kobras1 "C:\Downloads\Vaso.3mf" com 12 cm, PLA Silk dourado
+/kobras1 "C:\Downloads\Vaso.3mf" com 12 cm, em PLA Silk dourado
 /kobrax "C:\Downloads\Vaso.3mf" com os meus perfis
-/kobrax "C:\Downloads\Vaso.3mf" em PETG
+/kobrax "C:\Downloads\Vaso.3mf" em PETG e guarda o g-code
 /kobra3max "C:\Downloads\MakerWorld"                  ← todos os .3mf da pasta
 /anycubic Kobra 2 Neo "C:\Downloads\Vaso.3mf" bico 0.6
 ```
 
 Também podes simplesmente pedir: *"adapta este ficheiro para a kobra x"*, *"mete o vaso com 10 cm"*,
-*"faz um ficheiro só com os pratos 3 e 4"*, *"quanto tempo demora este?"*.
+*"põe o corpo num prato e a tampa noutro"*, *"o nome a azul e o resto a branco"*, *"quanto tempo demora este?"*.
+
+<a id="depois"></a>
+
+## 🧰 Depois de adaptar: pratos, cores, tamanho
+
+Um projeto já adaptado pode ser trabalhado sem voltar ao original. Cada alteração é fatiada outra vez, para saberes
+o tempo e as gramas, e fica sempre uma cópia do ficheiro anterior.
+
+<p align="center">
+  <img src="docs/pratos.png" alt="Os dois pratos do projeto de exemplo vistos de cima, com a peça na cor do filamento e a torre de purga" width="760">
+  <br><sub>O que a skill vê: a forma real de cada peça (não a caixa à volta), a torre de purga, o tempo e as gramas de cada prato.</sub>
+</p>
+
+**Pratos** — `/any-pratos`
+
+```text
+/any-pratos "C:\…\Vaso - Kobra X.3mf"                                 ← mostra o que está em cada prato
+/any-pratos "C:\…\Vaso - Kobra X.3mf" o corpo num prato e a tampa noutro
+/any-pratos "C:\…\Vaso - Kobra X.3mf" um por prato
+/any-pratos "C:\…\Vaso - Kobra X.3mf" junta tudo e afasta as peças 6 mm
+```
+
+A skill mede a **folga real** entre as peças, pela forma delas. Avisa quando duas peças estão a menos de 2 mm (podem
+colar na primeira camada) e sabe afastá-las. A torre de purga vai sempre para um sítio livre.
+
+**Cores por peça** — `/any-cores`
+
+```text
+/any-cores "C:\…\Placa - Kobra X.3mf"                                 ← filamento de cada objeto e de cada peça
+/any-cores "C:\…\Placa - Kobra X.3mf" o nome a azul escuro e o resto a branco
+/any-cores "C:\…\Placa - Kobra X.3mf" o filamento 2 em bordô
+/any-cores "C:\…\Placa - Kobra X.3mf" em PETG
+```
+
+Podes pôr uma peça noutro filamento, juntar uma cor que o projeto não tinha, ou mudar só as cores. A **purga entre
+cores é recalculada** para as cores novas (de azul escuro para branco purga-se três vezes mais do que ao contrário):
+a linha de comandos do Anycubic não o faz e ficava a purga das cores antigas.
+
+**Tamanho** — pede no comando ou depois: *"mete com 10 cm"*, *"do tamanho do outro"*, *"metade"*. Cada objeto cresce
+à volta do seu centro e fica assente na mesa.
+
+**Voltar atrás** — `/any-desfazer`
+
+```text
+/any-desfazer                                 ← mostra as cópias guardadas
+/any-desfazer "C:\…\Vaso - Kobra X.3mf"       ← repõe a versão anterior
+```
+
+Antes de substituir um ficheiro, a skill guarda-o (ficam as últimas 30 cópias, em `%APPDATA%\makerworld-to-any\copias`).
+Os teus originais nunca são alterados.
 
 <a id="impressoras"></a>
 
@@ -204,7 +262,11 @@ flowchart LR
 | Suportes, enchimento, paredes, ironing, fuzzy skin, modo vaso | do **autor do modelo**, porque o modelo foi pensado assim |
 | O que mudaste no teu perfil (costura, arachne…) | **teu**: ganha aos valores que o autor só tinha por omissão |
 | Altura de camada | a do autor; se escolheres o perfil à mão ("com 0.12"), a desse perfil |
-| Velocidades nas Kobra 1 e 2 | as da impressora; o autor só as pode baixar |
+| Velocidades que o autor mudou | só passam se forem **mais baixas** que as do perfil da tua impressora |
+| Alturas de camada variáveis do autor | mantêm-se (o relatório diz a altura média real); *"sem camadas variáveis"* ignora-as |
+
+O relatório separa o que o autor **mudou de propósito**, o que vinha do **perfil dele**, e o que **não passou** e
+porquê (é da impressora dele, não existe no Anycubic, ou é uma velocidade acima do teu perfil).
 
 ### Prioridades
 
@@ -260,17 +322,39 @@ Max tem PA, PC e fibras, e a Kobra 1 só tem Generic PLA, PETG e ABS.
 (ex. o teu *"PETG preto"* a partir do `Anycubic PETG`) e usa `/any-perfil meus`. A skill usa-o sempre que o material
 for esse.
 
+<a id="preferencias"></a>
+
+## 📁 Pastas e custo de cada trabalho
+
+O `/any-perfil` também guarda onde queres os ficheiros e quanto te custa imprimir:
+
+```text
+/any-perfil guarda os adaptados em D:\Impressões\Adaptado e os originais em D:\Impressões\Originais
+/any-perfil PLA a 18 euros o quilo, PETG a 20, a máquina a 40 cêntimos a hora
+```
+
+- **Pasta dos adaptados** — tudo o que adaptas vai para lá (com `{impressora}` no caminho, uma pasta por impressora).
+- **Pasta dos originais** — um original que largues na pasta acima dessa é arrumado lá depois de adaptado.
+- **Preços** — por quilo de cada material e por hora de máquina. O relatório passa a trazer o **custo estimado** de
+  cada trabalho (filamento + horas), como na imagem lá em cima.
+
+Sem nada disto a skill funciona como sempre: o adaptado fica ao lado do original (ou numa pasta
+`Adaptado <impressora>`, se existir) e não há custo no relatório.
+
 ## ✨ O que faz por ti
 
 | | |
 |---|---|
 | 🎯 **Perfil certo** | O perfil da tua impressora com o mesmo nome do do autor (`0.20mm Standard @BBL A1` → `0.20mm Standard @Anycubic Kobra X`) |
 | 🎨 **Filamentos e cores** | Descobre que filamentos o modelo usa *mesmo* e escolhe o perfil de cada material (PLA, PETG, ABS, TPU, CF…) para a tua impressora, com as cores do autor; avisa se a impressora não tiver o material |
-| 🗼 **Torre de purga** | Liga-a quando há cores e põe-na num sítio livre de cada prato |
+| 🗼 **Torre e purga** | Liga a torre de purga quando há cores, põe-na num sítio livre de cada prato e recalcula a purga quando as cores mudam |
 | 🧩 **Tudo intacto** | Pratos, peças, modificadores, pintura de cores, fuzzy skin, alturas de camada variáveis e os créditos do autor |
 | 🩹 **Bugs do Anycubic** | Contorna os crashes e erros conhecidos da linha de comandos do Anycubic |
-| 📏 **Tamanhos e pratos** | "Mete com 10 cm", "do tamanho do outro", "só os pratos 3 e 4" |
+| 📏 **Tamanhos, pratos e cores** | "Mete com 10 cm", "um por prato", "o nome a azul e o resto a branco" |
+| 📐 **Folgas reais** | Mede a distância entre peças pela forma delas e avisa das que podem colar |
 | ✅ **Verificado** | Medidas iguais ao original, tudo dentro da mesa, e fatiado prato a prato |
+| ↩️ **Sem medo** | Guarda uma cópia antes de substituir um ficheiro; `/any-desfazer` repõe |
+| 💶 **Custo** | Com os teus preços, o custo estimado de cada trabalho |
 | 🧷 **Fim de impressão** | Onde o g-code de fábrica deixa o bico pousado na peça (Kobra X, 4, S1 Max), levanta-o 5 mm |
 
 ```mermaid
@@ -279,18 +363,24 @@ flowchart LR
     B --> C["🖨 Anycubic exporta<br/>com os perfis da tua impressora"]
     C --> D["🩹 Corrige e verifica"]
     D --> E["✅ Pronto a imprimir"]
+    E -.-> F["🧰 pratos · cores · tamanho"]
+    F -.-> D
 ```
 
 <a id="atualizar"></a>
 
-## 🔄 Atualizar
+## 🔄 Atualizar e diagnosticar
 
 ```text
-/any-update
+/any-update              ← última versão do GitHub (skill e comandos)
+/any-diagnostico         ← Python, Anycubic Slicer Next, perfis e preferências
+/any-diagnostico teste   ← adapta, muda cores, arruma pratos e fatia um projeto de exemplo
 ```
 
-Vê a última versão no GitHub e atualiza a skill e os comandos. Se instalaste como plugin, também podes usar
-`/plugin update makerworld-to-any@makerworld-to-any`. No fim, abre uma sessão nova do Claude Code.
+Se instalaste como plugin, também podes atualizar com `/plugin update makerworld-to-any@makerworld-to-any`. No fim,
+abre uma sessão nova do Claude Code. Depois de atualizares o **Anycubic Slicer Next**, corre `/any-diagnostico teste`:
+a skill foi testada com a versão 2.0.0.3 e o teste diz-te se continua tudo a funcionar com a tua. As novidades de
+cada versão estão no [CHANGELOG](CHANGELOG.md).
 
 <a id="perguntas"></a>
 
@@ -313,14 +403,31 @@ skill diz-te a cor que o autor deu a cada objeto, para trocares o rolo entre pra
 <details>
 <summary><b>O modelo não cabe na minha mesa</b></summary>
 
-<br>A skill avisa. Pede para reduzir (*"mete com 18 cm"*), escolhe uma impressora maior, ou arruma as peças no
-Anycubic.
+<br>A skill avisa. Pede para reduzir (*"mete com 18 cm"*), divide por pratos (`/any-pratos`), ou escolhe uma
+impressora maior.
 </details>
 
 <details>
-<summary><b>Mexe nos meus perfis do Anycubic?</b></summary>
+<summary><b>Mexe nos meus perfis ou nos meus ficheiros?</b></summary>
 
-<br>Não. Os teus perfis só são lidos (com `--perfis meus`); a skill nunca escreve na pasta do Anycubic.
+<br>Os teus perfis só são lidos: a skill nunca escreve na pasta do Anycubic. Os originais nunca são alterados (só
+mudam de pasta se guardaste uma pasta de originais). Quando um adaptado é substituído, fica uma cópia que o
+`/any-desfazer` repõe.
+</details>
+
+<details>
+<summary><b>Posso imprimir diretamente o g-code que a skill guarda?</b></summary>
+
+<br>Com *"guarda o g-code"* ficas com o g-code de cada prato tal como o Anycubic Slicer Next o fatiou. O caminho
+recomendado continua a ser abrir o `.3mf` no Anycubic Slicer Next e enviar dali: vês a pré-visualização e a ACE fica
+mapeada. O g-code direto é para quem sabe o que está a fazer.
+</details>
+
+<details>
+<summary><b>O custo estimado inclui o quê?</b></summary>
+
+<br>As gramas de cada filamento ao preço por quilo que guardaste, mais as horas de impressão ao teu preço por hora.
+Falhas, eletricidade ou o teu tempo só entram se os puseres no preço por hora.
 </details>
 
 <details>
@@ -333,19 +440,22 @@ a licença de cada um (muitos são só para uso pessoal).
 <details>
 <summary><b>Posso usar sem o Claude?</b></summary>
 
-<br>Sim, os scripts são Python simples (o `numpy` acelera, mas é opcional):
+<br>Sim, os scripts são Python simples (o `numpy` e o `matplotlib` são opcionais):
 
 ```bash
-cd skills/makerworld-to-any
-python scripts/adaptar.py --listar-impressoras
-python scripts/adaptar.py --listar-perfis
-python scripts/adaptar.py "Modelo.3mf"                          # → Modelo - Kobra X.3mf
-python scripts/adaptar.py "Modelo.3mf" --impressora "Kobra S1" --perfis meus
-python scripts/escalar.py "Modelo - Kobra X.3mf" "Modelo 12cm.3mf" --altura 120 --fatiar
-python scripts/separar_pratos.py "Projeto.3mf" "Só pratos 3-4.3mf" 3,4
-python scripts/medir.py "Modelo - Kobra X.3mf" --fatiar
-python scripts/perfil.py meus --impressora "Kobra X"
-python scripts/atualizar.py
+cd skills/makerworld-to-any/scripts
+python adaptar.py --listar-impressoras
+python adaptar.py "Modelo.3mf"                                   # → Modelo - Kobra X.3mf
+python adaptar.py "Modelo.3mf" --impressora "Kobra S1" --perfis meus --gcode gcode
+python escalar.py "Modelo - Kobra X.3mf" --altura 120 --fatiar   # altera o ficheiro e guarda uma cópia
+python pratos.py "Modelo - Kobra X.3mf" --mover "corpo=1;tampa=2" --fatiar
+python pratos.py "Modelo - Kobra X.3mf" --afastar 6 --fatiar
+python cores.py "Modelo - Kobra X.3mf" --atribuir "tampa=2" --cores ";#232C7C"
+python medir.py "Modelo - Kobra X.3mf" --fatiar --imagem pratos.png
+python desfazer.py "Modelo - Kobra X.3mf"
+python perfil.py meus --impressora "Kobra X" --preco-kg "PLA=18;*=22" --preco-hora 0.40
+python diagnostico.py --teste
+python exemplo.py Exemplo.3mf                                    # o projeto de exemplo das imagens deste README
 ```
 
 | opção do `adaptar.py` | para que |
@@ -355,46 +465,47 @@ python scripts/atualizar.py
 | `--processo "0.16mm High Quality"` | outro perfil de impressão (também um teu, pelo nome) |
 | `--material PETG` | muda o material de todos os filamentos (as cores ficam) |
 | `--filamentos "Anycubic PLA Matte;Anycubic PLA"` · `--cores "#FFFFFF;#800020"` | filamentos e cores por ordem |
+| `--atribuir "tampa=2;1.3=2"` | filamento de objetos e peças |
+| `--sem-camadas-variaveis` | ignora as alturas de camada variáveis do autor |
+| `--gcode PASTA` | guarda o g-code de cada prato |
 | `--saida PASTA` · `--nome FICHEIRO` · `--substituir` | onde gravar |
 | `--arquivar-original PASTA` | move o original no fim |
-| `--sem-fatiar` · `--manter-temp` | só exportar · guardar a pasta temporária |
+| `--sem-fatiar` · `--json` · `--manter-temp` | só exportar · relatório em JSON · guardar a pasta temporária |
 
-Preferências (`/any-perfil` ou `python scripts/perfil.py meus --impressora "Kobra S1"`) ficam em
-`%APPDATA%\makerworld-to-any\config.json`. Variáveis de ambiente (mandam sobre as preferências):
-`MAKERWORLD_TO_ANY_IMPRESSORA`, `MAKERWORLD_TO_ANY_PERFIS` (`sistema` ou `meus`), `ANYCUBIC_SLICER` (caminho do executável).
+Preferências (`/any-perfil` ou `perfil.py`) ficam em `%APPDATA%\makerworld-to-any\config.json`. Variáveis de
+ambiente (mandam sobre as preferências): `MAKERWORLD_TO_ANY_IMPRESSORA`, `MAKERWORLD_TO_ANY_PERFIS` (`sistema` ou
+`meus`), `ANYCUBIC_SLICER` (caminho do executável).
 </details>
 
 <details>
 <summary><b>Com que projetos foi testada?</b></summary>
 
 <br>Projetos para Bambu Lab **A1**, **A1 mini** e **P1S/X1C**, com 1 a 4 pratos, até 5 filamentos, pintura de fuzzy
-skin, alturas de camada variáveis e peças cortadas. Impressoras de destino: **Kobra X** (resultados iguais a
-adaptações feitas à mão), **Kobra S1**, **Kobra 3 Max**, **Kobra 2 Neo** e **Kobra 1**, com os perfis da Anycubic
-e com perfis do utilizador.
+skin, alturas de camada variáveis e peças cortadas, adaptados para a **Kobra X** (resultados iguais a adaptações
+feitas à mão), com os perfis da Anycubic e com perfis do utilizador. O teste de ponta a ponta
+(`/any-diagnostico teste`) passa na **Kobra X** (bicos 0.4 e 0.6), **Kobra 4**, **S1**, **S1 Max**, **Kobra 3**,
+**3 Max**, **Kobra 2 Neo**, **2 Max** e **Kobra 1**. Esse teste é feito no slicer (o projeto abre e fatia sem
+erros); a impressora em que a Megatic imprime é a Kobra X.
+</details>
+
+<details>
+<summary><b>Quero mexer no código</b></summary>
+
+<br>
+
+```bash
+python -m unittest discover -s tests -t tests   # testes (com perfis falsos; os de ponta a ponta precisam do slicer)
+python tools/verifica.py                        # versão, comandos gerados, sintaxe, dados pessoais
+python tools/gera_comandos.py                   # os comandos /kobrax, /any-… saem todos daqui
+python tools/gera_docs.py                       # as imagens deste README, a partir de uma adaptação real
+python tools/publica.py 2.1.0                   # prepara uma versão: versão num sítio só, testes e ZIPs
+```
+
+As notas técnicas sobre a linha de comandos do Anycubic estão em
+[`skills/makerworld-to-any/referencia/notas.md`](skills/makerworld-to-any/referencia/notas.md).
 </details>
 
 ---
-
-<details>
-<summary><b>🇬🇧 English</b></summary>
-
-<br>**MakerWorld to Any** is a [Claude Code](https://claude.com/claude-code) skill that turns Bambu Studio /
-MakerWorld 3MF projects into ready-to-print projects for **Anycubic printers** (Kobra X, Kobra 4, Kobra S1 / S1 Max,
-Kobra 3 / 3 Max, Kobra 2, Kobra 1) in Anycubic Slicer Next.
-
-It does the following:
-- maps the designer's profile and changes;
-- picks the printer's own filaments and keeps the colours;
-- fixes the CLI's known bugs and places the prime tower;
-- slices every plate to report time and grams.
-
-You can use Anycubic's official profiles or your own saved ones.
-
-Install it with `/plugin marketplace add GodFaizT/makerworld-to-any` and
-`/plugin install makerworld-to-any@makerworld-to-any`. Then run `/kobrax "C:\path\model.3mf"` (or `/kobras1`,
-`/kobra3`, `/anycubic <printer> <file>`…), or ask *"convert this 3MF for my Kobra S1"*. Choose Anycubic's or
-your own profiles (and your default printer) with `/any-perfil`; update with `/any-update`. The reports are in Portuguese, but Claude answers in your language.
-</details>
 
 <p align="center">
   <br>
