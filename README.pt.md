@@ -24,13 +24,16 @@
 </p>
 
 <p align="center">
-  <a href="#comecar"><b>Começar</b></a> ·
+  <a href="#instalar"><b>Instalar</b></a> ·
+  <a href="#primeira-adaptacao"><b>Primeira adaptação</b></a> ·
   <a href="#comandos"><b>Comandos</b></a> ·
   <a href="#depois"><b>Pratos e cores</b></a> ·
   <a href="#impressoras"><b>Impressoras</b></a> ·
   <a href="#perfis"><b>Perfis</b></a> ·
   <a href="#filamentos"><b>Filamentos</b></a> ·
   <a href="#preferencias"><b>Pastas e custo</b></a> ·
+  <a href="#atualizar"><b>Atualizar</b></a> ·
+  <a href="#problemas"><b>Problemas</b></a> ·
   <a href="#perguntas"><b>Perguntas</b></a>
 </p>
 
@@ -47,46 +50,190 @@ tempo e as gramas de cada prato.
 
 <a id="comecar"></a>
 
-## 🚀 Começar em 1 minuto
+## 🚀 Começar já
 
-> **Precisas de:** [Claude Code](https://claude.com/claude-code) · [Anycubic Slicer Next](https://www.anycubic.com) (Windows) · [Python 3](https://www.python.org/downloads/)
+Num terminal (PowerShell, Linha de Comandos ou Git Bash), **fora** do Claude Code:
 
-**1. Instala** — dentro do Claude Code:
+```bash
+npx skills add GodFaizT/makerworld-to-any --skill "*" -g -a claude-code -y
+```
+
+Ou, como plugin, dentro do Claude Code:
 
 ```text
 /plugin marketplace add GodFaizT/makerworld-to-any
 /plugin install makerworld-to-any@makerworld-to-any
 ```
 
-**2. Abre uma sessão nova** do Claude Code.
-
-**3. Adapta** — o comando da tua impressora e o caminho do ficheiro:
+Depois abre uma sessão **nova** do Claude Code e escreve o comando da tua impressora seguido do caminho do ficheiro:
 
 ```text
 /kobrax "C:\Downloads\Vaso.3mf"
 ```
 
-Pronto: fica `Vaso - Kobra X.3mf` ao lado do original, já verificado, com tempo e gramas de cada prato. 🎉
+Fica `Vaso - Kobra X.3mf` ao lado do original, já verificado, com o tempo e as gramas de cada prato. 🎉
 
-Para confirmar que está tudo no sítio: `/any-diagnostico teste` (adapta e fatia um projeto de exemplo em menos de um
-minuto).
+Primeira vez, ou alguma coisa não correu bem? Os passos todos estão a seguir.
 
-<details>
-<summary><b>Outras formas de instalar</b> (npx, ZIP, app do Claude)</summary>
+<a id="instalar"></a>
+
+## 📦 Instalar, passo a passo
+
+### 1. O que precisas
+
+| | O quê | Para quê | Como confirmar |
+|---|---|---|---|
+| ✅ | **Windows 10 ou 11** | a linha de comandos do Anycubic Slicer Next corre no Windows | — |
+| ✅ | **[Claude Code](https://claude.com/claude-code)**: terminal, VS Code ou separador *Code* da app Claude | é o Claude que corre os scripts da skill no teu computador | `claude --version` |
+| ✅ | **[Anycubic Slicer Next](https://www.anycubic.com)** 2.0 (testada com a 2.0.0.3), em `C:\Program Files\AnycubicSlicerNext` | é ele que exporta e fatia os projetos | abre normalmente; instalado noutra pasta → ver [Problemas](#problemas) |
+| ✅ | **[Python 3.8 ou mais recente](https://www.python.org/downloads/)**, com *"Add python.exe to PATH"* marcado ao instalar | os scripts são em Python | `python --version` |
+| ➕ | `numpy` *(opcional)* | mede a folga real entre peças e consegue afastá-las | `pip install numpy` |
+| ➕ | `matplotlib` *(opcional)* | desenha os pratos numa imagem | `pip install matplotlib` |
+| ➕ | **[Node.js](https://nodejs.org)**, só para instalar com `npx` | corre o instalador (o `npx skills` precisa do Node.js 22.20 ou mais recente) | `node --version` |
+
+### 2. Instalar: escolhe uma forma
+
+| Forma | Boa para | Atualizar |
+|---|---|---|
+| **A. `npx skills`** ⭐ recomendada | a maioria das pessoas | `npx skills update` |
+| **B. Plugin do Claude Code** | instalar sem sair do Claude Code | `/any-update` |
+| **C. ZIP** | computadores sem Node.js | `/any-update` |
+| **D. `npx github:`** | o instalador do próprio projeto | `/any-update` |
+
+<details open>
+<summary><b>A. Com <code>npx skills</code> (recomendada)</b></summary>
 
 <br>
 
-| Como | Comando / passos |
-|---|---|
-| **npx** (sem plugin) | `npx github:GodFaizT/makerworld-to-any` — instala em `~/.claude/skills` (`--projeto` só no projeto atual, `--desinstalar` para remover) |
-| **npx skills** | `npx skills add GodFaizT/makerworld-to-any` |
-| **ZIP** | Descarrega `makerworld-to-any-v….zip` das [releases](https://github.com/GodFaizT/makerworld-to-any/releases/latest), descompacta e dá duplo clique em `instalar.bat` |
-| **App Claude (separador _Code_)** | É o Claude Code dentro da app: instala o plugin como acima. Funciona tudo. |
-| **Chat do claude.ai / da app** | Carrega `makerworld-to-any-skill.zip` em **Definições → Capacidades → Skills**. O chat corre num servidor sem o Anycubic Slicer Next: o Claude explica e aconselha, mas não adapta nem fatia. |
+Num terminal, **fora** do Claude Code:
 
-O `numpy` é opcional (`pip install numpy`): com ele a skill mede a folga real entre peças e consegue afastá-las.
+```bash
+npx skills add GodFaizT/makerworld-to-any --skill "*" -g -a claude-code -y
+```
+
+| Parte do comando | O que quer dizer |
+|---|---|
+| `GodFaizT/makerworld-to-any` | este repositório do GitHub |
+| `--skill "*"` | instala **todas** as skills: a principal (`makerworld-to-any`) e os comandos (`/kobrax`, `/any-pratos`…). Os comandos chamam a skill principal, por isso instalam-se juntos. |
+| `-g` | para o teu utilizador, em todos os projetos (`~/.claude/skills`). Sem isto, fica só na pasta atual. |
+| `-a claude-code` | para o Claude Code |
+| `-y` | sem perguntas |
+
+Preferes escolher em menus? Corre `npx skills add GodFaizT/makerworld-to-any` e **marca todas as skills** da lista.
+
+- **Atualizar:** `npx skills update` (usa este e não o `/any-update`)
+- **Remover:** `npx skills remove` e escolhe as skills da MakerWorld to Any
 
 </details>
+
+<details>
+<summary><b>B. Como plugin do Claude Code</b></summary>
+
+<br>
+
+Dentro do Claude Code:
+
+```text
+/plugin marketplace add GodFaizT/makerworld-to-any
+/plugin install makerworld-to-any@makerworld-to-any
+```
+
+- **Atualizar:** `/any-update`, ou `/plugin marketplace update makerworld-to-any` seguido de
+  `/plugin update makerworld-to-any@makerworld-to-any`
+- **Remover:** `/plugin uninstall makerworld-to-any@makerworld-to-any`
+
+</details>
+
+<details>
+<summary><b>C. Pelo ZIP (sem Node.js)</b></summary>
+
+<br>
+
+1. Abre a [última versão](https://github.com/GodFaizT/makerworld-to-any/releases/latest) e, em **Assets**,
+   descarrega `makerworld-to-any-vX.Y.Z.zip`.
+2. Descompacta-o.
+3. Dá duplo clique em `instalar.bat`. Copia as pastas para `%USERPROFILE%\.claude\skills\`.
+
+- **Atualizar:** `/any-update`
+- **Remover:** apaga estas pastas de `%USERPROFILE%\.claude\skills\`: `makerworld-to-any`, `anycubic`, `kobrax`,
+  `kobra3`, `kobra3max`, `kobra4`, `kobras1`, `kobras1max`, `any-cores`, `any-desfazer`, `any-diagnostico`,
+  `any-perfil`, `any-pratos`, `any-update`
+
+</details>
+
+<details>
+<summary><b>D. Com <code>npx github:</code></b></summary>
+
+<br>
+
+```bash
+npx github:GodFaizT/makerworld-to-any                 # todos os projetos (~/.claude/skills)
+npx github:GodFaizT/makerworld-to-any --projeto       # só a pasta atual (./.claude/skills)
+npx github:GodFaizT/makerworld-to-any --verificar     # só confirma o Python e o Anycubic Slicer Next
+npx github:GodFaizT/makerworld-to-any --desinstalar   # remover
+```
+
+- **Atualizar:** `/any-update`, ou correr outra vez o primeiro comando
+
+</details>
+
+<details>
+<summary><b>E no chat do claude.ai?</b></summary>
+
+<br>
+
+Carrega `makerworld-to-any-skill.zip` (das [releases](https://github.com/GodFaizT/makerworld-to-any/releases/latest))
+em **Definições → Capacidades → Skills**. O chat corre num servidor sem o Anycubic Slicer Next: aí o Claude explica e
+aconselha, mas **não adapta nem fatia**. Para isso usa o Claude Code.
+
+</details>
+
+### 3. Confirmar que funciona
+
+1. **Fecha o Claude Code e abre uma sessão nova.** As skills só são carregadas quando a sessão começa.
+2. Escreve `/` e procura `/kobrax`, `/any-pratos`… na lista.
+3. Corre o teste:
+   ```text
+   /any-diagnostico teste
+   ```
+   Em menos de um minuto confirma o Python, o Anycubic Slicer Next e os perfis, e depois adapta, muda as cores, arruma
+   os pratos e fatia um projeto de exemplo. Se faltar alguma coisa, diz o quê. As soluções habituais estão em
+   [Problemas](#problemas).
+
+<a id="primeira-adaptacao"></a>
+
+## 🧭 A primeira adaptação, passo a passo
+
+1. **Arranja o ficheiro do projeto.** Na página do modelo no MakerWorld, descarrega o **3MF** do perfil de impressão
+   que queres. Tem de ser o projeto `.3mf`, **não** um `.gcode.3mf`: esse já vem fatiado e não tem modelo para adaptar.
+2. **Copia o caminho.** No Explorador de Ficheiros, clica com o botão direito no ficheiro → **Copiar como caminho**
+   (ou seleciona-o e carrega em `Ctrl` + `Shift` + `C`). Fica com as aspas, por exemplo `"C:\Downloads\Vaso.3mf"`.
+3. **Pede ao Claude Code.** Escreve o comando da tua impressora e cola o caminho:
+   ```text
+   /kobrax "C:\Downloads\Vaso.3mf"
+   ```
+   Podes juntar pedidos em português normal: `/kobrax "C:\Downloads\Vaso.3mf" com 12 cm, em PETG`.
+4. **Espera 1 a 3 minutos.** A skill lê o projeto, põe o Anycubic Slicer Next a exportá-lo com os perfis da tua
+   impressora, corrige o que a linha de comandos do Anycubic deixa mal, confere as medidas e fatia todos os pratos.
+   O Claude pode pedir autorização para correr o `python`: autoriza.
+5. **Lê a resposta.** Diz-te:
+   - onde ficou o ficheiro novo e para que impressora;
+   - o perfil de impressão e o que veio do autor (suportes, enchimento, altura de camada…);
+   - os filamentos e as cores e, com ACE, **que cor vai em que ranhura**;
+   - em cada prato: o que tem, o tempo e as gramas;
+   - o custo estimado (se guardaste os teus preços) e os avisos, com o que fazer.
+6. **Imprime.** Abre o ficheiro novo no Anycubic Slicer Next, vê a pré-visualização, confirma que as ranhuras da ACE
+   batem certo com os filamentos (filamento 1 → ranhura 1, e por aí fora) e envia para a impressora.
+
+**Onde fica o ficheiro novo**
+
+| Situação | O adaptado vai para |
+|---|---|
+| guardaste uma pasta de adaptados com `/any-perfil` | essa pasta |
+| há uma pasta `Adaptado <impressora>` (ex. `Adaptado Kobra X`) ao lado do original ou na pasta-mãe | essa pasta |
+| nos outros casos | ao lado do original |
+
+O nome é sempre `<original> - <impressora>.3mf`, por exemplo `Vaso - Kobra X.3mf`. **O original nunca é alterado.**
 
 <a id="comandos"></a>
 
@@ -375,16 +522,39 @@ flowchart LR
 
 ## 🔄 Atualizar e diagnosticar
 
+A forma de atualizar depende de como instalaste:
+
+| Instalaste com | Atualiza com |
+|---|---|
+| `npx skills` | `npx skills update` (num terminal) |
+| plugin do Claude Code | `/any-update` (ou `/plugin update makerworld-to-any@makerworld-to-any`) |
+| ZIP ou `npx github:` | `/any-update` |
+
+No fim, abre uma sessão nova do Claude Code. As novidades de cada versão estão no [CHANGELOG](CHANGELOG.md).
+
 ```text
-/any-update              ← última versão do GitHub (skill e comandos)
 /any-diagnostico         ← Python, Anycubic Slicer Next, perfis e preferências
 /any-diagnostico teste   ← adapta, muda cores, arruma pratos e fatia um projeto de exemplo
 ```
 
-Se instalaste como plugin, também podes atualizar com `/plugin update makerworld-to-any@makerworld-to-any`. No fim,
-abre uma sessão nova do Claude Code. Depois de atualizares o **Anycubic Slicer Next**, corre `/any-diagnostico teste`:
-a skill foi testada com a versão 2.0.0.3 e o teste diz-te se continua tudo a funcionar com a tua. As novidades de
-cada versão estão no [CHANGELOG](CHANGELOG.md).
+Depois de atualizares o **Anycubic Slicer Next**, corre `/any-diagnostico teste`: a skill foi testada com a versão
+2.0.0.3 e o teste diz-te se continua tudo a funcionar com a tua.
+
+<a id="problemas"></a>
+
+## 🩺 Problemas e soluções
+
+| Problema | O que fazer |
+|---|---|
+| O `/kobrax` não aparece no Claude Code | Abre uma sessão **nova**. Continua sem aparecer? Confirma que as skills estão instaladas (`npx skills list`, `/plugin`, ou as pastas em `~/.claude/skills`). Com `npx skills`, instala **todas** as skills (`--skill "*"`): os comandos não funcionam sem a skill principal. |
+| *"Anycubic Slicer Next não encontrado"* | Instala-o. Se está noutra pasta, diz à skill onde está o programa e abre um terminal novo:<br>`setx ANYCUBIC_SLICER "D:\Programas\AnycubicSlicerNext\AnycubicSlicerNext.exe"` |
+| *"Python não encontrado"*, ou o `python` abre a Microsoft Store | Instala o Python de [python.org](https://www.python.org/downloads/) com *"Add python.exe to PATH"* marcado. Depois, no Windows, vai a **Definições → Aplicações → Definições avançadas de aplicações → Aliases de execução de aplicações** e desliga os de `python.exe` e `python3.exe`. |
+| O ficheiro não é encontrado | Põe o caminho entre **aspas**, sobretudo se tiver espaços ou acentos. O **Copiar como caminho** do Explorador já as põe. |
+| *".gcode.3mf"* ou *"sem modelo"* | Esse ficheiro já vem fatiado. Descarrega o projeto `.3mf` do MakerWorld. |
+| Aviso de peças a menos de 2 mm | Podem colar na primeira camada: `/any-pratos "<adaptado>" afasta as peças 6 mm` |
+| O modelo não cabe na mesa | Reduz (*"com 18 cm"*), divide por pratos (`/any-pratos`) ou escolhe uma impressora maior. |
+| Funcionava e deixou de funcionar depois de atualizar o Anycubic Slicer Next | Corre `/any-diagnostico teste` e abre um [issue](https://github.com/GodFaizT/makerworld-to-any/issues) com o que ele diz. |
+| Outra coisa | Corre `/any-diagnostico teste` e abre um [issue](https://github.com/GodFaizT/makerworld-to-any/issues) com o relatório. Não precisas de enviar o teu modelo. |
 
 <a id="perguntas"></a>
 

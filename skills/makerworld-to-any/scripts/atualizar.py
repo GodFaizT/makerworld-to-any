@@ -6,13 +6,16 @@ Uso:
     python atualizar.py --verificar  so diz se ha versao nova
 
 - Instalada como plugin do Claude Code: usa `claude plugin marketplace update` + `claude plugin update`.
-- Instalada como skill (npx, ZIP, a mao): descarrega o ZIP da ultima release e substitui so as pastas da skill e
-  dos comandos que vem nele (as outras skills nao sao tocadas).
+- Instalada com o `npx skills add` (skills.sh): as pastas em ~/.claude/skills sao ligacoes (no Windows, juncoes)
+  para ~/.agents/skills, geridas pelo `npx skills`. Nao mexe em nada e diz para correr `npx skills update`.
+- Instalada como skill (ZIP, `npx github:`, a mao): descarrega o ZIP da ultima release e substitui so as pastas da
+  skill e dos comandos que vem nele (as outras skills nao sao tocadas). Nunca apaga uma ligacao.
 """
 import json
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -62,6 +65,34 @@ def em_plugin():
     return any(partes[i] == ".claude" and partes[i + 1] == "plugins" for i in range(len(partes) - 1))
 
 
+def e_ligacao(p):
+    """Atalho (symlink) ou juncao do Windows. O os.path.isjunction so existe no Python 3.12+, por isso ve-se o
+    atributo de reparse point (Windows) no lstat."""
+    try:
+        if os.path.islink(p):
+            return True
+        st = os.lstat(p)
+    except OSError:
+        return False
+    return bool(getattr(st, "st_file_attributes", 0) & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0))
+
+
+def em_npx_skills():
+    """Instalada com `npx skills add`: a pasta da skill e uma ligacao, ou a pasta real esta em .agents/skills."""
+    if e_ligacao(SKILL):
+        return True
+    partes = os.path.normcase(os.path.realpath(SKILL)).replace("/", os.sep).split(os.sep)
+    return any(partes[i] == ".agents" and partes[i + 1] == "skills" for i in range(len(partes) - 1))
+
+
+def atualiza_npx_skills():
+    print("Instalada com o npx skills (skills.sh): as pastas sao geridas por ele e esta atualizacao nao lhes mexe.\n"
+          "Para atualizar, corre num terminal:\n"
+          "  npx skills update\n"
+          "Depois abre uma sessao nova do Claude Code.")
+    return 0
+
+
 def atualiza_plugin():
     claude = shutil.which("claude")
     if not claude:
@@ -97,6 +128,10 @@ def atualiza_pastas(rel):
         pastas = [d for d in os.listdir(ext) if os.path.isfile(os.path.join(ext, d, "SKILL.md"))]
         if "makerworld-to-any" not in pastas:
             raise SystemExit("O ZIP nao tem a skill makerworld-to-any; atualizacao cancelada")
+        ligacoes = [d for d in pastas if e_ligacao(os.path.join(BASE, d))]
+        if ligacoes:                                     # confirmar antes de mexer em qualquer pasta
+            raise SystemExit("Estas pastas sao ligacoes (instaladas com o npx skills): " + ", ".join(sorted(ligacoes))
+                             + ". Nada foi alterado. Atualiza com: npx skills update")
         for d in pastas:
             destino = os.path.join(BASE, d)
             if os.path.isdir(destino):
@@ -111,7 +146,7 @@ def limpa_obsoletas():
     """Apaga comandos antigos que mudaram de nome (so se forem mesmo da MakerWorld to Any)."""
     for d in OBSOLETAS:
         sk = os.path.join(BASE, d, "SKILL.md")
-        if not os.path.isfile(sk):
+        if not os.path.isfile(sk) or e_ligacao(os.path.join(BASE, d)):
             continue
         with open(sk, encoding="utf-8", errors="ignore") as f:
             nosso = "MakerWorld to Any" in f.read()
@@ -124,7 +159,8 @@ def main():
     if "--limpar" in sys.argv:
         limpa_obsoletas()
         return 0
-    if not em_plugin():
+    npx_skills = not em_plugin() and em_npx_skills()
+    if not em_plugin() and not npx_skills:
         limpa_obsoletas()
     so_ver = "--verificar" in sys.argv
     local = versao_local()
@@ -142,6 +178,8 @@ def main():
         return 0
     if em_plugin():
         return atualiza_plugin()
+    if npx_skills:
+        return atualiza_npx_skills()
     pastas = atualiza_pastas(rel)
     # a versao nova pode saber de mais comandos antigos para apagar: corre a limpeza dela
     novo = os.path.join(BASE, "makerworld-to-any", "scripts", "atualizar.py")
