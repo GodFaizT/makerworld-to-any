@@ -1,5 +1,16 @@
 # Novidades
 
+## 2.0.2 - 2026-11-25 · instalar com npx skills e README passo a passo
+
+- Instalar com `npx skills add GodFaizT/makerworld-to-any --skill "*" -g -a claude-code -y` (skills.sh). O plugin
+  do Claude Code, o ZIP e o `npx github:` continuam a funcionar.
+- O `/any-update` reconhece uma instalação feita com o `npx skills` (pastas ligadas a `~/.agents/skills`): não lhes
+  mexe e diz para atualizar com `npx skills update`. Antes dava erro a meio. Também nunca apaga uma ligação e
+  confirma todas as pastas antes de substituir alguma.
+- README novo, em português e em inglês: início rápido, instalação passo a passo (o que é preciso, as 4 formas de
+  instalar, como atualizar e remover cada uma), a primeira adaptação passo a passo e uma secção de problemas e
+  soluções.
+
 ## 2.0.1 - 2026-11-25 · g-code de um projeto só com autorização
 
 - Ao mudar as cores ou o material de um projeto já adaptado, o g-code e os limites da máquina que vêm dentro do
