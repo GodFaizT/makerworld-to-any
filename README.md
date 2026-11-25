@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="https://github.com/GodFaizT/makerworld-to-any/releases/latest"><img alt="Versão" src="https://img.shields.io/github/v/release/GodFaizT/makerworld-to-any?label=vers%C3%A3o&color=38BDF8"></a>
-  <a href="https://github.com/GodFaizT/makerworld-to-any/actions/workflows/testes.yml"><img alt="Testes" src="https://github.com/GodFaizT/makerworld-to-any/actions/workflows/testes.yml/badge.svg"></a>
+  <a href="https://github.com/GodFaizT/makerworld-to-any/actions/workflows/verificacao.yml"><img alt="Verificação" src="https://github.com/GodFaizT/makerworld-to-any/actions/workflows/verificacao.yml/badge.svg"></a>
   <img alt="Claude Code skill" src="https://img.shields.io/badge/Claude%20Code-skill-D97757?logo=claude&logoColor=white">
   <img alt="Anycubic Slicer Next" src="https://img.shields.io/badge/Anycubic%20Slicer%20Next-2.0-1E88E5">
   <img alt="Windows" src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?logo=windows&logoColor=white">
@@ -494,11 +494,10 @@ erros); a impressora em que a Megatic imprime é a Kobra X.
 <br>
 
 ```bash
-python -m unittest discover -s tests -t tests   # testes (com perfis falsos; os de ponta a ponta precisam do slicer)
 python tools/verifica.py                        # versão, comandos gerados, sintaxe, dados pessoais
 python tools/gera_comandos.py                   # os comandos /kobrax, /any-… saem todos daqui
 python tools/gera_docs.py                       # as imagens deste README, a partir de uma adaptação real
-python tools/publica.py 2.1.0                   # prepara uma versão: versão num sítio só, testes e ZIPs
+python tools/publica.py 2.1.0                   # prepara uma versão: versão num sítio só, verificação e ZIPs
 ```
 
 As notas técnicas sobre a linha de comandos do Anycubic estão em

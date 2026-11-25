@@ -1,7 +1,8 @@
 """Prepara e publica uma versao da MakerWorld to Any.
 
     python tools/publica.py 2.1.0         prepara: escreve a versao nos 4 sitios, gera os comandos, verifica o
-                                          repositorio, corre os testes e constroi os ZIPs em dist/
+                                          repositorio, corre os testes (se houver a pasta tests/ neste computador:
+                                          nao esta no repositorio) e constroi os ZIPs em dist/
     python tools/publica.py               o mesmo, sem mudar a versao
     python tools/publica.py --zips        so constroi os ZIPs
     python tools/publica.py --publicar    publica a versao atual: envia o ramo e cria a release no GitHub com os ZIPs
@@ -176,9 +177,12 @@ def prepara(nova):
         raise SystemExit(f"{len(ps)} problema(s): corrige antes de publicar")
     print("  tudo bem")
     print("testes:")
-    r = corre([sys.executable, "-W", "error::ResourceWarning", "-m", "unittest", "discover", "-s", "tests", "-t", "tests"])
-    if r.returncode != 0:
-        raise SystemExit("Os testes falharam")
+    if os.path.isdir(os.path.join(RAIZ, "tests")):        # os testes ficam so no computador de quem publica
+        r = corre([sys.executable, "-W", "error::ResourceWarning", "-m", "unittest", "discover", "-s", "tests", "-t", "tests"])
+        if r.returncode != 0:
+            raise SystemExit("Os testes falharam")
+    else:
+        print("  (nao ha a pasta tests/ neste computador: saltados)")
     print("ZIPs:")
     constroi()
     print(f"\nPronto para o commit. Depois: python tools/publica.py --publicar   (release '{titulo(v)}')")

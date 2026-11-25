@@ -1,0 +1,28 @@
+name: Verificacao
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verificacao:
+    name: Python ${{ matrix.python }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.8", "3.13"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+      # versao, comandos gerados, sintaxe dos scripts neste Python, dados pessoais, fins de linha
+      - name: Verificacoes do repositorio
+        run: python tools/verifica.py
+      - name: Instalador
+        run: node bin/instalar.js --destino "${{ runner.temp }}/skills"

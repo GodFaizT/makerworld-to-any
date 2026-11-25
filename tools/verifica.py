@@ -1,4 +1,4 @@
-"""Verificacoes do repositorio antes de publicar (tambem correm nos testes e no CI).
+"""Verificacoes do repositorio antes de publicar (tambem correm no CI do GitHub e no tools/publica.py).
 
     python tools/verifica.py
 

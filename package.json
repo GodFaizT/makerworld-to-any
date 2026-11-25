@@ -15,7 +15,6 @@
     "LICENSE"
   ],
   "scripts": {
-    "test": "python -m unittest discover -s tests -t tests",
     "verificar": "python tools/verifica.py && node bin/instalar.js --verificar"
   },
   "keywords": [

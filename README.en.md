@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="https://github.com/GodFaizT/makerworld-to-any/releases/latest"><img alt="Version" src="https://img.shields.io/github/v/release/GodFaizT/makerworld-to-any?label=version&color=38BDF8"></a>
-  <a href="https://github.com/GodFaizT/makerworld-to-any/actions/workflows/testes.yml"><img alt="Tests" src="https://github.com/GodFaizT/makerworld-to-any/actions/workflows/testes.yml/badge.svg"></a>
+  <a href="https://github.com/GodFaizT/makerworld-to-any/actions/workflows/verificacao.yml"><img alt="Checks" src="https://github.com/GodFaizT/makerworld-to-any/actions/workflows/verificacao.yml/badge.svg"></a>
   <img alt="Claude Code skill" src="https://img.shields.io/badge/Claude%20Code-skill-D97757?logo=claude&logoColor=white">
   <img alt="Anycubic Slicer Next" src="https://img.shields.io/badge/Anycubic%20Slicer%20Next-2.0-1E88E5">
   <img alt="Windows" src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?logo=windows&logoColor=white">
@@ -344,11 +344,10 @@ python exemplo.py Example.3mf                                    # the example p
 <br>
 
 ```bash
-python -m unittest discover -s tests -t tests   # tests (fake profiles; the end-to-end ones need the slicer)
 python tools/verifica.py                        # version, generated commands, syntax, personal data
 python tools/gera_comandos.py                   # every /kobrax, /any-… command is generated here
 python tools/gera_docs.py                       # the images in this README, from a real run
-python tools/publica.py 2.1.0                   # prepare a release: one version number, tests and ZIPs
+python tools/publica.py 2.1.0                   # prepare a release: one version number, checks and ZIPs
 ```
 
 Technical notes on Anycubic's command line are in
