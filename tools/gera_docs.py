@@ -2,8 +2,8 @@ r"""Gera as imagens do README a partir de uma adaptacao REAL do projeto de exemp
 
     python tools/gera_docs.py
 
-    docs/demo.svg      a conversa no Claude: o pedido /kobrax e a resposta, em portugues
-    docs/demo.en.svg   a mesma conversa em ingles (README.en.md)
+    docs/demo.svg      a conversa no Claude: o pedido /kobrax e a resposta, em portugues (README.pt.md)
+    docs/demo.en.svg   a mesma conversa em ingles (README.md, o principal)
     docs/pratos.png    os pratos vistos de cima (medir.py --fatiar --imagem), com a torre de purga
 
 A resposta e montada aqui a partir do relatorio (--json) de uma adaptacao verdadeira, como a skill manda o Claude
