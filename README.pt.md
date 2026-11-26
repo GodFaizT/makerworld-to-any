@@ -85,7 +85,7 @@ Primeira vez, ou alguma coisa não correu bem? Os passos todos estão a seguir.
 |---|---|---|---|
 | ✅ | **Windows 10 ou 11** | a linha de comandos do Anycubic Slicer Next corre no Windows | — |
 | ✅ | **[Claude Code](https://claude.com/claude-code)**: terminal, VS Code ou separador *Code* da app Claude | é o Claude que corre os scripts da skill no teu computador | `claude --version` |
-| ✅ | **[Anycubic Slicer Next](https://www.anycubic.com)** 2.0 (testada com a 2.0.0.3), em `C:\Program Files\AnycubicSlicerNext` | é ele que exporta e fatia os projetos | abre normalmente; instalado noutra pasta → ver [Problemas](#problemas) |
+| ✅ | **[Anycubic Slicer Next](https://www.anycubic.com)** 2.0 (testada com a 2.0.0.3 e a 2.0.0.7), em `C:\Program Files\AnycubicSlicerNext` | é ele que exporta e fatia os projetos | abre normalmente; instalado noutra pasta → ver [Problemas](#problemas) |
 | ✅ | **[Python 3.8 ou mais recente](https://www.python.org/downloads/)**, com *"Add python.exe to PATH"* marcado ao instalar | os scripts são em Python | `python --version` |
 | ➕ | `numpy` *(opcional)* | mede a folga real entre peças e consegue afastá-las | `pip install numpy` |
 | ➕ | `matplotlib` *(opcional)* | desenha os pratos numa imagem | `pip install matplotlib` |
@@ -537,8 +537,8 @@ No fim, abre uma sessão nova do Claude Code. As novidades de cada versão estã
 /any-diagnostico teste   ← adapta, muda cores, arruma pratos e fatia um projeto de exemplo
 ```
 
-Depois de atualizares o **Anycubic Slicer Next**, corre `/any-diagnostico teste`: a skill foi testada com a versão
-2.0.0.3 e o teste diz-te se continua tudo a funcionar com a tua.
+Depois de atualizares o **Anycubic Slicer Next**, corre `/any-diagnostico teste`: a skill foi testada com as versões
+2.0.0.3 e 2.0.0.7, e o teste diz-te se continua tudo a funcionar com a tua.
 
 <a id="problemas"></a>
 

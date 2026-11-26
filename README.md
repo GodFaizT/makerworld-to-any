@@ -89,7 +89,7 @@ New to this, or something didn't work? The full steps are below.
 |---|---|---|---|
 | ✅ | **Windows 10 or 11** | Anycubic Slicer Next's command line runs on Windows | — |
 | ✅ | **[Claude Code](https://claude.com/claude-code)**: terminal, VS Code, or the *Code* tab of the Claude app | Claude runs the skill's scripts on your computer | `claude --version` |
-| ✅ | **[Anycubic Slicer Next](https://www.anycubic.com)** 2.0 (tested with 2.0.0.3), in `C:\Program Files\AnycubicSlicerNext` | it exports and slices the projects | it opens normally; installed somewhere else → see [Troubleshooting](#troubleshooting) |
+| ✅ | **[Anycubic Slicer Next](https://www.anycubic.com)** 2.0 (tested with 2.0.0.3 and 2.0.0.7), in `C:\Program Files\AnycubicSlicerNext` | it exports and slices the projects | it opens normally; installed somewhere else → see [Troubleshooting](#troubleshooting) |
 | ✅ | **[Python 3.8 or newer](https://www.python.org/downloads/)**, with *"Add python.exe to PATH"* ticked when installing | the scripts are Python | `python --version` |
 | ➕ | `numpy` *(optional)* | measures the real gap between parts and can push them apart | `pip install numpy` |
 | ➕ | `matplotlib` *(optional)* | draws the plates as an image | `pip install matplotlib` |
@@ -543,8 +543,8 @@ Portuguese).
 /any-diagnostico teste   ← adapts, changes colours, rearranges plates and slices an example project
 ```
 
-After updating **Anycubic Slicer Next**, run `/any-diagnostico teste`: the skill was tested with version 2.0.0.3 and
-the self-test tells you whether everything still works with yours.
+After updating **Anycubic Slicer Next**, run `/any-diagnostico teste`: the skill was tested with versions 2.0.0.3 and
+2.0.0.7, and the self-test tells you whether everything still works with yours.
 
 <a id="troubleshooting"></a>
 

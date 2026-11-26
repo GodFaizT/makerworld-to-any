@@ -75,12 +75,13 @@ def rapido(impressora=None):
 
     if os.path.exists(K.ANY):
         vs = versao_slicer()
+        testadas = " e ".join(K.TESTADO_COM)
         if not vs:
-            diz("aviso", f"Anycubic Slicer Next em {K.ANY} (nao consegui ver a versao; testada com a {K.TESTADO_COM})")
-        elif tupla(vs) == tupla(K.TESTADO_COM):
+            diz("aviso", f"Anycubic Slicer Next em {K.ANY} (nao consegui ver a versao; testada com {testadas})")
+        elif tupla(vs) in [tupla(x) for x in K.TESTADO_COM]:
             diz("ok", f"Anycubic Slicer Next {vs} em {K.ANY}")
         else:
-            diz("aviso", f"Anycubic Slicer Next {vs}: a skill foi testada com a {K.TESTADO_COM}. Corre 'diagnostico.py --teste' "
+            diz("aviso", f"Anycubic Slicer Next {vs}: a skill foi testada com {testadas}. Corre 'diagnostico.py --teste' "
                          "para confirmar que continua tudo a funcionar")
     else:
         diz("falha", f"nao encontro o Anycubic Slicer Next em {K.ANY} (instala-o, ou define ANYCUBIC_SLICER com o caminho)")

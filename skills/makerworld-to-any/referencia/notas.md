@@ -1,4 +1,4 @@
-# Notas tecnicas (Anycubic Slicer Next 2.0.0.3, linha de comandos)
+# Notas tecnicas (Anycubic Slicer Next 2.0.0.3 e 2.0.0.7, linha de comandos)
 
 MakerWorld to Any - Megatic (https://megatic.pt).
 
@@ -43,6 +43,9 @@ Os scripts ja tratam tudo o que esta marcado com (auto). Depois de uma atualizac
   exportar como a fatiar: ou seja, a linha de comandos nunca corre esses scripts. O `adaptar.py` tira-os da copia
   de entrada e do projeto final (auto) e o relatorio diz que nao passaram; o `fatia()` fatia uma copia sem eles
   quando um projeto ja adaptado os tem. A skill nunca escreve `post_process` num projeto.
+- **2.0.0.7**: o resumo no fim do g-code (`; filament used [g] = 0.00, 34.07`) poe o peso todo no ultimo filamento
+  usado do prato; o total e o g-code estao certos. `resumo_gcode()` soma o E de cada ferramenta (extrusao relativa,
+  `M83`) e, quando o resumo nao bate com isso, divide o total pela massa que cada uma extrude.
 
 ## Purga entre cores
 

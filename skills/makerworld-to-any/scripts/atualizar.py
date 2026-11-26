@@ -7,7 +7,8 @@ Uso:
 
 - Instalada como plugin do Claude Code: usa `claude plugin marketplace update` + `claude plugin update`.
 - Instalada com o `npx skills add` (skills.sh): as pastas em ~/.claude/skills sao ligacoes (no Windows, juncoes)
-  para ~/.agents/skills, geridas pelo `npx skills`. Nao mexe em nada e diz para correr `npx skills update`.
+  para ~/.agents/skills, ou copias registadas em ~/.agents/.skill-lock.json, geridas pelo `npx skills`. Nao mexe
+  em nada e diz para correr `npx skills update`.
 - Instalada como skill (ZIP, `npx github:`, a mao): descarrega o ZIP da ultima release e substitui so as pastas da
   skill e dos comandos que vem nele (as outras skills nao sao tocadas). Nunca apaga uma ligacao.
 """
@@ -77,12 +78,33 @@ def e_ligacao(p):
     return bool(getattr(st, "st_file_attributes", 0) & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0))
 
 
+def _no_registo(caminho):
+    """O ficheiro de registo do `npx skills` (.skill-lock.json / skills-lock.json) tem esta skill, vinda deste repo."""
+    try:
+        with open(caminho, encoding="utf-8-sig") as f:
+            dados = json.load(f)
+        entrada = (dados.get("skills") or {}).get("makerworld-to-any") or {}
+    except (OSError, ValueError, AttributeError):
+        return False
+    return "makerworld-to-any" in str(entrada.get("source", "")).lower()
+
+
 def em_npx_skills():
-    """Instalada com `npx skills add`: a pasta da skill e uma ligacao, ou a pasta real esta em .agents/skills."""
+    """Instalada com `npx skills add`: a pasta da skill e uma ligacao, a pasta real esta em .agents/skills, ou foi
+    copiada (o que o `npx skills` faz quando so ha um agente) e esta no registo dele."""
     if e_ligacao(SKILL):
         return True
     partes = os.path.normcase(os.path.realpath(SKILL)).replace("/", os.sep).split(os.sep)
-    return any(partes[i] == ".agents" and partes[i + 1] == "skills" for i in range(len(partes) - 1))
+    if any(partes[i] == ".agents" and partes[i + 1] == "skills" for i in range(len(partes) - 1)):
+        return True
+    casa = os.path.expanduser("~")
+    if os.path.normcase(os.path.realpath(BASE)) == os.path.normcase(os.path.realpath(os.path.join(casa, ".claude", "skills"))):
+        registos = [os.path.join(casa, ".agents", ".skill-lock.json")]
+        if os.environ.get("XDG_STATE_HOME"):
+            registos.insert(0, os.path.join(os.environ["XDG_STATE_HOME"], "skills", ".skill-lock.json"))
+    else:                                          # <projeto>/.claude/skills -> <projeto>/skills-lock.json
+        registos = [os.path.join(os.path.dirname(os.path.dirname(BASE)), "skills-lock.json")]
+    return any(_no_registo(r) for r in registos)
 
 
 def atualiza_npx_skills():

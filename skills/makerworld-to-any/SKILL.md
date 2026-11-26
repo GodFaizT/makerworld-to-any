@@ -8,7 +8,7 @@ description: Adapta projetos 3MF do Bambu Studio / MakerWorld (Bambu Lab A1, A1 
 Projetos Bambu Lab / MakerWorld -> impressoras Anycubic. Feito pela Megatic (https://megatic.pt).
 
 Converte projetos 3MF feitos no Bambu Studio (a maioria dos modelos do MakerWorld) em projetos do **Anycubic Slicer
-Next** (testado com a 2.0.0.3) para qualquer impressora Anycubic que o slicer traga: Kobra X, Kobra S1 / S1 Max,
+Next** (testado com a 2.0.0.3 e a 2.0.0.7) para qualquer impressora Anycubic que o slicer traga: Kobra X, Kobra S1 / S1 Max,
 Kobra 3 / 3 V2 / 3 Max, Kobra 4, Kobra 2 (Neo, Pro, Plus, Max), Kobra 1. Mesa, perfis e filamentos vem dos perfis de
 cada impressora. Confirma o resultado fatiando. Responder na lingua do utilizador (PT-PT se escreve em portugues; os
 relatorios dos scripts saem em portugues sem acentos: traduzir ao responder noutra lingua).

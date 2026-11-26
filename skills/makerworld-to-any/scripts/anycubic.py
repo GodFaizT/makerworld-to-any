@@ -1,7 +1,7 @@
 """Biblioteca comum da skill makerworld-to-any (MakerWorld to Any, feita pela Megatic - https://megatic.pt).
 
 Converte projetos 3MF do Bambu Studio / MakerWorld para impressoras Anycubic (Kobra X, Kobra S1, Kobra 3, Kobra 4,
-...) com a linha de comandos do proprio Anycubic Slicer Next (testado com a 2.0.0.3) e verifica o resultado
+...) com a linha de comandos do proprio Anycubic Slicer Next (testado com a 2.0.0.3 e a 2.0.0.7) e verifica o resultado
 fatiando. A impressora de destino escolhe-se com usa_impressora(); tamanho da mesa, perfis e filamentos vem dos
 perfis de sistema do Anycubic. So precisa da biblioteca padrao do Python (o numpy acelera e permite medir folgas).
 """
@@ -36,7 +36,7 @@ def saida_utf8():
 saida_utf8()
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
-TESTADO_COM = "2.0.0.3"       # versao do Anycubic Slicer Next com que a skill foi testada
+TESTADO_COM = ("2.0.0.3", "2.0.0.7")       # versoes do Anycubic Slicer Next com que a skill foi testada
 
 
 def le_json(caminho):
@@ -742,10 +742,40 @@ def fatia(projeto, pasta, cwd, avisos=None):
     return out
 
 
+def _numeros(texto):
+    try:
+        return [float(x) for x in texto.replace(";", ",").split(",") if x.strip()]
+    except ValueError:
+        return []
+
+
+def gramas_por_ferramenta(g, total, mm, densidades, diametros):
+    """O Anycubic Slicer Next 2.0.0.7 poe no resumo do fim do g-code o peso todo no ultimo filamento usado
+    ("; filament used [g] = 0.00, 34.07" num prato a duas cores; o g-code em si esta certo). Quando o resumo nao bate
+    com o que cada ferramenta extrude de facto (mm = E liquido por ferramenta, extrusao relativa), divide-se o total
+    (que esta certo) pela massa extrudida por cada uma."""
+    if len(g) < 2 or not total or not mm:
+        return g
+    massa = []
+    for i in range(len(g)):
+        d = diametros[i] if i < len(diametros) and diametros[i] > 0 else 1.75
+        p = densidades[i] if i < len(densidades) and densidades[i] > 0 else 1.24
+        massa.append(max(mm.get(i, 0.0), 0.0) * math.pi * (d / 2) ** 2 * p)
+    soma, lido = sum(massa), sum(g)
+    if soma <= 0:
+        return g
+    certo = [m / soma for m in massa]
+    parte = [x / lido if lido > 0 else 0.0 for x in g]
+    if all((parte[i] > 0) == (certo[i] >= 0.005) and abs(parte[i] - certo[i]) <= 0.1 for i in range(len(g))):
+        return g
+    return [round(total * c, 2) for c in certo]
+
+
 def resumo_gcode(caminho):
     r = {"tempo": None, "g": [], "total_g": None, "camadas": None, "trocas": 0, "altura": None, "torre": None, "pecas": None}
     tipo = None
     caixas = {}
+    ferramenta, relativo, absoluto, mm, dens, diam = None, False, False, {}, [], []
     with open(caminho, encoding="utf-8", errors="ignore") as f:
         for l in f:
             if l.startswith(";"):
@@ -763,7 +793,25 @@ def resumo_gcode(caminho):
                     r["trocas"] = int(l.split("= ", 1)[1])
                 elif l.startswith("; max_z_height:"):
                     r["altura"] = float(l.split(":", 1)[1])
+                elif l.startswith("; filament_density:"):
+                    dens = _numeros(l.split(":", 1)[1])
+                elif l.startswith("; filament_diameter:"):
+                    diam = _numeros(l.split(":", 1)[1])
                 continue
+            # o que cada ferramenta extrude (para conferir o resumo do fim; ver gramas_por_ferramenta)
+            if l[:1] == "T" and l[1:2].isdigit():
+                m = re.match(r"T(\d+)\s*(?:;|$)", l)
+                if m:
+                    ferramenta = int(m.group(1))
+                continue
+            if l.startswith("M83"):
+                relativo = True
+            elif l.startswith("M82"):
+                absoluto = True
+            elif ferramenta is not None and relativo and l[:3] in ("G1 ", "G0 ", "G2 ", "G3 ") and "E" in l:
+                me = re.search(r" E(-?[\d.]+)", l.split(";", 1)[0])
+                if me:
+                    mm[ferramenta] = mm.get(ferramenta, 0.0) + float(me.group(1))
             if tipo and tipo != "Custom" and l.startswith("G1 ") and " E" in l:
                 mx = re.search(r" X([-\d.]+)", l)
                 my = re.search(r" Y([-\d.]+)", l)
@@ -773,6 +821,8 @@ def resumo_gcode(caminho):
                     e = caixas.setdefault(k, [x, y, x, y])
                     e[0], e[1], e[2], e[3] = min(e[0], x), min(e[1], y), max(e[2], x), max(e[3], y)
     r.update(caixas)
+    if not absoluto:
+        r["g"] = gramas_por_ferramenta(r["g"], r["total_g"], mm, dens, diam)
     r["segundos"] = tempo_segundos(r["tempo"])
     r["camada_media"] = round(r["altura"] / r["camadas"], 3) if r["altura"] and r["camadas"] else None
     return r

@@ -1,5 +1,15 @@
 # Novidades
 
+## 2.0.3 - 2026-11-26 · Anycubic Slicer Next 2.0.0.7
+
+- Testada com o Anycubic Slicer Next 2.0.0.7 (e a 2.0.0.3): o `/any-diagnostico` já não avisa com nenhuma das duas.
+- Gramas por cor certos com a 2.0.0.7. Esta versão escreve no fim do g-code o peso todo na última cor usada do prato
+  (ex.: "0 g amarelo, 34 g vermelho" numa caixa que é quase toda amarela). O g-code e o total estão certos. Agora a
+  skill confere esse resumo com o que cada cor extrude no g-code e, se não bater, refaz a divisão. O custo por
+  material também fica certo.
+- O `/any-update` também reconhece a instalação do `npx skills` quando ele copia as pastas em vez de as ligar (o que
+  faz com `-a claude-code`): diz para atualizar com `npx skills update` e não mexe nas pastas.
+
 ## 2.0.2 - 2026-11-25 · instalar com npx skills e README passo a passo
 
 - Instalar com `npx skills add GodFaizT/makerworld-to-any --skill "*" -g -a claude-code -y` (skills.sh). O plugin
