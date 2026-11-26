@@ -48,9 +48,9 @@ grams of every plate.
   <br><sub>What it looks like in Claude. The numbers come from a real adaptation of the example project that ships with the skill (2 plates, 2 colours).</sub>
 </p>
 
-> **A note on language.** The skill was made in Portugal: the command names, script options and raw reports are in
-> Portuguese. You don't need to speak it — ask Claude in English and it answers in English. This page translates
-> everything you need to type.
+> **A note on language.** The skill was made in Portugal. The commands and the skill's instructions are in English;
+> the script options and raw reports are in Portuguese. You don't need to speak it — ask Claude in English and it
+> answers in English.
 
 <a id="get-started"></a>
 
@@ -119,7 +119,7 @@ npx skills add GodFaizT/makerworld-to-any --skill "*" -g -a claude-code -y
 | Part of the command | What it means |
 |---|---|
 | `GodFaizT/makerworld-to-any` | this GitHub repository |
-| `--skill "*"` | installs **every** skill: the main one (`makerworld-to-any`) and the commands (`/kobrax`, `/any-pratos`…). The commands call the main skill, so install them together. |
+| `--skill "*"` | installs **every** skill: the main one (`makerworld-to-any`) and the commands (`/kobrax`, `/any-plates`…). The commands call the main skill, so install them together. |
 | `-g` | for your user, in every project (`~/.claude/skills`). Without it, only in the current folder. |
 | `-a claude-code` | for Claude Code |
 | `-y` | no questions |
@@ -161,8 +161,8 @@ Inside Claude Code:
 
 - **Update:** `/any-update`
 - **Remove:** delete these folders from `%USERPROFILE%\.claude\skills\`: `makerworld-to-any`, `anycubic`, `kobrax`,
-  `kobra3`, `kobra3max`, `kobra4`, `kobras1`, `kobras1max`, `any-cores`, `any-desfazer`, `any-diagnostico`,
-  `any-perfil`, `any-pratos`, `any-update`
+  `kobra3`, `kobra3max`, `kobra4`, `kobras1`, `kobras1max`, `any-colors`, `any-doctor`, `any-plates`,
+  `any-settings`, `any-undo`, `any-update`
 
 </details>
 
@@ -196,10 +196,10 @@ explain and advise there, but it **cannot adapt or slice**. Use Claude Code for 
 ### 3. Check that it works
 
 1. **Close Claude Code and open a new session.** Skills are only loaded when a session starts.
-2. Type `/` and look for `/kobrax`, `/any-pratos`… in the list.
+2. Type `/` and look for `/kobrax`, `/any-plates`… in the list.
 3. Run the self-test:
    ```text
-   /any-diagnostico teste
+   /any-doctor test
    ```
    In under a minute it checks Python, Anycubic Slicer Next and the profiles, then adapts, recolours, rearranges and
    slices an example project. If something is missing it says what. The [Troubleshooting](#troubleshooting) section has
@@ -234,7 +234,7 @@ explain and advise there, but it **cannot adapt or slice**. Use Claude Code for 
 
 | Situation | The adapted file goes to |
 |---|---|
-| you saved an adapted-files folder with `/any-perfil` | that folder |
+| you saved an adapted-files folder with `/any-settings` | that folder |
 | there is an `Adaptado <printer>` folder (e.g. `Adaptado Kobra X`) next to the original or in its parent folder | that folder |
 | otherwise | next to the original |
 
@@ -252,11 +252,11 @@ else you want in plain words.
 | `/kobrax <file>` | adapt for the Anycubic **Kobra X** |
 | `/kobra4` · `/kobras1` · `/kobras1max` · `/kobra3` · `/kobra3max` | the same for the **Kobra 4**, **S1**, **S1 Max**, **Kobra 3** and **3 Max** |
 | `/anycubic <printer> <file>` | any other: Kobra 2 Neo, Kobra 3 V2, Kobra 1… |
-| `/any-pratos <adapted file>` | arrange the **plates**: move objects, one per plate, merge, push parts apart |
-| `/any-cores <adapted file>` | **colours** per part, add a colour, change colours or the material |
-| `/any-desfazer [file]` | **undo**: restore the previous version of a file |
-| `/any-perfil` | **preferences**: your profiles, your printer, folders and prices |
-| `/any-diagnostico [teste]` | check that everything works (`teste` = full self-test) |
+| `/any-plates <adapted file>` | arrange the **plates**: move objects, one per plate, merge, push parts apart |
+| `/any-colors <adapted file>` | **colours** per part, add a colour, change colours or the material |
+| `/any-undo [file]` | **undo**: restore the previous version of a file |
+| `/any-settings` | **preferences**: your profiles, your printer, folders and prices |
+| `/any-doctor [test]` | check that everything works (`test` = full self-test) |
 | `/any-update` | update the skill and its commands |
 
 ```text
@@ -283,26 +283,26 @@ time and grams, and a copy of the previous file is always kept.
   <br><sub>What the skill sees: the real outline of each part (not its bounding box), the prime tower, and the time and grams of each plate.</sub>
 </p>
 
-**Plates** — `/any-pratos`
+**Plates** — `/any-plates`
 
 ```text
-/any-pratos "C:\…\Vase - Kobra X.3mf"                                 ← what is on each plate
-/any-pratos "C:\…\Vase - Kobra X.3mf" the body on one plate and the lid on another
-/any-pratos "C:\…\Vase - Kobra X.3mf" one object per plate
-/any-pratos "C:\…\Vase - Kobra X.3mf" everything on one plate, 6 mm apart
+/any-plates "C:\…\Vase - Kobra X.3mf"                                 ← what is on each plate
+/any-plates "C:\…\Vase - Kobra X.3mf" the body on one plate and the lid on another
+/any-plates "C:\…\Vase - Kobra X.3mf" one object per plate
+/any-plates "C:\…\Vase - Kobra X.3mf" everything on one plate, 6 mm apart
 ```
 
 The skill measures the **real gap** between parts from their shape. It warns when two parts are less than 2 mm apart
 (they may fuse on the first layer) and can push them apart. The prime tower always goes somewhere that is actually
 free.
 
-**Colours per part** — `/any-cores`
+**Colours per part** — `/any-colors`
 
 ```text
-/any-cores "C:\…\Sign - Kobra X.3mf"                                  ← filament of every object and part
-/any-cores "C:\…\Sign - Kobra X.3mf" the name in navy and the rest in white
-/any-cores "C:\…\Sign - Kobra X.3mf" filament 2 in burgundy
-/any-cores "C:\…\Sign - Kobra X.3mf" in PETG
+/any-colors "C:\…\Sign - Kobra X.3mf"                                  ← filament of every object and part
+/any-colors "C:\…\Sign - Kobra X.3mf" the name in navy and the rest in white
+/any-colors "C:\…\Sign - Kobra X.3mf" filament 2 in burgundy
+/any-colors "C:\…\Sign - Kobra X.3mf" in PETG
 ```
 
 You can move a part to another filament, add a colour the project didn't have, or just change the colours. The **purge
@@ -312,11 +312,11 @@ command line does not do this and would keep the volumes of the old colours.
 **Size** — ask in the command or afterwards: *"10 cm tall"*, *"same height as the other one"*, *"half size"*. Each
 object grows around its own centre and stays on the bed.
 
-**Undo** — `/any-desfazer`
+**Undo** — `/any-undo`
 
 ```text
-/any-desfazer                                 ← list the saved copies
-/any-desfazer "C:\…\Vase - Kobra X.3mf"       ← restore the previous version
+/any-undo                                 ← list the saved copies
+/any-undo "C:\…\Vase - Kobra X.3mf"       ← restore the previous version
 ```
 
 Before replacing a file the skill saves it (the last 30 copies, in `%APPDATA%\makerworld-to-any\copias`). Your
@@ -384,18 +384,18 @@ temperature…). The skill uses yours whenever you have one based on the profile
    Filaments work the same way: open, say, `Anycubic PLA Matte`, tune the temperature and save it under another name.
 2. **Check that the skill sees it:**
    ```text
-   /any-perfil
+   /any-settings
    ```
    It lists your profiles and marks the ones that fit your printer with *"← para a tua impressora"* (for your printer).
 3. **Choose to use them:**
    ```text
-   /any-perfil meus                                 ← always, from now on ("meus" = mine)
+   /any-settings mine                                 ← always, from now on
    /kobrax "C:\…\Vase.3mf" with my own profiles     ← just this once
    ```
 4. **Adapt as usual.** The report says which profiles were used and marks yours as *"perfil teu, baseado em …"*
    (your profile, based on …).
 
-To go back to Anycubic's: `/any-perfil anycubic`.
+To go back to Anycubic's: `/any-settings anycubic`.
 
 > 💡 **Tip:** almost every MakerWorld model is made at **0.20 mm**. If you want your settings on nearly everything,
 > base your profile on your printer's `0.20mm Standard`.
@@ -406,7 +406,7 @@ To go back to Anycubic's: `/any-perfil anycubic`.
 flowchart LR
     A["Designer's profile<br/>0.20mm Standard @BBL A1"] --> B["Matching Anycubic profile<br/>0.20mm Standard @Kobra X"]
     B --> C{"Do you have a profile<br/>based on it?"}
-    C -- "yes, and /any-perfil meus" --> D["🙋 Uses yours<br/>(the most recent)"]
+    C -- "yes, and /any-settings mine" --> D["🙋 Uses yours<br/>(the most recent)"]
     C -- "no" --> E["🏭 Uses Anycubic's"]
 ```
 
@@ -427,16 +427,16 @@ your profile).
 
 ### Priorities
 
-What you ask for in the command wins over everything; then environment variables, then `/any-perfil`, and finally
+What you ask for in the command wins over everything; then environment variables, then `/any-settings`, and finally
 the Kobra X with Anycubic's profiles.
 
 ```text
-/kobrax "C:\…\Vase.3mf"                          ← uses what is set in /any-perfil
+/kobrax "C:\…\Vase.3mf"                          ← uses what is set in /any-settings
 /kobrax "C:\…\Vase.3mf" with my own profiles     ← yours, just this once
 /kobrax "C:\…\Vase.3mf" with 0.16 high quality   ← another print profile
 ```
 
-The `/any-perfil` choice is stored outside the skill folder, so `/any-update` keeps it. Your profiles are only ever
+The `/any-settings` choice is stored outside the skill folder, so `/any-update` keeps it. Your profiles are only ever
 read: the skill never writes to Anycubic's folder.
 
 <a id="filaments"></a>
@@ -476,18 +476,18 @@ has PA, PC and fibre-filled filaments, while the Kobra 1 only has Generic PLA, P
 ```
 
 **Using your own filament profile:** save it in Anycubic Slicer Next from Anycubic's profile for that material (e.g.
-your *"Black PETG"* based on `Anycubic PETG`) and use `/any-perfil meus`. The skill uses it whenever the material
+your *"Black PETG"* based on `Anycubic PETG`) and use `/any-settings mine`. The skill uses it whenever the material
 matches.
 
 <a id="preferences"></a>
 
 ## 📁 Folders and the cost of each job
 
-`/any-perfil` also stores where you want your files and what printing costs you:
+`/any-settings` also stores where you want your files and what printing costs you:
 
 ```text
-/any-perfil save adapted files in D:\Prints\Adapted and originals in D:\Prints\Originals
-/any-perfil PLA is 18 euros a kilo, PETG 20, the machine 40 cents an hour
+/any-settings save adapted files in D:\Prints\Adapted and originals in D:\Prints\Originals
+/any-settings PLA is 18 euros a kilo, PETG 20, the machine 40 cents an hour
 ```
 
 - **Adapted folder** — everything you adapt goes there (put `{impressora}` in the path for one folder per printer).
@@ -510,7 +510,7 @@ Without any of this the skill works as before: the adapted file goes next to the
 | 📏 **Size, plates and colours** | "10 cm tall", "one per plate", "the name in blue and the rest in white" |
 | 📐 **Real gaps** | Measures the distance between parts from their shape and warns about parts that may fuse |
 | ✅ **Verified** | Same dimensions as the original, everything inside the bed, and every plate sliced |
-| ↩️ **Nothing to fear** | Keeps a copy before replacing a file; `/any-desfazer` restores it |
+| ↩️ **Nothing to fear** | Keeps a copy before replacing a file; `/any-undo` restores it |
 | 💶 **Cost** | With your prices, the estimated cost of each job |
 | 🧷 **End of print** | Where the stock end g-code leaves the nozzle resting on the part (Kobra X, 4, S1 Max), it lifts it 5 mm |
 
@@ -540,11 +540,11 @@ Then open a new Claude Code session. What changed in each version is in the [CHA
 Portuguese).
 
 ```text
-/any-diagnostico         ← Python, Anycubic Slicer Next, profiles and preferences
-/any-diagnostico teste   ← adapts, changes colours, rearranges plates and slices an example project
+/any-doctor         ← Python, Anycubic Slicer Next, profiles and preferences
+/any-doctor test    ← adapts, changes colours, rearranges plates and slices an example project
 ```
 
-After updating **Anycubic Slicer Next**, run `/any-diagnostico teste`: the skill was tested with versions 2.0.0.3 and
+After updating **Anycubic Slicer Next**, run `/any-doctor test`: the skill was tested with versions 2.0.0.3 and
 2.0.0.7, and the self-test tells you whether everything still works with yours.
 
 <a id="troubleshooting"></a>
@@ -559,10 +559,10 @@ After updating **Anycubic Slicer Next**, run `/any-diagnostico teste`: the skill
 | *"Python not found"*, or `python` opens the Microsoft Store | Install Python from [python.org](https://www.python.org/downloads/) with *"Add python.exe to PATH"* ticked. Then in Windows go to **Settings → Apps → Advanced app settings → App execution aliases** and switch off the `python.exe` and `python3.exe` aliases. |
 | The file is not found | Put the path in **double quotes**, especially when it has spaces or accents. **Copy as path** in File Explorer does it for you. |
 | *".gcode.3mf"* or *"no model"* | That file is already sliced. Download the project `.3mf` from MakerWorld instead. |
-| Warning: parts less than 2 mm apart | They may fuse on the first layer: `/any-pratos "<adapted file>" push the parts 6 mm apart` |
-| The model doesn't fit the bed | Scale it (*"18 cm tall"*), split it across plates (`/any-pratos`) or pick a bigger printer. |
-| It worked before, it fails after updating Anycubic Slicer Next | Run `/any-diagnostico teste` and open an [issue](https://github.com/GodFaizT/makerworld-to-any/issues) with what it says. |
-| Anything else | Run `/any-diagnostico teste` and open an [issue](https://github.com/GodFaizT/makerworld-to-any/issues) with the report. You don't need to send your model. |
+| Warning: parts less than 2 mm apart | They may fuse on the first layer: `/any-plates "<adapted file>" push the parts 6 mm apart` |
+| The model doesn't fit the bed | Scale it (*"18 cm tall"*), split it across plates (`/any-plates`) or pick a bigger printer. |
+| It worked before, it fails after updating Anycubic Slicer Next | Run `/any-doctor test` and open an [issue](https://github.com/GodFaizT/makerworld-to-any/issues) with what it says. |
+| Anything else | Run `/any-doctor test` and open an [issue](https://github.com/GodFaizT/makerworld-to-any/issues) with the report. You don't need to send your model. |
 
 <a id="faq"></a>
 
@@ -585,7 +585,7 @@ tells you the colour the designer gave each object, so you can swap the spool be
 <details>
 <summary><b>The model doesn't fit my bed</b></summary>
 
-<br>The skill warns you. Ask it to scale down (*"18 cm tall"*), split the parts across plates (`/any-pratos`), or pick
+<br>The skill warns you. Ask it to scale down (*"18 cm tall"*), split the parts across plates (`/any-plates`), or pick
 a bigger printer.
 </details>
 
@@ -593,7 +593,7 @@ a bigger printer.
 <summary><b>Does it touch my profiles or my files?</b></summary>
 
 <br>Your profiles are only read: the skill never writes to Anycubic's folder. Originals are never modified (they only
-change folder if you set an originals folder). When an adapted file is replaced a copy is kept, and `/any-desfazer`
+change folder if you set an originals folder). When an adapted file is replaced a copy is kept, and `/any-undo`
 brings it back.
 </details>
 
@@ -655,7 +655,7 @@ python exemplo.py Example.3mf                                    # the example p
 | `--arquivar-original FOLDER` | move the original there at the end |
 | `--sem-fatiar` · `--json` · `--manter-temp` | export only · JSON report · keep the temporary folder |
 
-Preferences (`/any-perfil` or `perfil.py`) live in `%APPDATA%\makerworld-to-any\config.json`. Environment variables
+Preferences (`/any-settings` or `perfil.py`) live in `%APPDATA%\makerworld-to-any\config.json`. Environment variables
 (they win over preferences): `MAKERWORLD_TO_ANY_IMPRESSORA`, `MAKERWORLD_TO_ANY_PERFIS` (`sistema` or `meus`),
 `ANYCUBIC_SLICER` (path to the executable).
 </details>
@@ -666,7 +666,7 @@ Preferences (`/any-perfil` or `perfil.py`) live in `%APPDATA%\makerworld-to-any\
 <br>Projects made for the Bambu Lab **A1**, **A1 mini** and **P1S/X1C**, with 1 to 4 plates, up to 5 filaments,
 painted fuzzy skin, variable layer heights and cut parts, adapted for the **Kobra X** (results identical to
 adaptations done by hand), with Anycubic's profiles and with user profiles. The end-to-end self-test
-(`/any-diagnostico teste`) passes on the **Kobra X** (0.4 and 0.6 nozzles), **Kobra 4**, **S1**, **S1 Max**,
+(`/any-doctor test`) passes on the **Kobra X** (0.4 and 0.6 nozzles), **Kobra 4**, **S1**, **S1 Max**,
 **Kobra 3**, **3 Max**, **Kobra 2 Neo**, **2 Max** and **Kobra 1**. That test runs in the slicer (the project opens
 and slices without errors); the printer Megatic prints on is the Kobra X.
 </details>

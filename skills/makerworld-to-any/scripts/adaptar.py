@@ -1008,7 +1008,7 @@ def main():
     ap.add_argument("--perfis", choices=("sistema", "meus"),
                     help=f"sistema = perfis de origem da Anycubic; meus = os que guardaste no slicer (por omissao: {K.PERFIS_OMISSAO})")
     ap.add_argument("--listar-perfis", action="store_true", help="mostra os perfis que guardaste no slicer e sai")
-    ap.add_argument("--saida", help="pasta de saida (por omissao: a de /any-perfil, ou 'Adaptado <impressora>' ao lado)")
+    ap.add_argument("--saida", help="pasta de saida (por omissao: a de /any-settings, ou 'Adaptado <impressora>' ao lado)")
     ap.add_argument("--nome", help="nome do ficheiro de saida (por omissao '<original> - <impressora>.3mf')")
     ap.add_argument("--processo", help='perfil da impressora, ex. "0.16mm High Quality" (por omissao: o do autor)')
     ap.add_argument("--filamentos", help='perfis Anycubic por ordem, separados por ";" (ex. "Anycubic PLA Matte;Anycubic PLA")')

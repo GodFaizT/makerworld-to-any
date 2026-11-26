@@ -1,5 +1,18 @@
 # Novidades
 
+## 2.1.0 - 2026-11-26 · comandos e instruções em inglês
+
+- Os comandos passam a ter nomes em inglês: `/any-pratos` → `/any-plates`, `/any-cores` → `/any-colors`,
+  `/any-perfil` → `/any-settings`, `/any-desfazer` → `/any-undo`, `/any-diagnostico` → `/any-doctor`. O `/kobrax`,
+  o `/anycubic` e os outros ficam iguais. Os pedidos continuam a poder ser feitos em português, e o Claude responde
+  na língua de quem escreve.
+- Os `SKILL.md` (a skill e os 13 comandos) estão em inglês e começam pelo que se vê no skills.sh: o que faz,
+  exemplos, impressoras, como instalar. As instruções para o Claude ficam por baixo. Os scripts, as opções deles e
+  os relatórios continuam em português.
+- Os comandos com o nome antigo saem sozinhos no `/any-update` (no ZIP e no `npx github:`). Numa instalação com o
+  `npx skills`, o `/any-update` diz o que correr para os trocar: `npx skills remove` dos antigos e `npx skills add`
+  outra vez. O `/any-doctor` avisa se ainda houver comandos com o nome antigo.
+
 ## 2.0.3 - 2026-11-26 · Anycubic Slicer Next 2.0.0.7 e mais segurança
 
 Segurança (o que a análise do Snyk no skills.sh apontou):

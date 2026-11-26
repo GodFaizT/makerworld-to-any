@@ -20,11 +20,11 @@ Comandos
       depois do ficheiro podes juntar pedidos: "com 10 cm", "bico 0.6", "em PETG", "dourado",
       "com os meus perfis", "guarda o g-code"
 
-  /any-pratos "C:\...\adaptado.3mf"            mover objetos entre pratos, um por prato, afastar pecas
-  /any-cores "C:\...\adaptado.3mf"             cores por peca, juntar uma cor, mudar o material
-  /any-desfazer                                repor a versao anterior de um ficheiro
-  /any-perfil                                  os teus perfis, impressora, pastas e precos
-  /any-diagnostico teste                       confirmar que esta tudo a funcionar
+  /any-plates "C:\...\adaptado.3mf"            mover objetos entre pratos, um por prato, afastar pecas
+  /any-colors "C:\...\adaptado.3mf"            cores por peca, juntar uma cor, mudar o material
+  /any-undo                                    repor a versao anterior de um ficheiro
+  /any-settings                                os teus perfis, impressora, pastas e precos
+  /any-doctor teste                            confirmar que esta tudo a funcionar
   /any-update                                  atualizar para a ultima versao
 
 Ou pede simplesmente: "adapta este ficheiro para a kobra x: ..."

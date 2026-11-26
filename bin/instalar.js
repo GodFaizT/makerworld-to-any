@@ -85,7 +85,8 @@ const PASTAS = fs.readdirSync(path.join(__dirname, "..", "skills"), { withFileTy
   .filter((d) => d.isDirectory() && fs.existsSync(path.join(__dirname, "..", "skills", d.name, "SKILL.md")))
   .map((d) => d.name);
 const base = pastaSkills();
-const OBSOLETAS = ["makerworld-update"]; // comandos que mudaram de nome (-> any-update na 1.4.1)
+// comandos que mudaram de nome: makerworld-update -> any-update (1.4.1); os /any-* em portugues -> ingles (2.1.0)
+const OBSOLETAS = ["makerworld-update", "any-pratos", "any-cores", "any-perfil", "any-desfazer", "any-diagnostico"];
 
 if (tem("--desinstalar")) {
   for (const p of PASTAS) {
@@ -127,6 +128,6 @@ console.log(`
     ${cor("36", '/kobrax "C:\\...\\modelo.3mf"')}
     ${cor("36", '/kobras1 "C:\\...\\modelo.3mf" com 10 cm')}
     ${cor("36", '/anycubic Kobra 2 Neo "C:\\...\\modelo.3mf"')}
-    ${cor("36", "/any-diagnostico teste")}   confirma que esta tudo a funcionar
+    ${cor("36", "/any-doctor test")}   confirma que esta tudo a funcionar
   ou pede simplesmente ${cor("36", '"adapta este ficheiro para a kobra x: ..."')}.
 `);

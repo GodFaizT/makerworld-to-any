@@ -71,7 +71,12 @@ def rapido(impressora=None):
     if cmds:
         diz("ok", "comandos: " + " ".join("/" + c for c in cmds))
     else:
-        diz("aviso", "nao encontrei os comandos (/kobrax, /any-perfil...) ao lado da skill: reinstala para os teres")
+        diz("aviso", "nao encontrei os comandos (/kobrax, /any-settings...) ao lado da skill: reinstala para os teres")
+    import atualizar
+    velhas = [d for d in irmas if d in atualizar.RENOMEADOS]
+    if velhas:
+        diz("aviso", "comandos com o nome antigo: " + ", ".join(f"/{d} (agora /{atualizar.RENOMEADOS[d]})" for d in velhas)
+            + ": corre /any-update para os trocar")
 
     if os.path.exists(K.ANY):
         vs = versao_slicer()

@@ -37,7 +37,10 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 SKILL = os.path.dirname(AQUI)              # .../makerworld-to-any
 BASE = os.path.dirname(SKILL)              # pasta das skills (ou skills/ do plugin)
 CABECALHOS = {"User-Agent": "makerworld-to-any-atualizar", "Accept": "application/vnd.github+json"}
-OBSOLETAS = ["makerworld-update"]   # comandos que mudaram de nome (makerworld-update -> any-update na 1.4.1)
+# comandos que mudaram de nome: makerworld-update -> any-update (1.4.1); os /any-* em portugues -> ingles (2.1.0)
+RENOMEADOS = {"makerworld-update": "any-update", "any-pratos": "any-plates", "any-cores": "any-colors",
+              "any-perfil": "any-settings", "any-desfazer": "any-undo", "any-diagnostico": "any-doctor"}
+OBSOLETAS = list(RENOMEADOS)
 
 
 def versao_local():
@@ -184,6 +187,21 @@ def atualiza_pastas(rel):
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def obsoletas_presentes():
+    """Comandos com o nome antigo que ainda estao instalados ao lado da skill."""
+    return [d for d in OBSOLETAS if os.path.isfile(os.path.join(BASE, d, "SKILL.md"))]
+
+
+def avisa_obsoletas_npx():
+    """No npx skills as pastas sao dele: so diz como trocar os comandos antigos pelos novos."""
+    velhas = obsoletas_presentes()
+    if velhas:
+        print("Os comandos mudaram de nome (" + ", ".join(f"/{d} -> /{RENOMEADOS[d]}" for d in velhas) + ").\n"
+              "Para ficares com os novos, corre num terminal:\n"
+              f"  npx skills remove {' '.join(velhas)} -g -y\n"
+              f'  npx skills add {REPO} --skill "*" -g -a claude-code -y')
+
+
 def limpa_obsoletas():
     """Apaga comandos antigos que mudaram de nome (so se forem mesmo da MakerWorld to Any)."""
     for d in OBSOLETAS:
@@ -204,6 +222,8 @@ def main():
     npx_skills = not em_plugin() and em_npx_skills()
     if not em_plugin() and not npx_skills:
         limpa_obsoletas()
+    elif npx_skills:
+        avisa_obsoletas_npx()
     so_ver = "--verificar" in sys.argv
     local = versao_local()
     try:

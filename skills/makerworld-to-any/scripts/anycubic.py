@@ -61,7 +61,7 @@ def versao():
 
 ANY = os.environ.get("ANYCUBIC_SLICER", r"C:\Program Files\AnycubicSlicerNext\AnycubicSlicerNext.exe")
 PERFIS = os.environ.get("ANYCUBIC_PERFIS", os.path.join(os.environ.get("APPDATA", ""), "AnycubicSlicerNext", "system", "Anycubic"))
-# preferencias guardadas com /any-perfil (fora da pasta da skill, para nao se perderem ao atualizar)
+# preferencias guardadas com /any-settings (fora da pasta da skill, para nao se perderem ao atualizar)
 CONFIG = os.environ.get("MAKERWORLD_TO_ANY_CONFIG") or os.path.join(
     os.environ.get("APPDATA") or os.path.join(os.path.expanduser("~"), ".config"), "makerworld-to-any", "config.json")
 PASTA_DADOS = os.path.dirname(CONFIG)
@@ -115,7 +115,7 @@ def grava_config(**valores):
 
 
 _CFG = le_config()
-# ordem: opcao na linha de comandos > variavel de ambiente > /any-perfil > Kobra X / perfis da Anycubic
+# ordem: opcao na linha de comandos > variavel de ambiente > /any-settings > Kobra X / perfis da Anycubic
 IMPRESSORA_OMISSAO = os.environ.get("MAKERWORLD_TO_ANY_IMPRESSORA") or _CFG.get("impressora") or "Kobra X"
 # perfis do utilizador (guardados no Anycubic Slicer Next): user/<conta>/{machine,process,filament}/*.json
 PERFIS_UTILIZADOR = os.environ.get("ANYCUBIC_PERFIS_UTILIZADOR",
