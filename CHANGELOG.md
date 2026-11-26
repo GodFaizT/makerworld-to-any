@@ -9,6 +9,8 @@
   material também fica certo.
 - O `/any-update` também reconhece a instalação do `npx skills` quando ele copia as pastas em vez de as ligar (o que
   faz com `-a claude-code`): diz para atualizar com `npx skills update` e não mexe nas pastas.
+- README: o `npx skills` precisa do Git (está nos requisitos), e há uma solução para o erro
+  `spawn git ENOENT` em "Problemas".
 
 ## 2.0.2 - 2026-11-25 · instalar com npx skills e README passo a passo
 

@@ -90,6 +90,7 @@ Primeira vez, ou alguma coisa não correu bem? Os passos todos estão a seguir.
 | ➕ | `numpy` *(opcional)* | mede a folga real entre peças e consegue afastá-las | `pip install numpy` |
 | ➕ | `matplotlib` *(opcional)* | desenha os pratos numa imagem | `pip install matplotlib` |
 | ➕ | **[Node.js](https://nodejs.org)**, só para instalar com `npx` | corre o instalador (o `npx skills` precisa do Node.js 22.20 ou mais recente) | `node --version` |
+| ➕ | **[Git](https://git-scm.com/download/win)**, só para o `npx skills` | o `npx skills` descarrega o repositório com o Git | `git --version` |
 
 ### 2. Instalar: escolhe uma forma
 
@@ -547,6 +548,7 @@ Depois de atualizares o **Anycubic Slicer Next**, corre `/any-diagnostico teste`
 | Problema | O que fazer |
 |---|---|
 | O `/kobrax` não aparece no Claude Code | Abre uma sessão **nova**. Continua sem aparecer? Confirma que as skills estão instaladas (`npx skills list`, `/plugin`, ou as pastas em `~/.claude/skills`). Com `npx skills`, instala **todas** as skills (`--skill "*"`): os comandos não funcionam sem a skill principal. |
+| O `npx skills` falha com *"Failed to clone repository"* … `spawn git ENOENT` | Esse terminal não encontra o Git. Se o `git --version` der erro, instala o [Git](https://git-scm.com/download/win). Se o Git já estiver instalado, **fecha o terminal, abre um novo** e corre o comando outra vez. |
 | *"Anycubic Slicer Next não encontrado"* | Instala-o. Se está noutra pasta, diz à skill onde está o programa e abre um terminal novo:<br>`setx ANYCUBIC_SLICER "D:\Programas\AnycubicSlicerNext\AnycubicSlicerNext.exe"` |
 | *"Python não encontrado"*, ou o `python` abre a Microsoft Store | Instala o Python de [python.org](https://www.python.org/downloads/) com *"Add python.exe to PATH"* marcado. Depois, no Windows, vai a **Definições → Aplicações → Definições avançadas de aplicações → Aliases de execução de aplicações** e desliga os de `python.exe` e `python3.exe`. |
 | O ficheiro não é encontrado | Põe o caminho entre **aspas**, sobretudo se tiver espaços ou acentos. O **Copiar como caminho** do Explorador já as põe. |

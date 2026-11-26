@@ -94,6 +94,7 @@ New to this, or something didn't work? The full steps are below.
 | ➕ | `numpy` *(optional)* | measures the real gap between parts and can push them apart | `pip install numpy` |
 | ➕ | `matplotlib` *(optional)* | draws the plates as an image | `pip install matplotlib` |
 | ➕ | **[Node.js](https://nodejs.org)**, only for the `npx` installs | runs the installer (`npx skills` needs Node.js 22.20 or newer) | `node --version` |
+| ➕ | **[Git](https://git-scm.com/download/win)**, only for `npx skills` | `npx skills` downloads the repository with Git | `git --version` |
 
 ### 2. Install: pick one way
 
@@ -553,6 +554,7 @@ After updating **Anycubic Slicer Next**, run `/any-diagnostico teste`: the skill
 | Problem | What to do |
 |---|---|
 | `/kobrax` doesn't show up in Claude Code | Open a **new** session. Still missing? Check the skills are installed (`npx skills list`, `/plugin`, or the folders in `~/.claude/skills`). With `npx skills`, install **every** skill (`--skill "*"`): the commands don't work without the main skill. |
+| `npx skills` fails with *"Failed to clone repository"* … `spawn git ENOENT` | That terminal can't find Git. Install [Git](https://git-scm.com/download/win) if `git --version` fails. If Git is already installed, **close the terminal, open a new one** and run the command again. |
 | *"Anycubic Slicer Next not found"* | Install it. If it lives in another folder, point the skill at the program and open a new terminal:<br>`setx ANYCUBIC_SLICER "D:\Apps\AnycubicSlicerNext\AnycubicSlicerNext.exe"` |
 | *"Python not found"*, or `python` opens the Microsoft Store | Install Python from [python.org](https://www.python.org/downloads/) with *"Add python.exe to PATH"* ticked. Then in Windows go to **Settings → Apps → Advanced app settings → App execution aliases** and switch off the `python.exe` and `python3.exe` aliases. |
 | The file is not found | Put the path in **double quotes**, especially when it has spaces or accents. **Copy as path** in File Explorer does it for you. |
