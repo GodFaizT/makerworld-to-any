@@ -670,15 +670,10 @@ erros); a impressora em que a Megatic imprime é a Kobra X.
 
 <br>
 
-```bash
-python tools/verifica.py                        # versão, comandos gerados, sintaxe, dados pessoais
-python tools/gera_comandos.py                   # os comandos /kobrax, /any-… saem todos daqui
-python tools/gera_docs.py                       # as imagens deste README, a partir de uma adaptação real
-python tools/publica.py 2.1.0                   # prepara uma versão: versão num sítio só, verificação e ZIPs
-```
-
-As notas técnicas sobre a linha de comandos do Anycubic estão em
-[`skills/makerworld-to-any/referencia/notas.md`](skills/makerworld-to-any/referencia/notas.md).
+Os scripts são Python simples, em [`skills/makerworld-to-any/scripts`](skills/makerworld-to-any/scripts), e cada
+comando é um `SKILL.md` pequeno em `skills/<comando>/`. As notas técnicas sobre a linha de comandos do Anycubic
+estão em [`skills/makerworld-to-any/referencia/notas.md`](skills/makerworld-to-any/referencia/notas.md). Erros e
+ideias são bem-vindos nos [pedidos](https://github.com/GodFaizT/makerworld-to-any/issues).
 </details>
 
 ---

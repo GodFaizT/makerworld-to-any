@@ -9,3 +9,4 @@ Thumbs.db
 dist/
 *.local.txt
 tests/
+tools/

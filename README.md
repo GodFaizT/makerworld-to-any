@@ -676,15 +676,10 @@ and slices without errors); the printer Megatic prints on is the Kobra X.
 
 <br>
 
-```bash
-python tools/verifica.py                        # version, generated commands, syntax, personal data
-python tools/gera_comandos.py                   # every /kobrax, /any-… command is generated here
-python tools/gera_docs.py                       # the images in this README, from a real run
-python tools/publica.py 2.1.0                   # prepare a release: one version number, checks and ZIPs
-```
-
-Technical notes on Anycubic's command line are in
+The scripts are plain Python in [`skills/makerworld-to-any/scripts`](skills/makerworld-to-any/scripts), and each
+command is a small `SKILL.md` in `skills/<command>/`. Technical notes on Anycubic's command line are in
 [`skills/makerworld-to-any/referencia/notas.md`](skills/makerworld-to-any/referencia/notas.md) (in Portuguese).
+Bugs and ideas are welcome in the [issues](https://github.com/GodFaizT/makerworld-to-any/issues).
 </details>
 
 ---

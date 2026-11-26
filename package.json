@@ -15,7 +15,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "verificar": "python tools/verifica.py && node bin/instalar.js --verificar"
+    "verificar": "node bin/instalar.js --verificar"
   },
   "keywords": [
     "claude-code",

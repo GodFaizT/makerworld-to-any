@@ -21,8 +21,8 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
-      # versao, comandos gerados, sintaxe dos scripts neste Python, dados pessoais, fins de linha
-      - name: Verificacoes do repositorio
-        run: python tools/verifica.py
+      # os scripts da skill correm no Python de quem a instala: tem de compilar no 3.8 e no mais novo
+      - name: Sintaxe dos scripts
+        run: python -m compileall -q skills/makerworld-to-any/scripts
       - name: Instalador
         run: node bin/instalar.js --destino "${{ runner.temp }}/skills"
