@@ -1,6 +1,20 @@
 # Novidades
 
-## 2.0.3 - 2026-11-26 · Anycubic Slicer Next 2.0.0.7
+## 2.0.3 - 2026-11-26 · Anycubic Slicer Next 2.0.0.7 e mais segurança
+
+Segurança (o que a análise do Snyk no skills.sh apontou):
+
+- O `/any-update` confere o SHA-256 que o GitHub publica para o ZIP da release antes de mexer em alguma pasta, só
+  aceita ZIPs das releases deste repositório e já não executa o script novo que descarregou. Se a conferência
+  falhar, nada é alterado.
+- O g-code que vem dentro de um projeto continua a ficar de fora, e o Claude já não pergunta se o quer manter. Para
+  usar um g-code teu, guarda-o num perfil de impressora no Anycubic e adapta com os teus perfis (`--perfis meus`).
+  O `--manter-gcode` só é usado se tu o pedires.
+- Os nomes que vêm de um 3MF (objetos, peças) aparecem nos relatórios sem quebras de linha nem caracteres
+  invisíveis, e no máximo com 80 caracteres. A skill e os comandos dizem ao Claude que o que vem dentro de um 3MF
+  são dados do autor do modelo, nunca instruções.
+
+Anycubic Slicer Next 2.0.0.7:
 
 - Testada com o Anycubic Slicer Next 2.0.0.7 (e a 2.0.0.3): o `/any-diagnostico` já não avisa com nenhuma das duas.
 - Gramas por cor certos com a 2.0.0.7. Esta versão escreve no fim do g-code o peso todo na última cor usada do prato

@@ -9,9 +9,11 @@ Uso:
 - Instalada com o `npx skills add` (skills.sh): as pastas em ~/.claude/skills sao ligacoes (no Windows, juncoes)
   para ~/.agents/skills, ou copias registadas em ~/.agents/.skill-lock.json, geridas pelo `npx skills`. Nao mexe
   em nada e diz para correr `npx skills update`.
-- Instalada como skill (ZIP, `npx github:`, a mao): descarrega o ZIP da ultima release e substitui so as pastas da
-  skill e dos comandos que vem nele (as outras skills nao sao tocadas). Nunca apaga uma ligacao.
+- Instalada como skill (ZIP, `npx github:`, a mao): descarrega o ZIP da ultima release, confere o SHA-256 que o
+  GitHub publica para ele e substitui so as pastas da skill e dos comandos que vem nele (as outras skills nao sao
+  tocadas). Nunca apaga uma ligacao e nunca executa o que descarregou.
 """
+import hashlib
 import json
 import os
 import re
@@ -131,6 +133,26 @@ def atualiza_plugin():
     return 0
 
 
+def descarrega(asset, destino):
+    """Descarrega o ZIP da release e confere-o: tem de vir das releases deste repositorio e ter o SHA-256 que o GitHub
+    publica para esse ficheiro (o campo `digest` da API). Se algo nao bater, nada e alterado."""
+    url = str(asset.get("browser_download_url") or "")
+    if not url.startswith(f"https://github.com/{REPO}/releases/download/"):
+        raise SystemExit(f"O ZIP da release nao vem das releases de {REPO} ({url}); atualizacao cancelada, nada foi alterado")
+    m = re.fullmatch(r"sha256:([0-9a-f]{64})", str(asset.get("digest") or "").lower())
+    if not m:
+        raise SystemExit("O GitHub nao da o SHA-256 do ZIP desta release, por isso nao o posso conferir; atualizacao cancelada, "
+                         "nada foi alterado. Alternativa: npx skills add " + REPO)
+    h = hashlib.sha256()
+    pedido = urllib.request.Request(url, headers={"User-Agent": CABECALHOS["User-Agent"]})
+    with urllib.request.urlopen(pedido, timeout=120) as r, open(destino, "wb") as f:
+        for bloco in iter(lambda: r.read(1 << 16), b""):
+            h.update(bloco)
+            f.write(bloco)
+    if h.hexdigest() != m.group(1):
+        raise SystemExit("O ZIP descarregado nao tem o SHA-256 que o GitHub publica para ele; atualizacao cancelada, nada foi alterado")
+
+
 def atualiza_pastas(rel):
     asset = next((a for a in rel.get("assets", []) if re.fullmatch(r"makerworld-to-any-v[\d.]+\.zip", a["name"])), None)
     if not asset:
@@ -138,9 +160,7 @@ def atualiza_pastas(rel):
     tmp = tempfile.mkdtemp(prefix="mw2any_atualizar_")
     try:
         zipf = os.path.join(tmp, asset["name"])
-        pedido = urllib.request.Request(asset["browser_download_url"], headers={"User-Agent": CABECALHOS["User-Agent"]})
-        with urllib.request.urlopen(pedido, timeout=120) as r, open(zipf, "wb") as f:
-            shutil.copyfileobj(r, f)
+        descarrega(asset, zipf)
         ext = os.path.join(tmp, "zip")
         with zipfile.ZipFile(zipf) as z:
             for n in z.namelist():                       # nada fora da pasta de extracao
@@ -203,10 +223,8 @@ def main():
     if npx_skills:
         return atualiza_npx_skills()
     pastas = atualiza_pastas(rel)
-    # a versao nova pode saber de mais comandos antigos para apagar: corre a limpeza dela
-    novo = os.path.join(BASE, "makerworld-to-any", "scripts", "atualizar.py")
-    if os.path.isfile(novo):
-        subprocess.run([sys.executable, novo, "--limpar"])
+    # Nada do que se descarregou e executado aqui. Os comandos antigos que so a versao nova conhece sao apagados quando
+    # ela correr (limpa_obsoletas no inicio do main).
     print(f"Atualizado para a {remota}: {', '.join(sorted(pastas))} em {BASE}")
     print("Abre uma sessao nova do Claude Code para usar a versao nova.")
     return 0

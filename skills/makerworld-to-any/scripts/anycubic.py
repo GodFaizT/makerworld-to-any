@@ -18,6 +18,8 @@ import sys
 import time
 import zipfile
 
+from pecas import limpa_nome
+
 try:
     import numpy as np
 except ImportError:  # funciona sem numpy: mais devagar e sem folgas reais entre pecas
@@ -494,7 +496,7 @@ class Modelo:
         except KeyError:
             ms = ""
         self.ms = ms
-        self.nomes = {i: html.unescape(n) for i, n in re.findall(r'<object id="(\d+)">\s*<metadata key="name" value="([^"]*)"', ms)}
+        self.nomes = {i: limpa_nome(n) for i, n in re.findall(r'<object id="(\d+)">\s*<metadata key="name" value="([^"]*)"', ms)}
         self.n_pratos = max(1, len(re.findall(r"<plate>", ms)))
         self.tipos = {}      # (objeto, peca) -> normal_part | modifier_part | negative_part | support_blocker...
         for o in re.finditer(r'<object id="(\d+)">(.*?)</object>', ms, re.S):

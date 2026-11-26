@@ -787,8 +787,8 @@ def adapta(a):
         fora = [x for x in nao["seguranca"] if DO_FICHEIRO.search(x)] + gcode_fora
         if fora:
             avisos.append("o projeto trazia g-code ou limites da maquina proprios (" + ", ".join(fora) + ") que NAO passaram: o que vem "
-                          "dentro de um ficheiro corre na impressora, por isso so passa com --manter-gcode. Se foste tu que o afinaste "
-                          "no Anycubic, repete com --manter-gcode; senao fica o da impressora")
+                          "dentro de um ficheiro corre na impressora, por isso ficou o da impressora. Para usar um g-code teu, guarda-o "
+                          "num perfil de impressora no Anycubic e usa os teus perfis (--perfis meus)")
         if corr["sem_regra"]:
             avisos.append(f"listas com comprimento inesperado (ver no Anycubic): {corr['sem_regra']}")
         if corr["plano_falhou"]:

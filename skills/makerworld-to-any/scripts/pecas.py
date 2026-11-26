@@ -9,6 +9,15 @@ RE_OBJ = re.compile(r'(<object id="(\d+)">)(.*?)(</object>)', re.S)
 RE_PECA = re.compile(r'(<part id="(\d+)" subtype="(\w+)">)(.*?)(</part>)', re.S)
 RE_EXT = re.compile(r'[ \t]*<metadata key="extruder" value="(\d+)"/>\r?\n?')
 RE_NOME = re.compile(r'<metadata key="name" value="([^"]*)"/>')
+# caracteres de controlo, quebras de linha e marcas invisiveis/de direcao do texto
+_INVISIVEIS = re.compile("[\x00-\x1f\x7f​-‏  ‪-‮⁠-⁤⁦-⁩﻿]")
+
+
+def limpa_nome(nome, maximo=80):
+    """Nome escrito pelo autor de um 3MF (objeto, peca): sem quebras de linha nem caracteres invisiveis, e curto.
+    Nos relatorios e so um rotulo, nunca uma instrucao."""
+    s = re.sub(r"\s+", " ", _INVISIVEIS.sub(" ", html.unescape(nome or ""))).strip()
+    return s if len(s) <= maximo else s[:maximo - 3].rstrip() + "..."
 
 
 def _ext(texto):
@@ -30,9 +39,9 @@ def le(ms):
         for p in RE_PECA.finditer(corpo):
             pn = RE_NOME.search(p.group(4))
             pe = _ext(p.group(4))
-            pecas.append({"id": p.group(2), "tipo": p.group(3), "nome": html.unescape(pn.group(1)) if pn else "", "extrusor": pe,
+            pecas.append({"id": p.group(2), "tipo": p.group(3), "nome": limpa_nome(pn.group(1)) if pn else "", "extrusor": pe,
                           "efetivo": pe if pe and pe > 0 else base})
-        objs.append({"id": m.group(2), "nome": html.unescape(nome.group(1)) if nome else "", "extrusor": eo, "efetivo": base, "pecas": pecas})
+        objs.append({"id": m.group(2), "nome": limpa_nome(nome.group(1)) if nome else "", "extrusor": eo, "efetivo": base, "pecas": pecas})
     objs.sort(key=lambda o: int(o["id"]))
     for n, o in enumerate(objs, 1):
         o["n"] = n
