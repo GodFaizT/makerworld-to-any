@@ -48,9 +48,9 @@ grams of every plate.
   <br><sub>What it looks like in Claude. The numbers come from a real adaptation of the example project that ships with the skill (2 plates, 2 colours).</sub>
 </p>
 
-> **A note on language.** The skill was made in Portugal. The commands and the skill's instructions are in English;
-> the script options and raw reports are in Portuguese. You don't need to speak it — ask Claude in English and it
-> answers in English.
+> **A note on language.** The skill was made in Portugal. The commands, the instructions and the reports are in
+> English; only the script options (`--impressora`, `--afastar`...) are in Portuguese. You don't need to type them:
+> ask Claude in English and it answers in English.
 
 <a id="get-started"></a>
 
@@ -392,7 +392,7 @@ temperature…). The skill uses yours whenever you have one based on the profile
    /any-settings mine                                 ← always, from now on
    /kobrax "C:\…\Vase.3mf" with my own profiles     ← just this once
    ```
-4. **Adapt as usual.** The report says which profiles were used and marks yours as *"perfil teu, baseado em …"*
+4. **Adapt as usual.** The report says which profiles were used and marks yours as *"your profile, based on …"*
    (your profile, based on …).
 
 To go back to Anycubic's: `/any-settings anycubic`.
@@ -536,8 +536,7 @@ How you update depends on how you installed:
 | Claude Code plugin | `/any-update` (or `/plugin update makerworld-to-any@makerworld-to-any`) |
 | ZIP or `npx github:` | `/any-update` |
 
-Then open a new Claude Code session. What changed in each version is in the [CHANGELOG](CHANGELOG.md) (in
-Portuguese).
+Then open a new Claude Code session. What changed in each version is in the [CHANGELOG](CHANGELOG.md).
 
 ```text
 /any-doctor         ← Python, Anycubic Slicer Next, profiles and preferences
@@ -678,7 +677,7 @@ and slices without errors); the printer Megatic prints on is the Kobra X.
 
 The scripts are plain Python in [`skills/makerworld-to-any/scripts`](skills/makerworld-to-any/scripts), and each
 command is a small `SKILL.md` in `skills/<command>/`. Technical notes on Anycubic's command line are in
-[`skills/makerworld-to-any/referencia/notas.md`](skills/makerworld-to-any/referencia/notas.md) (in Portuguese).
+[`skills/makerworld-to-any/referencia/notas.md`](skills/makerworld-to-any/referencia/notas.md).
 Bugs and ideas are welcome in the [issues](https://github.com/GodFaizT/makerworld-to-any/issues).
 </details>
 

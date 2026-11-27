@@ -389,7 +389,7 @@ Anycubic.
    /kobrax "C:\…\Vaso.3mf" com os meus perfis   ← só desta vez
    ```
 4. **Adapta como sempre.** O relatório diz que perfis foram usados e marca os teus com
-   *"(perfil teu, baseado em …)"*.
+   *"(your profile, based on …)"* (perfil teu, baseado em …).
 
 Para voltar aos da Anycubic: `/any-settings anycubic`.
 
@@ -531,7 +531,7 @@ A forma de atualizar depende de como instalaste:
 | plugin do Claude Code | `/any-update` (ou `/plugin update makerworld-to-any@makerworld-to-any`) |
 | ZIP ou `npx github:` | `/any-update` |
 
-No fim, abre uma sessão nova do Claude Code. As novidades de cada versão estão no [CHANGELOG](CHANGELOG.md).
+No fim, abre uma sessão nova do Claude Code. As novidades de cada versão estão no [CHANGELOG](CHANGELOG.md) (em inglês).
 
 ```text
 /any-doctor         ← Python, Anycubic Slicer Next, perfis e preferências
@@ -672,7 +672,7 @@ erros); a impressora em que a Megatic imprime é a Kobra X.
 
 Os scripts são Python simples, em [`skills/makerworld-to-any/scripts`](skills/makerworld-to-any/scripts), e cada
 comando é um `SKILL.md` pequeno em `skills/<comando>/`. As notas técnicas sobre a linha de comandos do Anycubic
-estão em [`skills/makerworld-to-any/referencia/notas.md`](skills/makerworld-to-any/referencia/notas.md). Erros e
+estão em [`skills/makerworld-to-any/referencia/notas.md`](skills/makerworld-to-any/referencia/notas.md), em inglês. Erros e
 ideias são bem-vindos nos [pedidos](https://github.com/GodFaizT/makerworld-to-any/issues).
 </details>
 

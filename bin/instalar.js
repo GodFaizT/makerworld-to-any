@@ -29,13 +29,13 @@ const erro = (t) => console.log(cor("31", "  ✖ ") + t);
 
 if (tem("--ajuda") || tem("-h") || tem("--help")) {
   console.log(`
-  ${NOME} — skill do Claude Code: projetos Bambu Lab / MakerWorld -> impressoras Anycubic
+  ${NOME} — Claude Code skill: Bambu Lab / MakerWorld projects -> Anycubic printers
 
-  npx github:GodFaizT/${NOME}               instala para todos os projetos (~/.claude/skills)
-  npx github:GodFaizT/${NOME} --projeto     instala so neste projeto (./.claude/skills)
-  npx github:GodFaizT/${NOME} --destino D   instala na pasta de skills D
-  npx github:GodFaizT/${NOME} --desinstalar remove
-  npx github:GodFaizT/${NOME} --verificar   so verifica Python e Anycubic Slicer Next
+  npx github:GodFaizT/${NOME}               installs for all projects (~/.claude/skills)
+  npx github:GodFaizT/${NOME} --projeto     installs in this project only (./.claude/skills)
+  npx github:GodFaizT/${NOME} --destino D   installs in the skills folder D
+  npx github:GodFaizT/${NOME} --desinstalar removes it
+  npx github:GodFaizT/${NOME} --verificar   only checks Python and Anycubic Slicer Next
 `);
   process.exit(0);
 }
@@ -52,30 +52,30 @@ function verificar() {
     const r = spawnSync(c, c === "py" ? ["-3", "--version"] : ["--version"], { encoding: "utf8" });
     return r.status === 0 && /Python 3/.test((r.stdout || "") + (r.stderr || ""));
   });
-  if (py) ok(`Python 3 encontrado (${py})`);
+  if (py) ok(`Python 3 found (${py})`);
   else {
     tudoBem = false;
-    aviso("Nao encontrei o Python 3 — instala-o em https://www.python.org/downloads/ (marca 'Add to PATH')");
+    aviso("Python 3 not found — install it from https://www.python.org/downloads/ (tick 'Add to PATH')");
   }
   const slicer = process.env.ANYCUBIC_SLICER || "C:\\Program Files\\AnycubicSlicerNext\\AnycubicSlicerNext.exe";
-  if (fs.existsSync(slicer)) ok("Anycubic Slicer Next encontrado");
+  if (fs.existsSync(slicer)) ok("Anycubic Slicer Next found");
   else {
     tudoBem = false;
-    aviso(`Nao encontrei o Anycubic Slicer Next em ${slicer}` +
-      (process.platform === "win32" ? "" : " (a skill foi feita para Windows)") +
-      " — instala-o ou define ANYCUBIC_SLICER com o caminho do executavel");
+    aviso(`Anycubic Slicer Next not found in ${slicer}` +
+      (process.platform === "win32" ? "" : " (the skill was made for Windows)") +
+      " — install it or set ANYCUBIC_SLICER to the path of the executable");
   }
   return tudoBem;
 }
 
-console.log(cor("1", `\n  ${NOME}`) + cor("2", "  ·  feito pela Megatic — https://megatic.pt") + "\n");
+console.log(cor("1", `\n  ${NOME}`) + cor("2", "  ·  made by Megatic — https://megatic.pt") + "\n");
 
 if (tem("--verificar")) {
   if (!fs.existsSync(path.join(ORIGEM, "SKILL.md"))) {
-    erro("Falta skills/" + NOME + "/SKILL.md");
+    erro("Missing skills/" + NOME + "/SKILL.md");
     process.exit(1);
   }
-  ok("Pacote completo");
+  ok("Package complete");
   verificar();
   process.exit(0);
 }
@@ -93,7 +93,7 @@ if (tem("--desinstalar")) {
     const d = path.join(base, p);
     if (fs.existsSync(d)) {
       fs.rmSync(d, { recursive: true, force: true });
-      ok(`Removida ${d}`);
+      ok(`Removed ${d}`);
     }
   }
   process.exit(0);
@@ -115,19 +115,19 @@ try {
       filter: (src) => !/__pycache__|\.pyc$/.test(src),
     });
   }
-  ok(`Skill instalada em ${path.join(base, NOME)}`);
+  ok(`Skill installed in ${path.join(base, NOME)}`);
   const cmds = PASTAS.filter((p) => p !== NOME).map((p) => "/" + p);
-  if (cmds.length) ok(`Comandos: ${cmds.join(" ")}`);
+  if (cmds.length) ok(`Commands: ${cmds.join(" ")}`);
 } catch (e) {
-  erro(`Falhou a copia: ${e.message}`);
+  erro(`Copy failed: ${e.message}`);
   process.exit(1);
 }
 verificar();
 console.log(`
-  Abre uma sessao nova do Claude Code e usa, por exemplo:
-    ${cor("36", '/kobrax "C:\\...\\modelo.3mf"')}
-    ${cor("36", '/kobras1 "C:\\...\\modelo.3mf" com 10 cm')}
-    ${cor("36", '/anycubic Kobra 2 Neo "C:\\...\\modelo.3mf"')}
-    ${cor("36", "/any-doctor test")}   confirma que esta tudo a funcionar
-  ou pede simplesmente ${cor("36", '"adapta este ficheiro para a kobra x: ..."')}.
+  Open a new Claude Code session and use, for example:
+    ${cor("36", '/kobrax "C:\\...\\model.3mf"')}
+    ${cor("36", '/kobras1 "C:\\...\\model.3mf" 10 cm tall')}
+    ${cor("36", '/anycubic Kobra 2 Neo "C:\\...\\model.3mf"')}
+    ${cor("36", "/any-doctor test")}   checks that everything works
+  or just ask ${cor("36", '"adapt this file for the kobra x: ..."')}.
 `);

@@ -51,58 +51,58 @@ def tupla(v):
 
 def rapido(impressora=None):
     v = sys.version_info
-    diz("ok" if v >= (3, 8) else "falha", f"Python {v.major}.{v.minor}.{v.micro}" + ("" if v >= (3, 8) else " (precisa do 3.8 ou mais novo)"))
+    diz("ok" if v >= (3, 8) else "falha", f"Python {v.major}.{v.minor}.{v.micro}" + ("" if v >= (3, 8) else " (needs 3.8 or newer)"))
     try:
         import numpy
-        diz("ok", f"numpy {numpy.__version__} (folgas reais entre pecas, afastar pecas)")
+        diz("ok", f"numpy {numpy.__version__} (real gaps between parts, moving parts apart)")
     except ImportError:
-        diz("aviso", "sem numpy: funciona, mas mais devagar e sem medir a folga real entre pecas (pip install numpy)")
+        diz("aviso", "no numpy: works, but slower and without measuring the real gap between parts (pip install numpy)")
     try:
         import matplotlib
         diz("ok", f"matplotlib {matplotlib.__version__} (medir.py --imagem)")
     except ImportError:
-        diz("aviso", "sem matplotlib: medir.py --imagem nao desenha os pratos (pip install matplotlib)")
+        diz("aviso", "no matplotlib: medir.py --imagem can't draw the plates (pip install matplotlib)")
 
     base = os.path.dirname(os.path.dirname(K.AQUI))
     irmas = sorted(d for d in os.listdir(base) if os.path.isfile(os.path.join(base, d, "SKILL.md")) and d != "makerworld-to-any") \
         if os.path.isdir(base) else []
-    diz("ok", f"MakerWorld to Any {K.versao()} em {os.path.dirname(K.AQUI)}")
+    diz("ok", f"MakerWorld to Any {K.versao()} in {os.path.dirname(K.AQUI)}")
     cmds = [d for d in irmas if d.startswith(("kobra", "any"))]
     if cmds:
-        diz("ok", "comandos: " + " ".join("/" + c for c in cmds))
+        diz("ok", "commands: " + " ".join("/" + c for c in cmds))
     else:
-        diz("aviso", "nao encontrei os comandos (/kobrax, /any-settings...) ao lado da skill: reinstala para os teres")
+        diz("aviso", "commands (/kobrax, /any-settings...) not found next to the skill: reinstall to get them")
     import atualizar
     velhas = [d for d in irmas if d in atualizar.RENOMEADOS]
     if velhas:
-        diz("aviso", "comandos com o nome antigo: " + ", ".join(f"/{d} (agora /{atualizar.RENOMEADOS[d]})" for d in velhas)
-            + ": corre /any-update para os trocar")
+        diz("aviso", "commands with the old name: " + ", ".join(f"/{d} (now /{atualizar.RENOMEADOS[d]})" for d in velhas)
+            + ": run /any-update to swap them")
 
     if os.path.exists(K.ANY):
         vs = versao_slicer()
-        testadas = " e ".join(K.TESTADO_COM)
+        testadas = " and ".join(K.TESTADO_COM)
         if not vs:
-            diz("aviso", f"Anycubic Slicer Next em {K.ANY} (nao consegui ver a versao; testada com {testadas})")
+            diz("aviso", f"Anycubic Slicer Next in {K.ANY} (couldn't read the version; tested with {testadas})")
         elif tupla(vs) in [tupla(x) for x in K.TESTADO_COM]:
-            diz("ok", f"Anycubic Slicer Next {vs} em {K.ANY}")
+            diz("ok", f"Anycubic Slicer Next {vs} in {K.ANY}")
         else:
-            diz("aviso", f"Anycubic Slicer Next {vs}: a skill foi testada com {testadas}. Corre 'diagnostico.py --teste' "
-                         "para confirmar que continua tudo a funcionar")
+            diz("aviso", f"Anycubic Slicer Next {vs}: the skill was tested with {testadas}. Run 'diagnostico.py --teste' "
+                         "to confirm everything still works")
     else:
-        diz("falha", f"nao encontro o Anycubic Slicer Next em {K.ANY} (instala-o, ou define ANYCUBIC_SLICER com o caminho)")
+        diz("falha", f"Can't find Anycubic Slicer Next in {K.ANY} (install it, or set ANYCUBIC_SLICER to its path)")
 
     try:
         ms = K.maquinas()
         np_, nf = len(K.nomes("process")), len(K.nomes("filament"))
-        diz("ok", f"perfis da Anycubic: {len(ms)} impressoras, {sum(len(b) for b in ms.values())} maquinas, {np_} de impressao, {nf} de filamento")
+        diz("ok", f"Anycubic profiles: {len(ms)} printers, {sum(len(b) for b in ms.values())} machines, {np_} print, {nf} filament")
     except SystemExit as e:
-        diz("falha", f"{e} (abre o Anycubic Slicer Next uma vez para ele criar os perfis)")
+        diz("falha", f"{e} (open Anycubic Slicer Next once so it creates the profiles)")
         return
     meus = {t: len(K.meus(t)) for t in ("machine", "process", "filament")}
     if sum(meus.values()):
-        diz("ok", f"perfis teus: {meus['machine']} de impressora, {meus['process']} de impressao, {meus['filament']} de filamento")
+        diz("ok", f"your profiles: {meus['machine']} printer, {meus['process']} print, {meus['filament']} filament")
     else:
-        diz("ok", "perfis teus: nenhum (usa os da Anycubic)")
+        diz("ok", "your profiles: none (uses Anycubic's)")
 
     cfg = K.le_config()
     alvo = impressora or K.IMPRESSORA_OMISSAO
@@ -110,31 +110,31 @@ def rapido(impressora=None):
         K.usa_impressora(K.encontra_maquina(alvo))
         np_, nf = len(K.compativeis("process")), len(K.compativeis("filament"))
         estado = "ok" if np_ and nf else "falha"
-        diz(estado, f"impressora{'' if impressora else ' por omissao'}: {K.MODELO} bico {K.BICO}, mesa {K.CAMA_X:g} x {K.CAMA_Y:g} x "
-                    f"{K.ALTURA_MAX:g} mm, {'com ACE' if K.MULTICOR else 'sem ACE'}, {np_} perfis de impressao, {nf} filamentos")
+        diz(estado, f"{'printer' if impressora else 'default printer'}: {K.MODELO} nozzle {K.BICO}, bed {K.CAMA_X:g} x {K.CAMA_Y:g} x "
+                    f"{K.ALTURA_MAX:g} mm, {'with ACE' if K.MULTICOR else 'no ACE'}, {np_} print profiles, {nf} filaments")
     except SystemExit as e:
-        diz("falha", f"impressora '{alvo}': {e}")
-    diz("ok", "perfis por omissao: " + ("os teus, quando existem" if K.PERFIS_OMISSAO == "meus" else "os da Anycubic"))
-    for chave, titulo in (("saida", "pasta dos adaptados"), ("originais", "pasta dos originais")):
+        diz("falha", f"printer '{alvo}': {e}")
+    diz("ok", "default profiles: " + ("yours, when they exist" if K.PERFIS_OMISSAO == "meus" else "Anycubic's"))
+    for chave, titulo in (("saida", "adapted files folder"), ("originais", "originals folder")):
         p = K.pasta_config(chave)
         if p:
-            diz("ok" if os.path.isdir(p) else "aviso", f"{titulo}: {p}" + ("" if os.path.isdir(p) else " (ainda nao existe: e criada quando for precisa)"))
+            diz("ok" if os.path.isdir(p) else "aviso", f"{titulo}: {p}" + ("" if os.path.isdir(p) else " (doesn't exist yet: it is created when needed)"))
     if cfg.get("precos") or cfg.get("preco_hora"):
-        diz("ok", "precos: " + "; ".join(f"{k}={v:g}" for k, v in sorted((cfg.get("precos") or {}).items()))
-            + f" EUR/kg | maquina {float(cfg.get('preco_hora') or 0):g} EUR/h")
+        diz("ok", "prices: " + "; ".join(f"{k}={v:g}" for k, v in sorted((cfg.get("precos") or {}).items()))
+            + f" EUR/kg | machine {float(cfg.get('preco_hora') or 0):g} EUR/h")
     cs = K.copias()
     if cs:
         tam = sum(os.path.getsize(c["copia"]) for c in cs) / 1e6
-        diz("ok", f"copias de seguranca: {len(cs)} ({tam:.0f} MB) em {os.path.join(K.PASTA_DADOS, 'copias')}")
+        diz("ok", f"backups: {len(cs)} ({tam:.0f} MB) in {os.path.join(K.PASTA_DADOS, 'copias')}")
     try:
         d = tempfile.mkdtemp(prefix="mw2any_diag_")
         shutil.rmtree(d, ignore_errors=True)
     except OSError as e:
-        diz("falha", f"nao consigo criar pastas temporarias: {e}")
+        diz("falha", f"can't create temporary folders: {e}")
 
 
 def confere(cond, certo, errado=None):
-    diz("ok" if cond else "falha", certo if cond else (errado or certo + " - FALHOU"))
+    diz("ok" if cond else "falha", certo if cond else (errado or certo + " - FAILED"))
     return bool(cond)
 
 
@@ -144,7 +144,7 @@ def teste(impressora=None, manter=False):
     import exemplo
     import pratos
     if not os.path.exists(K.ANY):
-        diz("falha", "teste: precisa do Anycubic Slicer Next instalado")
+        diz("falha", "test: needs Anycubic Slicer Next installed")
         return
     tmp = tempfile.mkdtemp(prefix="mw2any_teste_")
     try:
@@ -154,40 +154,40 @@ def teste(impressora=None, manter=False):
             rel = adaptar.adapta(adaptar.pedido(original=orig, impressora=impressora, perfis="sistema", saida=tmp,
                                                 nome="adaptado.3mf", arquivar_original=""))
         except SystemExit as e:
-            diz("falha", f"teste: adaptar falhou: {e}")
+            diz("falha", f"test: adapting failed: {e}")
             return
         ada = rel["adaptado"]["caminho"]
         ace = rel["adaptado"]["ace"]
-        confere(rel["original"]["usados"] == [2, 4], "teste: descobriu os 2 filamentos usados de 4", f"teste: filamentos usados {rel['original']['usados']} (esperava [2, 4])")
+        confere(rel["original"]["usados"] == [2, 4], "test: found the 2 used filaments out of 4", f"test: used filaments {rel['original']['usados']} (expected [2, 4])")
         if ace:
-            confere([f["cor"] for f in rel["filamentos"]] == ["#F2C94C", "#C0392B"], "teste: 2 filamentos com as cores do autor",
-                    f"teste: filamentos {[(f['perfil'], f['cor']) for f in rel['filamentos']]}")
+            confere([f["cor"] for f in rel["filamentos"]] == ["#F2C94C", "#C0392B"], "test: 2 filaments with the designer's colors",
+                    f"test: filaments {[(f['perfil'], f['cor']) for f in rel['filamentos']]}")
             confere(rel["torre"] and str(rel["torre"]["ligada"]) == "1" and len(rel["torre"]["posicoes"]) == 2,
-                    "teste: torre de purga ligada, uma posicao por prato")
-            confere(rel["purga"] and len(rel["purga"]["matriz"]) == 2 and rel["purga"]["matriz"][0][1] > 0, "teste: matriz de purga 2 x 2")
+                    "test: prime tower on, one position per plate")
+            confere(rel["purga"] and len(rel["purga"]["matriz"]) == 2 and rel["purga"]["matriz"][0][1] > 0, "test: 2 x 2 purge matrix")
         else:
-            confere(len(rel["filamentos"]) == 1 and any("nao tem ACE" in a for a in rel["avisos"]),
-                    "teste: impressora sem ACE -> um filamento e aviso das cores")
+            confere(len(rel["filamentos"]) == 1 and any("has no ACE" in a for a in rel["avisos"]),
+                    "test: printer without ACE -> one filament and a warning about the colors")
         ms = {m["chave"]: m for m in rel["mudancas"]}
         confere(str(K.primeiro(ms.get("sparse_infill_density", {}).get("para"))) == "10%" and "wall_loops" in ms,
-                "teste: passaram as definicoes do autor (enchimento 10 %, 3 paredes)", f"teste: mudancas {sorted(ms)}")
-        confere(any("outer_wall_speed" in x for x in rel["nao_passou"]["velocidades"]), "teste: a velocidade do autor acima do perfil nao passou")
+                "test: the designer's settings passed (infill 10 %, 3 walls)", f"test: changes {sorted(ms)}")
+        confere(any("outer_wall_speed" in x for x in rel["nao_passou"]["velocidades"]), "test: the designer's speed above the profile didn't pass")
         with zipfile.ZipFile(ada) as z:
             nomes = re.findall(r'key="plater_name" value="([^"]*)"', z.read("Metadata/model_settings.config").decode("utf-8"))
             j = json.loads(z.read("Metadata/project_settings.config"))
-        confere(nomes == ["", ""], "teste: 2 pratos, sem nome", f"teste: nomes dos pratos {nomes}")
-        confere(str(K.primeiro(j.get("printer_settings_id"))) == K.MAQUINA, f"teste: projeto para {K.MAQUINA}")
+        confere(nomes == ["", ""], "test: 2 plates, no names", f"test: plate names {nomes}")
+        confere(str(K.primeiro(j.get("printer_settings_id"))) == K.MAQUINA, f"test: project for {K.MAQUINA}")
         medidas = [o["tamanho"] for p in rel["pratos"] for o in p["objetos"]]
-        confere(medidas == [[60.0, 52.0, 48.0], [66.0, 57.2, 4.0]] and not any("medidas mudaram" in a for a in rel["avisos"]),
-                "teste: medidas iguais as do original", f"teste: medidas {medidas}")
+        confere(medidas == [[60.0, 52.0, 48.0], [66.0, 57.2, 4.0]] and not any("dimensions changed" in a for a in rel["avisos"]),
+                "test: same sizes as the original", f"test: sizes {medidas}")
         fat = [p for p in rel["pratos"] if p.get("segundos")]
         confere(len(fat) == 2 and all(p["total_g"] > 0 for p in fat),
-                "teste: fatiou os 2 pratos (" + "; ".join(f"{p['tempo']}, {p['total_g']} g" for p in fat) + ")", "teste: nao fatiou os 2 pratos")
+                "test: sliced the 2 plates (" + "; ".join(f"{p['tempo']}, {p['total_g']} g" for p in fat) + ")", "test: didn't slice the 2 plates")
         if ace:
-            confere(fat and fat[0]["trocas"] >= 1 and len(fat[0]["g"]) == 2 and min(fat[0]["g"]) > 0, "teste: o prato 1 usa as 2 cores")
+            confere(fat and fat[0]["trocas"] >= 1 and len(fat[0]["g"]) == 2 and min(fat[0]["g"]) > 0, "test: plate 1 uses the 2 colors")
         for a in rel["avisos"]:
-            if not ("nao tem ACE" in a or "varias cores" in a):
-                diz("aviso", "teste: " + a)
+            if not ("has no ACE" in a or "several colors" in a):
+                diz("aviso", "test: " + a)
 
         # 2. cores: a tampa noutro filamento (novo) e a faixa a branco
         if ace:
@@ -196,10 +196,10 @@ def teste(impressora=None, manter=False):
                 cores = [f["cor"] for f in r2["filamentos"]]
                 p2 = next((p for p in r2["pratos"] if p["n"] == 2), {})
                 confere(cores == ["#F2C94C", "#FFFFFF", "#232C7C"] and len(p2.get("g", [])) == 3 and p2["g"][2] > 0 and p2["g"][0] == 0,
-                        "teste: cores por peca (filamento novo para a tampa, purga recalculada)", f"teste: cores {cores}, prato 2 {p2.get('g')}")
-                confere(len(r2["purga"]["recalculadas"]) == 6, "teste: purga recalculada para as cores novas")
+                        "test: per-part colors (new filament for the lid, purge recalculated)", f"test: colors {cores}, plate 2 {p2.get('g')}")
+                confere(len(r2["purga"]["recalculadas"]) == 6, "test: purge recalculated for the new colors")
             except SystemExit as e:
-                diz("falha", f"teste: mudar cores falhou: {e}")
+                diz("falha", f"test: changing colors failed: {e}")
 
         # 3. pratos: juntar tudo num so e afastar
         try:
@@ -209,27 +209,27 @@ def teste(impressora=None, manter=False):
             pr.junta_demasiado()
             n, _ = pr.grava(junto)
             res = K.fatia(junto, os.path.join(tmp, "f_junto"), tmp)
-            confere(n == 1 and list(res) == [1] and res[1]["total_g"] > 0, f"teste: juntar pratos (1 prato, {res[1]['tempo']}, {res[1]['total_g']} g)")
+            confere(n == 1 and list(res) == [1] and res[1]["total_g"] > 0, f"test: merging plates (1 plate, {res[1]['tempo']}, {res[1]['total_g']} g)")
         except SystemExit as e:
-            diz("falha", f"teste: juntar pratos falhou: {e}")
+            diz("falha", f"test: merging plates failed: {e}")
 
         # 4. tamanho: metade
         r = subprocess.run([sys.executable, os.path.join(K.AQUI, "escalar.py"), ada, os.path.join(tmp, "metade.3mf"), "--fator", "0.5", "--fatiar"],
                            capture_output=True, text=True, encoding="utf-8", errors="replace")
-        confere(r.returncode == 0 and "-> 30.0 x 26.0 x 24.0 mm" in r.stdout and "FATIADO" in r.stdout, "teste: mudar o tamanho (metade: 30 x 26 x 24 mm)",
-                "teste: mudar o tamanho falhou: " + (r.stdout + r.stderr).strip()[-300:])
+        confere(r.returncode == 0 and "-> 30.0 x 26.0 x 24.0 mm" in r.stdout and "SLICED" in r.stdout, "test: resizing (half: 30 x 26 x 24 mm)",
+                "test: resizing failed: " + (r.stdout + r.stderr).strip()[-300:])
     finally:
         if manter:
-            diz("ok", f"pasta do teste: {tmp}")
+            diz("ok", f"test folder: {tmp}")
         else:
             shutil.rmtree(tmp, ignore_errors=True)
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Diagnostico da MakerWorld to Any")
-    ap.add_argument("--teste", action="store_true", help="teste de ponta a ponta com um projeto de exemplo")
-    ap.add_argument("--impressora", help="impressora do teste (por omissao: a tua)")
-    ap.add_argument("--manter", action="store_true", help="nao apaga a pasta do teste")
+    ap = argparse.ArgumentParser(description="MakerWorld to Any diagnostics")
+    ap.add_argument("--teste", action="store_true", help="end-to-end test with an example project")
+    ap.add_argument("--impressora", help="printer for the test (default: yours)")
+    ap.add_argument("--manter", action="store_true", help="don't delete the test folder")
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args()
     rapido(a.impressora)
@@ -241,11 +241,11 @@ def main():
         print(json.dumps({"versao": K.versao(), "ok": not falhas, "falhas": falhas, "avisos": avisos,
                           "verificacoes": [{"estado": e, "texto": t} for e, t in RES]}, indent=1, ensure_ascii=False))
     else:
-        print(f"MakerWorld to Any {K.versao()} (Megatic) - diagnostico")
+        print(f"MakerWorld to Any {K.versao()} (Megatic) - diagnostics")
         for e, t in RES:
-            print(f"  [{ {'ok': 'ok', 'aviso': 'AVISO', 'falha': 'FALHA'}[e] }] {t}")
-        fim = "tudo bem" if not falhas else f"{falhas} problema(s)"
-        print(f"RESULTADO: {fim}" + (f", {avisos} aviso(s)" if avisos else "") + ("" if a.teste or falhas else "  (--teste faz um teste completo)"))
+            print(f"  [{ {'ok': 'ok', 'aviso': 'WARNING', 'falha': 'FAIL'}[e] }] {t}")
+        fim = "all good" if not falhas else f"{falhas} problem(s)"
+        print(f"RESULT: {fim}" + (f", {avisos} warning(s)" if avisos else "") + ("" if a.teste or falhas else "  (--teste runs a full test)"))
     sys.exit(1 if falhas else 0)
 
 

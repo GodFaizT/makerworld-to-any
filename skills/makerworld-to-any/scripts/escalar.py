@@ -28,26 +28,26 @@ import distancias
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Mudar o tamanho num projeto Anycubic (MakerWorld to Any)")
+    ap = argparse.ArgumentParser(description="Resize objects in an Anycubic project (MakerWorld to Any)")
     ap.add_argument("entrada")
     ap.add_argument("saida", nargs="?")
     g = ap.add_mutually_exclusive_group(required=True)
-    g.add_argument("--altura", type=float)
-    g.add_argument("--largura", type=float)
-    g.add_argument("--fator", type=float)
-    ap.add_argument("--objeto")
-    ap.add_argument("--fatiar", action="store_true")
+    g.add_argument("--altura", type=float, metavar="MM", help="the tallest chosen object gets this height; the others scale by the same factor")
+    g.add_argument("--largura", type=float, metavar="MM", help="the same for the width (X axis)")
+    g.add_argument("--fator", type=float, metavar="F", help="multiply by F (e.g. 0.52 = 52 %%)")
+    ap.add_argument("--objeto", metavar="TEXT", help="only objects whose name contains TEXT (default: all)")
+    ap.add_argument("--fatiar", action="store_true", help="slice every plate at the end")
     a = ap.parse_args()
     destino = os.path.abspath(a.saida or a.entrada)
 
     z = zipfile.ZipFile(a.entrada)
     if not K.impressora_do_projeto(json.loads(z.read("Metadata/project_settings.config"))):
-        raise SystemExit("Este projeto nao e de uma impressora Anycubic: adapta-o primeiro com adaptar.py")
+        raise SystemExit("This project is not for an Anycubic printer: adapt it first with adaptar.py")
     mod = K.Modelo(z)
     cx = mod.caixas()
     esc = [i for i, c in enumerate(cx) if not a.objeto or a.objeto.lower() in c["nome"].lower()]
     if not esc:
-        raise SystemExit("Nenhum objeto com esse nome. Ha: " + ", ".join(sorted({c["nome"] for c in cx})))
+        raise SystemExit("No object with that name. There are: " + ", ".join(sorted({c["nome"] for c in cx})))
     if a.fator:
         f = a.fator
     elif a.altura:
@@ -55,7 +55,7 @@ def main():
     else:
         f = a.largura / max(cx[i]["tam"][0] for i in esc)
     if not 0.01 <= f <= 100:
-        raise SystemExit(f"Fator {f:g} fora do razoavel")
+        raise SystemExit(f"Factor {f:g} is out of a sensible range")
 
     novos = {}
     for i in esc:
@@ -118,8 +118,8 @@ def main():
                 if mudou and all(mudou):
                     return re.sub(r'(top_z=")([-\d.]+)(")', lambda z: z.group(1) + format(float(z.group(2)) * f, ".6g") + z.group(3), mm.group(0))
                 if any(mudou):
-                    avisos.append(f"prato {pid.group(1)}: ha trocas de cor ou pausas por camada e so algumas pecas mudaram de tamanho: "
-                                  "as alturas das trocas ficaram como estavam, confirma no Anycubic")
+                    avisos.append(f"plate {pid.group(1)}: there are color changes or pauses by layer and only some parts were resized: "
+                                  "the heights of the changes stayed as they were, check in Anycubic")
                 return mm.group(0)
             return re.sub(r"<plate>.*?</plate>", bloco, d.decode("utf-8"), flags=re.S).encode("utf-8")
         return d
@@ -148,8 +148,8 @@ def main():
                                         livre=pegadas[p].livre if p in pegadas else None)
                 if not livre:
                     livre = (int(K.CAMA_X / 2), int(K.CAMA_Y - 50))
-                    avisos.append(f"prato {p}: nao ha sitio livre para a torre de purga; ficou em ({livre[0]}, {livre[1]}), provavelmente em "
-                                  "cima de pecas: reduz o tamanho ou divide as pecas por mais pratos (pratos.py)")
+                    avisos.append(f"plate {p}: there is no free spot for the prime tower; it went to ({livre[0]}, {livre[1]}), probably on "
+                                  "top of parts: make it smaller or spread the parts over more plates (pratos.py)")
                 pos.append(livre)
 
             def torre(nome, d):
@@ -160,24 +160,24 @@ def main():
                 jj["wipe_tower_y"] = [str(p[1]) for p in pos]
                 return json.dumps(jj, indent=4, ensure_ascii=False).encode("utf-8")
             K.reescreve(meio, meio, torre)
-            print("torre de purga por prato:", pos)
-        print(f"fator {f:.5f}")
+            print("prime tower per plate:", pos)
+        print(f"factor {f:.5f}")
         antes = {c["i"]: c["tam"] for c in cx}
         for p, cs in sorted(por_prato.items()):
             for c in cs:
                 t0 = antes.get(c["i"])
-                print(f"prato {p}: {c['nome']}: " + (f"{t0[0]:.1f} x {t0[1]:.1f} x {t0[2]:.1f} -> " if t0 else "")
+                print(f"plate {p}: {c['nome']}: " + (f"{t0[0]:.1f} x {t0[1]:.1f} x {t0[2]:.1f} -> " if t0 else "")
                       + f"{c['tam'][0]:.1f} x {c['tam'][1]:.1f} x {c['tam'][2]:.1f} mm")
         if a.fatiar:
             res = K.fatia(meio, os.path.join(tmp, "fatiado"), tmp, avisos)
-            print("FATIADO:\n  " + K.texto_resumo(res, j.get("filament_colour")).replace("\n", "\n  "))
+            print("SLICED:\n  " + K.texto_resumo(res, j.get("filament_colour")).replace("\n", "\n  "))
             avisos += K.colisoes_torre(res, por_prato, pegadas=pegadas)
         copia = K.guarda_copia(destino, "escalar") if os.path.exists(destino) else None
         shutil.copyfile(meio, destino)
-        print("gravado:", destino)
+        print("saved:", destino)
         if copia:
-            print("COPIA DO FICHEIRO ANTERIOR:", copia, "(desfazer.py repoe)")
-        print("AVISOS:" if avisos else "AVISOS: nenhum")
+            print("BACKUP OF THE PREVIOUS FILE:", copia, "(desfazer.py restores it)")
+        print("WARNINGS:" if avisos else "WARNINGS: none")
         for av in avisos:
             print("  -", av)
     finally:

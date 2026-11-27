@@ -34,18 +34,18 @@ import pecas
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Cores por peca num projeto Anycubic (MakerWorld to Any)")
+    ap = argparse.ArgumentParser(description="Per-part colors in an Anycubic project (MakerWorld to Any)")
     ap.add_argument("projeto")
     ap.add_argument("saida", nargs="?")
-    ap.add_argument("--listar", action="store_true")
-    ap.add_argument("--atribuir", help='ex.: "anel=2;1.3=2;tudo=1"')
-    ap.add_argument("--cores", help='ex.: "#FFFFFF;#800020" (vazio = fica a que estava)')
-    ap.add_argument("--filamentos", help='perfis por ordem, ex.: "Anycubic PLA;Anycubic PLA Silk"')
-    ap.add_argument("--material", help='muda o material de todos, ex.: "PETG"')
+    ap.add_argument("--listar", action="store_true", help="filaments, objects and parts, with their numbers")
+    ap.add_argument("--atribuir", help='e.g. "anel=2;1.3=2;tudo=1"')
+    ap.add_argument("--cores", help='e.g. "#FFFFFF;#800020" (empty = keeps the current one)')
+    ap.add_argument("--filamentos", help='profiles in order, e.g. "Anycubic PLA;Anycubic PLA Silk"')
+    ap.add_argument("--material", help='changes the material of every filament, e.g. "PETG"')
     ap.add_argument("--manter-gcode", action="store_true",
-                    help="mantem o g-code e os limites da maquina que o projeto traz (so se foste tu que os afinaste)")
-    ap.add_argument("--sem-fatiar", dest="fatiar", action="store_false")
-    ap.add_argument("--json", action="store_true")
+                    help="keeps the G-code and machine limits the project carries (only if you tuned them yourself)")
+    ap.add_argument("--sem-fatiar", dest="fatiar", action="store_false", help="don't slice at the end")
+    ap.add_argument("--json", action="store_true", help="report in JSON")
     a = ap.parse_args()
 
     z = zipfile.ZipFile(a.projeto)
@@ -53,13 +53,13 @@ def main():
     ms = z.read("Metadata/model_settings.config").decode("utf-8")
     z.close()
     if not K.impressora_do_projeto(j):
-        raise SystemExit("Este projeto nao e de uma impressora Anycubic: adapta-o primeiro com adaptar.py")
+        raise SystemExit("This project is not for an Anycubic printer: adapt it first with adaptar.py")
     if a.listar or not (a.atribuir or a.cores or a.filamentos or a.material):
-        print(f"{K.MODELO}" + (" (com ACE)" if K.MULTICOR else " (sem ACE: uma cor)"))
-        print("Filamentos:")
+        print(f"{K.MODELO}" + (" (with ACE)" if K.MULTICOR else " (no ACE: one color)"))
+        print("Filaments:")
         for i, (n, c) in enumerate(zip(j.get("filament_settings_id", []), j.get("filament_colour", [])), 1):
             print(f"  {i}  {n.split(' @')[0]}  {c}")
-        print("Objetos e pecas (o numero da esquerda serve para --atribuir):")
+        print("Objects and parts (use the number on the left with --atribuir):")
         print("  " + pecas.texto_lista(pecas.le(ms), j.get("filament_colour")).replace("\n", "\n  "))
         return
 

@@ -210,9 +210,9 @@ def avisos_folgas(modelo, por_prato, minimo=2.0):
         for a, b, g in peg.folgas(limite=minimo + 1.0):
             na, nb = peg.itens[a]["nome"], peg.itens[b]["nome"]
             if g <= 0:
-                av.append(f"prato {p}: '{na}' e '{nb}' tocam-se ou sobrepoem-se (vistas de cima)")
+                av.append(f"plate {p}: '{na}' and '{nb}' touch or overlap (seen from above)")
             elif g < minimo:
-                av.append(f"prato {p}: '{na}' e '{nb}' estao a {g:.1f} mm uma da outra - podem colar na primeira camada "
+                av.append(f"plate {p}: '{na}' and '{nb}' are {g:.1f} mm apart - they may stick together on the first layer "
                           f"(pratos.py --afastar)")
     return av, pegadas
 

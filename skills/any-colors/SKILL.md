@@ -56,7 +56,7 @@ Request: `$ARGUMENTS`
    prime tower is put in a free spot and the plates are sliced again. If the report warns that the project's G-code
    or machine limits didn't pass, say the printer's own was kept (the main skill explains what to do if they were
    the user's).
-6. Reply briefly: which color goes in which ACE slot (the final numbers, from the report's `filamento N:` lines: a
+6. Reply briefly: which color goes in which ACE slot (the final numbers, from the report's `filament N:` lines: a
    filament left without parts is removed and the next ones move down a number), what changed filament, time and
    grams per plate (with the grams of each color) and warnings. More than 4 colors don't fit one ACE; printers
    without an ACE print a single color.

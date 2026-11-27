@@ -94,7 +94,7 @@ def le_config():
         pass
     if not _AVISOU_CONFIG:                # preferencias ilegiveis: diz-se, em vez de as ignorar em silencio
         _AVISOU_CONFIG = True
-        print(f"AVISO: nao consegui ler as preferencias em {CONFIG} (ficheiro estragado): estou a usar os valores por omissao",
+        print(f"WARNING: couldn't read the settings in {CONFIG} (broken file): using the defaults",
               file=sys.stderr)
     return {}
 
@@ -173,7 +173,7 @@ def _indice():
             k = (os.path.basename(os.path.dirname(f)), d["name"])
             idx[k], _ORIGEM[k] = d, "sistema"
     if not idx:
-        raise SystemExit(f"Nao encontro os perfis do Anycubic Slicer Next em {PERFIS}")
+        raise SystemExit(f"Can't find the Anycubic Slicer Next profiles in {PERFIS}")
     for f in glob.glob(os.path.join(PERFIS_UTILIZADOR, "*", "*", "*.json")):
         tipo = os.path.basename(os.path.dirname(f))
         if tipo not in ("machine", "process", "filament"):
@@ -314,11 +314,11 @@ def encontra_maquina(consulta=None, bico=None):
     cands = exatos or [m for m in ms if q and q in _norm(m)]
     if len(cands) != 1:
         lista = ", ".join(sorted(m.replace("Anycubic ", "") for m in ms))
-        raise SystemExit(f"Impressora '{consulta}' " + ("ambigua" if cands else "desconhecida") + f". Ha: {lista}")
+        raise SystemExit(f"Printer '{consulta}' is " + ("ambiguous" if cands else "unknown") + f". Available: {lista}")
     bicos = ms[cands[0]]
     b = format(float(bico), "g") if bico else "0.4"
     if b not in bicos:
-        raise SystemExit(f"A {cands[0]} nao tem perfis para bico {b} (ha: {', '.join(sorted(bicos))})")
+        raise SystemExit(f"The {cands[0]} has no profiles for a {b} nozzle (available: {', '.join(sorted(bicos))})")
     return bicos[b]
 
 
@@ -378,8 +378,8 @@ def fim_gcode():
     fim = str(perfil("machine", MAQUINA).get("machine_end_gcode", ""))     # (o do utilizador, se for perfil dele)
     if re.search(r"G1\s+Z|max_layer_z|G91", fim):
         return None
-    return ("M400\nG92 E0\n{if max_layer_z < max_print_height - 5}G1 Z{max_layer_z + 5} F900 ; levanta o bico da peca{endif}\n"
-            f"G1 X{CAMA_X - 10:g} Y{CAMA_Y - 10:g} F12000 ; afasta a cabeca antes de desligar\n" + fim.rstrip("\n") + "\n")
+    return ("M400\nG92 E0\n{if max_layer_z < max_print_height - 5}G1 Z{max_layer_z + 5} F900 ; lift the nozzle off the part{endif}\n"
+            f"G1 X{CAMA_X - 10:g} Y{CAMA_Y - 10:g} F12000 ; move the head away before switching off\n" + fim.rstrip("\n") + "\n")
 
 
 # ------------------------------------------------------------------------------- linha de comandos
@@ -388,32 +388,32 @@ def corre_cli(args, cwd, timeout=3600):
     """Corre o Anycubic Slicer Next. cwd = pasta temporaria: ele escreve certificados da impressora na pasta
     de trabalho e nao os queremos nas pastas do utilizador."""
     if not os.path.exists(ANY):
-        raise SystemExit(f"Nao encontro o Anycubic Slicer Next em {ANY} (variavel ANYCUBIC_SLICER para outro sitio)")
+        raise SystemExit(f"Can't find Anycubic Slicer Next in {ANY} (set the ANYCUBIC_SLICER variable if it is elsewhere)")
     r = subprocess.run([ANY] + args, cwd=cwd, capture_output=True, text=True, errors="ignore", timeout=timeout)
     return r.returncode, (r.stdout or "") + (r.stderr or "")
 
 
 DICAS_CLI = {
     "Variable layer height is not supported with Organic supports":
-        "alturas de camada variaveis nao dao com suportes em arvore organica: usa --sem-camadas-variaveis, ou outro estilo de suportes",
-    "process not compatible with printer": "o perfil de impressao nao e desta impressora (ve --listar-perfis)",
-    "Loading of a model file failed": "o Anycubic nao conseguiu ler o modelo (ficheiro estragado ou formato que ele nao conhece)",
-    "is too close to exclusion area": "ha pecas em cima da zona proibida da mesa: afasta-as com pratos.py --centrar ou --afastar",
-    "is laid over the boundary of plate": "ha pecas fora da mesa: reduz com escalar.py ou arruma com pratos.py",
-    "postprocess not supported": "o projeto tem scripts de pos-processamento (post_process): a linha de comandos do Anycubic nao os aceita",
+        "variable layer heights don't work with organic tree supports: use --sem-camadas-variaveis, or another support style",
+    "process not compatible with printer": "the print profile is not for this printer (see --listar-perfis)",
+    "Loading of a model file failed": "Anycubic couldn't read the model (broken file or a format it doesn't know)",
+    "is too close to exclusion area": "some parts are on the bed's exclusion area: move them with pratos.py --centrar or --afastar",
+    "is laid over the boundary of plate": "some parts are off the bed: scale down with escalar.py or arrange them with pratos.py",
+    "postprocess not supported": "the project has post-processing scripts (post_process): Anycubic's command line doesn't accept them",
 }
 
 
 def explica_rc(rc, log):
     dica = ""
     if rc in (139, -11, 3221225477, -1073741819):
-        dica = (" (o Anycubic rebentou: causas conhecidas = nomes de prato nao vazios [ja tratado], malha a meio da"
-                " mesa abaixo de z=0, ou ficheiro de perfil com caminho errado)")
+        dica = (" (Anycubic crashed: known causes = plate names that are not empty [already handled], a mesh in the"
+                " middle of the bed below z=0, or a profile file with a wrong path)")
     linhas = [l for l in log.splitlines() if ("error" in l.lower() or "fail" in l.lower()) and "calc_exclude_triangles" not in l][-8:]
     for sinal, ajuda in DICAS_CLI.items():
         if sinal in log:
             dica += "\n  -> " + ajuda
-    return f"codigo {rc}{dica}\n" + "\n".join(linhas)
+    return f"code {rc}{dica}\n" + "\n".join(linhas)
 
 
 def exporta(entrada, saida, maquina_json, processo_json, filamentos_json, cwd):
@@ -422,7 +422,7 @@ def exporta(entrada, saida, maquina_json, processo_json, filamentos_json, cwd):
             "--outputdir", os.path.dirname(saida), entrada]
     rc, log = corre_cli(args, cwd)
     if rc != 0 or not os.path.exists(saida):
-        raise SystemExit("O Anycubic falhou a exportar: " + explica_rc(rc, log))
+        raise SystemExit("Anycubic failed to export: " + explica_rc(rc, log))
 
 
 def cubo_stl(caminho, lado=10.0):
@@ -563,7 +563,7 @@ class Modelo:
         out = []
         for i, it in enumerate(self.itens):
             lo, hi = self._caixa(it["oid"], it["T"])
-            out.append(dict(it, i=i, nome=self.nomes.get(it["oid"], "objeto " + it["oid"]), lo=lo, hi=hi,
+            out.append(dict(it, i=i, nome=self.nomes.get(it["oid"], "object " + it["oid"]), lo=lo, hi=hi,
                             tam=[h - l for l, h in zip(lo, hi)]))
         return out
 
@@ -631,20 +631,20 @@ def avisos_mesa(por_prato, folga=0.5, sobreposicao=False):
             if c["printable"] == "0":
                 continue
             if min(c["llo"][:2]) < -folga or c["lhi"][0] > CAMA_X + folga or c["lhi"][1] > CAMA_Y + folga:
-                av.append(f"prato {p}: '{c['nome']}' sai da mesa de {CAMA_X:.0f} x {CAMA_Y:.0f} mm "
+                av.append(f"plate {p}: '{c['nome']}' goes off the {CAMA_X:.0f} x {CAMA_Y:.0f} mm bed "
                           f"(x {c['llo'][0]:.1f}..{c['lhi'][0]:.1f}, y {c['llo'][1]:.1f}..{c['lhi'][1]:.1f})")
             if c["lhi"][2] > ALTURA_MAX:
-                av.append(f"prato {p}: '{c['nome']}' tem {c['lhi'][2]:.1f} mm de altura (maximo {ALTURA_MAX:.0f})")
+                av.append(f"plate {p}: '{c['nome']}' is {c['lhi'][2]:.1f} mm tall (maximum {ALTURA_MAX:.0f})")
             if c["llo"][2] < -0.05:
-                av.append(f"prato {p}: '{c['nome']}' fica {-c['llo'][2]:.2f} mm abaixo da mesa")
+                av.append(f"plate {p}: '{c['nome']}' is {-c['llo'][2]:.2f} mm below the bed")
         for i, a in enumerate(cs if sobreposicao else []):
             for b in cs[i + 1:]:
                 if sep(ret(a), ret(b)) == 0 and a["oid"] != b["oid"]:
                     ix = min(a["lhi"][0], b["lhi"][0]) - max(a["llo"][0], b["llo"][0])
                     iy = min(a["lhi"][1], b["lhi"][1]) - max(a["llo"][1], b["llo"][1])
                     if ix > 1 and iy > 1:
-                        av.append(f"prato {p}: as caixas de '{a['nome']}' e '{b['nome']}' sobrepoem-se "
-                                  f"({ix:.1f} x {iy:.1f} mm) - confirma se as pecas se tocam")
+                        av.append(f"plate {p}: the boxes of '{a['nome']}' and '{b['nome']}' overlap "
+                                  f"({ix:.1f} x {iy:.1f} mm) - check whether the parts touch")
     return av
 
 
@@ -715,7 +715,7 @@ def fatia(projeto, pasta, cwd, avisos=None):
     except (ValueError, OSError, zipfile.BadZipFile):
         jp = None
     if not isinstance(jp, dict):               # nao se fatia o que nao se conseguiu verificar
-        raise SystemExit(f"Nao consegui ler as definicoes de {os.path.basename(projeto)} (ficheiro estragado): nao fatio")
+        raise SystemExit(f"Couldn't read the settings of {os.path.basename(projeto)} (broken file): not slicing")
     limpar = tem_pos_processamento(jp)
     os.makedirs(pasta, exist_ok=True)
     if limpar:
@@ -730,12 +730,12 @@ def fatia(projeto, pasta, cwd, avisos=None):
         reescreve(projeto, copia, mudar)
         projeto = copia
         if avisos is not None:
-            avisos.append("o projeto tem scripts de pos-processamento (post_process): o tempo e as gramas foram calculados sem eles "
-                          "(a skill nunca corre comandos que venham dentro de um projeto)")
+            avisos.append("the project has post-processing scripts (post_process): time and grams were calculated without them "
+                          "(the skill never runs commands that come inside a project)")
     rc, log = corre_cli(["--slice", "0", "--outputdir", pasta, projeto], cwd)
     gs = sorted(glob.glob(os.path.join(pasta, "plate_*.gcode")), key=lambda f: int(re.findall(r"\d+", os.path.basename(f))[0]))
     if rc != 0 or not gs:
-        raise SystemExit("O Anycubic falhou a fatiar: " + explica_rc(rc, log))
+        raise SystemExit("Anycubic failed to slice: " + explica_rc(rc, log))
     out = {}
     for g in gs:
         r = resumo_gcode(g)
@@ -834,10 +834,10 @@ def texto_resumo(res, cores=None):
     linhas = []
     for p, r in sorted(res.items()):
         g = " + ".join(f"{v:.1f} g" + (f" ({cores[i]})" if cores and i < len(cores) else "") for i, v in enumerate(r["g"]))
-        t = f"prato {p}: {r['tempo']}, {r['total_g']} g" + (f" [{g}]" if len(r["g"]) > 1 else "")
-        t += f", {r['camadas']} camadas, altura {r['altura']} mm"
+        t = f"plate {p}: {r['tempo']}, {r['total_g']} g" + (f" [{g}]" if len(r["g"]) > 1 else "")
+        t += f", {r['camadas']} layers, height {r['altura']} mm"
         if r["trocas"]:
-            t += f", {r['trocas']} troca{'s' if r['trocas'] > 1 else ''} de cor"
+            t += f", {r['trocas']} color change{'s' if r['trocas'] > 1 else ''}"
         linhas.append(t)
     return "\n".join(linhas)
 
@@ -852,13 +852,13 @@ def colisoes_torre(res, por_prato, folga=2.0, pegadas=None):
         t = r["torre"]
         if pegadas and pegadas.get(p) is not None:
             if not pegadas[p].livre(t[0] - folga, t[1] - folga, t[2] + folga, t[3] + folga):
-                av.append(f"prato {p}: a torre de purga (x {t[0]:.0f}..{t[2]:.0f}, y {t[1]:.0f}..{t[3]:.0f}) "
-                          f"esta encostada ou por cima de uma peca")
+                av.append(f"plate {p}: the prime tower (x {t[0]:.0f}..{t[2]:.0f}, y {t[1]:.0f}..{t[3]:.0f}) "
+                          f"is touching or on top of a part")
             continue
         for c in por_prato.get(p, []):
             if sep(tuple(t), ret(c)) < folga:
-                av.append(f"prato {p}: a torre de purga (x {t[0]:.0f}..{t[2]:.0f}, y {t[1]:.0f}..{t[3]:.0f}) "
-                          f"esta encostada/por cima de '{c['nome']}'")
+                av.append(f"plate {p}: the prime tower (x {t[0]:.0f}..{t[2]:.0f}, y {t[1]:.0f}..{t[3]:.0f}) "
+                          f"is touching or on top of '{c['nome']}'")
     return av
 
 

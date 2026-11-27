@@ -1,26 +1,26 @@
 @echo off
-rem MakerWorld to Any - instalador do ZIP (copia as pastas de skills deste ZIP para a pasta de skills do Claude Code)
+rem MakerWorld to Any - ZIP installer (copies the skill folders in this ZIP to the Claude Code skills folder)
 set "BASE=%USERPROFILE%\.claude\skills"
-echo MakerWorld to Any - feito pela Megatic (https://megatic.pt)
-echo A instalar em %BASE%
+echo MakerWorld to Any - made by Megatic (https://megatic.pt)
+echo Installing in %BASE%
 if not exist "%BASE%" mkdir "%BASE%"
 if exist "%BASE%\makerworld-update\SKILL.md" rmdir /S /Q "%BASE%\makerworld-update"
 for /D %%d in ("%~dp0*") do (
   if exist "%%d\SKILL.md" (
     if exist "%BASE%\%%~nxd" rmdir /S /Q "%BASE%\%%~nxd"
     xcopy /E /I /Y "%%d" "%BASE%\%%~nxd" >nul
-    echo   instalado: %%~nxd
+    echo   installed: %%~nxd
   )
 )
 echo.
-echo Feito. Abre uma sessao nova do Claude Code e usa:
-echo   /kobrax "C:\...\modelo.3mf"       (ou /kobra4 /kobras1 /kobras1max /kobra3 /kobra3max)
-echo   /anycubic Kobra 2 Neo "C:\...\modelo.3mf"
-echo   /any-plates, /any-colors        arrumar pratos e mudar cores de um projeto ja adaptado
-echo   /any-settings                   os teus perfis, pastas e precos
-echo   /any-undo                       voltar atras
-echo   /any-doctor teste               confirmar que esta tudo a funcionar
-echo   /any-update                     atualizar
-where python >nul 2>nul || where py >nul 2>nul || echo AVISO: nao encontrei o Python 3 - instala-o de python.org (marca "Add to PATH").
-if not exist "C:\Program Files\AnycubicSlicerNext\AnycubicSlicerNext.exe" echo AVISO: nao encontrei o Anycubic Slicer Next em C:\Program Files\AnycubicSlicerNext.
+echo Done. Open a new Claude Code session and use:
+echo   /kobrax "C:\...\model.3mf"        (or /kobra4 /kobras1 /kobras1max /kobra3 /kobra3max)
+echo   /anycubic Kobra 2 Neo "C:\...\model.3mf"
+echo   /any-plates, /any-colors        arrange plates and change colors of an adapted project
+echo   /any-settings                   your profiles, folders and prices
+echo   /any-undo                       go back
+echo   /any-doctor test                check that everything works
+echo   /any-update                     update
+where python >nul 2>nul || where py >nul 2>nul || echo WARNING: Python 3 not found - install it from python.org (tick "Add to PATH").
+if not exist "C:\Program Files\AnycubicSlicerNext\AnycubicSlicerNext.exe" echo WARNING: Anycubic Slicer Next not found in C:\Program Files\AnycubicSlicerNext.
 pause

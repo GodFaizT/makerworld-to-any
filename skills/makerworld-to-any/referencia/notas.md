@@ -1,161 +1,169 @@
-# Notas tecnicas (Anycubic Slicer Next 2.0.0.3 e 2.0.0.7, linha de comandos)
+# Technical notes (Anycubic Slicer Next 2.0.0.3 and 2.0.0.7, command line)
 
 MakerWorld to Any - Megatic (https://megatic.pt).
 
-Os scripts ja tratam tudo o que esta marcado com (auto). Depois de uma atualizacao do Anycubic Slicer Next, correr
-`diagnostico.py --teste`: se passar, estas notas continuam validas.
+The scripts already handle everything marked (auto). After an Anycubic Slicer Next update, run
+`diagnostico.py --teste`: if it passes, these notes still hold.
 
-## Linha de comandos do Anycubic
+## Anycubic's command line
 
-- Exportar projeto: `AnycubicSlicerNext.exe --arrange 0 --load-settings "maquina.json;processo.json"
-  --load-filaments "f1.json;f2.json" --export-3mf saida.3mf --outputdir <pasta> <entrada.3mf|.stl>`.
-  Fatiar: `--slice 0 --outputdir <pasta> <projeto.3mf>` (todos os pratos -> `plate_N.gcode`).
-- Os caminhos tem de ser do Windows (`C:\...`); em bash, `cygpath -w`. Um `/c/...` dentro da lista com `;` da
-  "can not find setting file" (codigo 127).
-- Escreve certificados/chaves da impressora (ficheiros com nome hexadecimal) na pasta de trabalho -> correr numa
-  pasta temporaria (auto).
-- **Rebenta** (segfault) com nomes de prato (`plater_name`) nao vazios, mesmo ASCII (auto: ficam vazios).
-- **Rebenta** com uma malha a meio abaixo de z=0. O Bambu guarda malhas centradas (z -h/2..h/2): so importa se se
-  extrair a malha para STL; a partir do 3MF original nao acontece.
-- Um STL solto so e carregado se estiver mais ou menos entre 60 e 125 mm, seja qual for a mesa (na origem, ou a
-  partir de ~150 mm, da "Loading of a model file failed") -> o cubo de referencia fica sempre a 100 mm (auto).
-- Centra os pratos na mesa da impressora de destino (Kobra X: +2,+2 de uma mesa de 256; +40 da A1 mini de 180).
-  Pratos separados por mesa x 1.2 (Kobra X 312, S1 300, Kobra 3 306, 3 Max 511.2 x 504); colunas = arredondar para
-  cima de raiz(n); as filas crescem para y negativo. A vista de montagem (assemble) e so visual.
-- Escreve mal `different_settings_to_system`; tem de ser `[processo, "" por filamento..., "machine_end_gcode"]` (auto).
-- Com menos ficheiros de filamento do que o projeto tinha, so substitui os primeiros e deixa os restantes como
-  perfis Bambu (temperaturas erradas, High Flow a 220 C...) -> cortar todas as listas por filamento (auto). Listas
-  `*_group` sao [processo, filamentos..., impressora].
-- Com **mais** ficheiros de filamento do que o projeto tinha, alarga todas as listas (bom), mas tudo o que apontava
-  para um filamento que a entrada ainda nao tinha volta ao filamento 1 -> o filamento de cada objeto/peca e escrito
-  outra vez depois de exportar (auto). No `model_settings` o filamento do objeto esta sempre escrito e o da peca so
-  quando e diferente.
-- No Bambu 2.x, `wall_filament`/`sparse_infill_filament`/`solid_infill_filament` do perfil valem 1 por omissao (=
-  filamento do objeto): nao contam como "usados" (auto).
-- Desliga a torre de purga (`enable_prime_tower` 0) mesmo com 2 cores; os perfis com ACE tem 1 (auto, e posicao
-  livre por prato). Pegada medida numa Kobra X: x de X-6 a X+largura+1, y de Y-7.5 a Y+20 com 2 cores.
-- A matriz `matrix` das pecas no `model_settings` sai "dobrada" (escala 1.21 para 1.1): inofensivo, o g-code sai certo.
-- Diferencas de normalizacao que aparecem sempre (internal_solid_infill_pattern rectilinear, wall_direction ccw,
-  ironing_angle 0) sao do proprio Anycubic.
-- Erros conhecidos tem uma dica no fim da mensagem (`anycubic.DICAS_CLI`); as linhas `calc_exclude_triangles` do
-  registo sao ruido.
-- **Recusa** qualquer projeto com `post_process` nao vazio ("normative_check: postprocess not supported"), tanto a
-  exportar como a fatiar: ou seja, a linha de comandos nunca corre esses scripts. O `adaptar.py` tira-os da copia
-  de entrada e do projeto final (auto) e o relatorio diz que nao passaram; o `fatia()` fatia uma copia sem eles
-  quando um projeto ja adaptado os tem. A skill nunca escreve `post_process` num projeto.
-- **2.0.0.7**: o resumo no fim do g-code (`; filament used [g] = 0.00, 34.07`) poe o peso todo no ultimo filamento
-  usado do prato; o total e o g-code estao certos. `resumo_gcode()` soma o E de cada ferramenta (extrusao relativa,
-  `M83`) e, quando o resumo nao bate com isso, divide o total pela massa que cada uma extrude.
+- Export a project: `AnycubicSlicerNext.exe --arrange 0 --load-settings "maquina.json;processo.json"
+  --load-filaments "f1.json;f2.json" --export-3mf saida.3mf --outputdir <folder> <entrada.3mf|.stl>`.
+  Slice: `--slice 0 --outputdir <folder> <projeto.3mf>` (every plate -> `plate_N.gcode`).
+- Paths must be Windows paths (`C:\...`); in bash, `cygpath -w`. A `/c/...` inside the `;` list gives
+  "can not find setting file" (code 127).
+- It writes the printer's certificates/keys (files with hexadecimal names) in the working folder -> run it in a
+  temporary folder (auto).
+- **Crashes** (segfault) with non-empty plate names (`plater_name`), even ASCII ones (auto: they are left empty).
+- **Crashes** with a mesh that is half below z=0. Bambu stores centered meshes (z -h/2..h/2): this only matters if
+  the mesh is extracted to STL; from the original 3MF it doesn't happen.
+- A loose STL only loads if it is roughly between 60 and 125 mm, whatever the bed (at the origin, or from ~150 mm
+  up, it gives "Loading of a model file failed") -> the reference cube is always 100 mm (auto).
+- It centers the plates on the target printer's bed (Kobra X: +2,+2 from a 256 bed; +40 from the A1 mini's 180).
+  Plates are spaced at bed x 1.2 (Kobra X 312, S1 300, Kobra 3 306, 3 Max 511.2 x 504); columns = round up of
+  sqrt(n); rows grow towards negative y. The assemble view is visual only.
+- It writes `different_settings_to_system` wrong; it must be `[process, "" per filament..., "machine_end_gcode"]`
+  (auto).
+- With fewer filament files than the project had, it only replaces the first ones and leaves the rest as Bambu
+  profiles (wrong temperatures, High Flow at 220 C...) -> cut every per-filament list (auto). `*_group` lists are
+  [process, filaments..., printer].
+- With **more** filament files than the project had, it extends every list (good), but everything that pointed to a
+  filament the input didn't have yet goes back to filament 1 -> each object's/part's filament is written again after
+  exporting (auto). In `model_settings` the object's filament is always written and the part's only when it differs.
+- In Bambu 2.x, the profile's `wall_filament`/`sparse_infill_filament`/`solid_infill_filament` default to 1 (= the
+  object's filament): they don't count as "used" (auto).
+- It turns off the prime tower (`enable_prime_tower` 0) even with 2 colors; the profiles with an ACE have 1 (auto,
+  plus a free position per plate). Footprint measured on a Kobra X: x from X-6 to X+width+1, y from Y-7.5 to Y+20
+  with 2 colors.
+- The parts' `matrix` in `model_settings` comes out "doubled" (scale 1.21 for 1.1): harmless, the G-code is right.
+- Normalization differences that always show up (internal_solid_infill_pattern rectilinear, wall_direction ccw,
+  ironing_angle 0) come from Anycubic itself.
+- Known errors get a hint at the end of the message (`anycubic.DICAS_CLI`); the `calc_exclude_triangles` lines in
+  the log are noise.
+- It **refuses** any project with a non-empty `post_process` ("normative_check: postprocess not supported"), both
+  when exporting and when slicing: in other words, the command line never runs those scripts. `adaptar.py` removes
+  them from the input copy and from the final project (auto) and the report says they didn't pass; `fatia()` slices
+  a copy without them when an already adapted project has them. The skill never writes `post_process` into a
+  project.
+- **2.0.0.7**: the summary at the end of the G-code (`; filament used [g] = 0.00, 34.07`) puts all the weight on the
+  last filament used on the plate; the total and the G-code are right. `resumo_gcode()` adds up the E of each tool
+  (relative extrusion, `M83`) and, when the summary doesn't match that, splits the total by the mass each one
+  extrudes.
 
-## Purga entre cores
+## Purging between colors
 
-- A linha de comandos **nunca recalcula** `flush_volumes_matrix`: herda a do original (um projeto de 1 filamento
-  fica com 16 valores "280" mesmo depois de passar a ter 2). Escreve-se sempre uma matriz k x k (auto): os valores do
-  autor onde as duas cores nao mudaram, e recalculados onde mudaram ou onde o filamento e novo.
-- Calculo em `purga.py`: e a formula do Bambu Studio (diferenca de cor em HSV + luminancia) mais `nozzle_volume` do
-  perfil da impressora (Kobra X 79, Bambu A1 92). Conferida com um projeto real: reproduz ao mm3 os valores
-  guardados pelo Bambu Studio. Para uma cor mais clara purga-se muito mais (branco -> azul escuro 204, o contrario
-  604 na Kobra X). Maximo 800.
-- A impressora multiplica por `flush_multiplier` (0.7 na Kobra X): o relatorio mostra os mm3 antes de multiplicar.
+- The command line **never recalculates** `flush_volumes_matrix`: it inherits the original's (a 1-filament project
+  keeps 16 "280" values even after it gets 2). A k x k matrix is always written (auto): the designer's values where
+  the two colors didn't change, and recalculated ones where they changed or where the filament is new.
+- Calculation in `purga.py`: it is Bambu Studio's formula (color difference in HSV + luminance) plus the printer
+  profile's `nozzle_volume` (Kobra X 79, Bambu A1 92). Checked against a real project: it reproduces the values
+  saved by Bambu Studio to the mm3. Going to a lighter color purges much more (white -> dark blue 204, the reverse
+  604 on the Kobra X). Maximum 800.
+- The printer multiplies by `flush_multiplier` (0.7 on the Kobra X): the report shows the mm3 before multiplying.
 
-## Pratos, folgas e torre
+## Plates, gaps and tower
 
-- `model_settings.config`: um bloco `<plate>` por prato com `plater_id`, `plater_name`, miniaturas e um
-  `<model_instance>` (object_id, instance_id, identify_id) por objeto. `pratos.py` reescreve os blocos, tira as
-  miniaturas dos pratos que mudaram e apaga os que ficam vazios.
-- `custom_gcode_per_layer.xml`: um bloco `<plate>` por prato (`<plate_info id="N"/>`) com as trocas de cor e pausas
-  por camada (`<layer top_z="..." .../>`). Valem para o prato inteiro. `pratos.py` leva-as com as pecas (e avisa
-  quando um prato passa a juntar pecas de pratos diferentes), `separar_pratos.py` fica so com as dos pratos que
-  ficam, e `escalar.py` multiplica o `top_z` quando todas as pecas do prato mudam de tamanho.
-- O prato de um objeto e so a posicao dele (o centro da caixa dividido pelo passo entre pratos); o slicer confirma
-  pelo bloco `<plate>`.
-- Folga real: `distancias.py` desenha a pegada de cada peca (projecao dos triangulos, celulas de 0.25 mm) e mede a
-  distancia entre pegadas. As caixas enganam (uma barra na diagonal "ocupa" o prato todo). Avisa abaixo de 2 mm.
-  Precisa do numpy; sem ele ha so o aviso de caixas sobrepostas.
-- A torre de purga e posta no sitio livre mais perto do centro (com as pegadas reais) e conferida no g-code.
+- `model_settings.config`: one `<plate>` block per plate with `plater_id`, `plater_name`, thumbnails and one
+  `<model_instance>` (object_id, instance_id, identify_id) per object. `pratos.py` rewrites the blocks, removes the
+  thumbnails of the plates that changed and deletes the ones left empty.
+- `custom_gcode_per_layer.xml`: one `<plate>` block per plate (`<plate_info id="N"/>`) with the color changes and
+  pauses by layer (`<layer top_z="..." .../>`). They apply to the whole plate. `pratos.py` carries them with the
+  parts (and warns when a plate ends up with parts from different plates), `separar_pratos.py` keeps only those of
+  the plates that stay, and `escalar.py` multiplies `top_z` when every part on the plate changes size.
+- An object's plate is just its position (the center of its box divided by the step between plates); the slicer
+  confirms it through the `<plate>` block.
+- Real gap: `distancias.py` draws each part's footprint (projection of the triangles, 0.25 mm cells) and measures
+  the distance between footprints. Boxes are misleading (a diagonal bar "takes up" the whole plate). It warns below
+  2 mm. Needs numpy; without it there is only the warning for overlapping boxes.
+- The prime tower goes in the free spot closest to the center (using the real footprints) and is checked in the
+  G-code.
 
-## Impressoras
+## Printers
 
-- Maquinas: `%APPDATA%\AnycubicSlicerNext\system\Anycubic\machine\*.json`, nome `Anycubic <modelo> <bico> nozzle`;
-  processos e filamentos chamam-se `<nome> @<maquina>` (ou tem a maquina em `compatible_printers`) (auto).
-- Mesa: `printable_area` + `printable_height` (Kobra 1/2/2 Neo/2 Pro 220; Kobra 3 255; S1 250; Kobra X e 4 260;
+- Machines: `%APPDATA%\AnycubicSlicerNext\system\Anycubic\machine\*.json`, named `Anycubic <model> <nozzle> nozzle`;
+  processes and filaments are called `<name> @<machine>` (or have the machine in `compatible_printers`) (auto).
+- Bed: `printable_area` + `printable_height` (Kobra 1/2/2 Neo/2 Pro 220; Kobra 3 255; S1 250; Kobra X and 4 260;
   1 Plus 300; 2 Plus 320; S1 Max 350; 1 Max 400; 2 Max 426; 3 Max 426 x 420 x 501).
-- ACE (varias cores): as maquinas com `change_filament_gcode` (Kobra X, 4, 3, 3 V2, 3 Max, S1, S1 Max). As Kobra 1
-  e 2 nao tem: o projeto fica num filamento so e o relatorio diz as cores do autor por objeto.
-- Fim de impressao de fabrica sem levantar o bico: Kobra X, Kobra 4, S1 Max -> junta-se o levantamento (auto).
-  S1, Kobra 3 e Kobra 1/2 ja levantam e ficam como estao.
-- Velocidades: as do autor foram pensadas para a impressora dele; em qualquer impressora so passam as que sao mais
-  baixas que as do perfil (auto). Excecao: `ironing_speed`, que faz parte da receita de ironing do autor (com o fluxo
-  e o espacamento) e passa como esta.
-- Filamentos por impressora variam muito (Kobra 1 so tem Generic PLA/PETG/ABS; Kobra 2 Neo so Anycubic PLA/PETG):
-  usa-se o mais proximo, Anycubic primeiro, depois Generic (auto).
-- Versao do slicer: `%APPDATA%\AnycubicSlicerNext\AnycubicSlicerNext.conf`, chave `app.version` (o diagnostico so le
-  essa chave; o resto do ficheiro tem dados da conta).
+- ACE (several colors): the machines with `change_filament_gcode` (Kobra X, 4, 3, 3 V2, 3 Max, S1, S1 Max). The
+  Kobra 1 and 2 don't have it: the project goes on a single filament and the report gives the designer's colors per
+  object.
+- Stock print end that doesn't lift the nozzle: Kobra X, Kobra 4, S1 Max -> the lift is added (auto). S1, Kobra 3
+  and Kobra 1/2 already lift and are left as they are.
+- Speeds: the designer's were meant for their printer; on any printer only those lower than the profile's pass
+  (auto). Exception: `ironing_speed`, which is part of the designer's ironing recipe (with the flow and the spacing)
+  and passes as it is.
+- Filaments vary a lot between printers (Kobra 1 only has Generic PLA/PETG/ABS; Kobra 2 Neo only Anycubic
+  PLA/PETG): the closest one is used, Anycubic first, then Generic (auto).
+- Slicer version: `%APPDATA%\AnycubicSlicerNext\AnycubicSlicerNext.conf`, key `app.version` (the diagnostics only
+  read that key; the rest of the file has account data).
 
-## Perfis do utilizador
+## The user's profiles
 
-- Ficam em `%APPDATA%\AnycubicSlicerNext\user\<conta>\{machine,process,filament}\*.json` (mais um `.info`): so as
-  diferencas, com `"inherits": "<perfil de sistema>"` e `"from": "User"`.
-- Ao passar um perfil do utilizador a linha de comandos, o JSON (ja resolvido) tem de manter `inherits` = o perfil de
-  sistema base; com `inherits` vazio a CLI recusa com "process not compatible with printer" (so na exportacao de um
-  STL, o cubo de referencia) (auto).
-- `different_settings_to_system` inclui as mudancas do utilizador em relacao ao perfil de sistema (auto).
-- Projeto que ja e desta impressora (mudar cores ou material de um adaptado): o que esta em
-  `different_settings_to_system` ([processo, filamento 1..n, impressora]) e do utilizador e passa tudo, sem os
-  filtros dos originais (aceleracoes, velocidades acima do perfil, temperaturas) - menos `post_process`, que nunca
-  passa, e o g-code e os `machine_max_*`, que correm na impressora e ficam os da impressora (qualquer ficheiro
-  pode dizer que e "desta impressora"). O g-code do utilizador vem dos perfis dele (`--perfis meus`), que so ele
-  pode criar; `--manter-gcode` existe para quem pede explicitamente para manter o de um projeto seu. O fim de impressao que a propria skill poe nao conta: volta a ser posto.
+- They live in `%APPDATA%\AnycubicSlicerNext\user\<account>\{machine,process,filament}\*.json` (plus an `.info`):
+  only the differences, with `"inherits": "<system profile>"` and `"from": "User"`.
+- When passing a user profile to the command line, the (already resolved) JSON must keep `inherits` = the base system
+  profile; with an empty `inherits` the CLI refuses with "process not compatible with printer" (only when exporting
+  an STL, the reference cube) (auto).
+- `different_settings_to_system` includes the user's changes relative to the system profile (auto).
+- A project that is already for this printer (changing colors or material of an adapted one): what is in
+  `different_settings_to_system` ([process, filament 1..n, printer]) belongs to the user and all of it passes,
+  without the filters used for originals (accelerations, speeds above the profile, temperatures) - except
+  `post_process`, which never passes, and the G-code and `machine_max_*`, which run on the printer and stay the
+  printer's (any file can claim to be "for this printer"). The user's G-code comes from their profiles
+  (`--perfis meus`), which only they can create; `--manter-gcode` exists for someone who explicitly asks to keep the
+  one from a project of their own. The print end the skill itself adds doesn't count: it is added again.
 
-## Perfis
+## Profiles
 
-- Perfis de sistema: `%APPDATA%\AnycubicSlicerNext\system\Anycubic\{machine,process,filament}\*.json` com heranca
-  por `inherits` (auto).
-- Kobra X 0.20mm Standard ~ Bambu A1 0.20mm Standard (2 paredes, 15 % grelha, tree(auto) a 30 graus). Os perfis
-  Anycubic vem com suportes desligados e so na mesa.
-- O autor muda definicoes em relacao ao perfil base dele -> usar o perfil da impressora com o **mesmo nome do perfil
-  base** e a altura de camada dele como mudanca (auto). Ex.: um perfil "optimised" a 0.12 feito sobre o 0.20 Standard.
-- O relatorio separa: `[o autor mudou]` (esta na lista de alteracoes do projeto), `[valor do perfil do autor]`
-  (definicao "de intencao" que difere do perfil da Anycubic) e `[acerto da skill]`; e o que nao passou: por ser da
-  impressora do autor, por nao existir no Anycubic, ou por ser uma velocidade acima do perfil.
-- Estilos de suporte em arvore: default, tree_slim, tree_strong, tree_hybrid. O valor `tree_organic` do Bambu nao
-  existe, mas com suportes em arvore o `default` **e** a arvore organica (e o que o slicer diz ao validar) -> o
-  `tree_organic` do autor passa a `default` (auto). `zig-zag` do Bambu -> `zigzag` (auto). Fuzzy skin pintado
-  (`paint_fuzzy_skin`) e suportado.
-- Fim de impressao: onde o de fabrica desliga com o bico pousado na peca (fio/bolinha no topo) -> levanta 5 mm e vai
-  para o canto (mesa - 10 mm) (auto).
+- System profiles: `%APPDATA%\AnycubicSlicerNext\system\Anycubic\{machine,process,filament}\*.json` with inheritance
+  through `inherits` (auto).
+- Kobra X 0.20mm Standard ~ Bambu A1 0.20mm Standard (2 walls, 15 % grid, tree(auto) at 30 degrees). The Anycubic
+  profiles come with supports off and on the build plate only.
+- The designer changes settings relative to their base profile -> use the printer's profile with the **same name as
+  the base profile** and their layer height as a change (auto). E.g. an "optimised" profile at 0.12 made on top of
+  0.20 Standard.
+- The report separates: `[designer changed]` (it is in the project's list of changes), `[designer's profile value]`
+  (an "intent" setting that differs from Anycubic's profile) and `[skill fix]`; and what didn't pass: because it
+  belongs to the designer's printer, because it doesn't exist in Anycubic, or because it is a speed above the
+  profile.
+- Tree support styles: default, tree_slim, tree_strong, tree_hybrid. Bambu's `tree_organic` value doesn't exist,
+  but with tree supports `default` **is** the organic tree (that's what the slicer says when validating) -> the
+  designer's `tree_organic` becomes `default` (auto). Bambu's `zig-zag` -> `zigzag` (auto). Painted fuzzy skin
+  (`paint_fuzzy_skin`) is supported.
+- Print end: where the stock one switches off with the nozzle resting on the part (string/blob on top) -> lifts
+  5 mm and goes to the corner (bed - 10 mm) (auto).
 
-## Alturas de camada variaveis
+## Variable layer heights
 
-- `Metadata/layer_heights_profile.txt`: uma linha por objeto, `object_id=N|z;altura;z;altura;...`. O N e a **posicao**
-  do objeto no projeto (1, 2, ...) e nao o id dele no 3MF. Mandam sobre `layer_height` (tambem no Bambu): um perfil
-  "0.12" com o perfil variavel do autor a 0.2 imprime a 0.2.
-- A primeira camada do perfil variavel tem de ter a altura da primeira camada do perfil de impressao; senao o slicer
-  deita o perfil variavel fora sem avisar.
-- O relatorio diz a altura media real (altura / numero de camadas do g-code) quando difere mais de 20 % da do perfil.
-  `--sem-camadas-variaveis` tira o ficheiro (auto) e passa a valer a altura do perfil.
-- Com suportes em arvore organica o Anycubic recusa-se a fatiar ("Variable layer height is not supported with
-  Organic supports") -> os suportes passam a arvore hibrida e o relatorio diz (auto).
-- `escalar.py` multiplica os z do perfil variavel (as alturas ficam) dos objetos que mudam de tamanho;
-  `separar_pratos.py` renumera as linhas (a posicao muda quando saem objetos).
+- `Metadata/layer_heights_profile.txt`: one line per object, `object_id=N|z;height;z;height;...`. N is the object's
+  **position** in the project (1, 2, ...), not its id in the 3MF. They override `layer_height` (in Bambu too): a
+  "0.12" profile with the designer's variable profile at 0.2 prints at 0.2.
+- The first layer of the variable profile must have the print profile's first layer height; otherwise the slicer
+  throws the variable profile away without warning.
+- The report gives the real average height (height / number of layers in the G-code) when it differs by more than
+  20 % from the profile's. `--sem-camadas-variaveis` removes the file (auto) and the profile's height applies.
+- With organic tree supports Anycubic refuses to slice ("Variable layer height is not supported with Organic
+  supports") -> the supports become hybrid tree and the report says so (auto).
+- `escalar.py` multiplies the z values of the variable profile (the heights stay) of the objects that change size;
+  `separar_pratos.py` renumbers the lines (the position changes when objects leave).
 
-## Preferencias e copias de seguranca
+## Settings and backups
 
-- `%APPDATA%\makerworld-to-any\config.json` (outro sitio: `MAKERWORLD_TO_ANY_CONFIG`): `perfis`, `impressora`,
-  `saida`, `originais`, `precos` ({material: EUR/kg}), `preco_hora`. Fora da pasta da skill, para sobreviver as
-  atualizacoes. Le-se com ou sem BOM (o Bloco de notas pode po-lo). Se estiver estragado ha um aviso e, antes de se
-  escrever por cima, fica uma copia `config.json.estragado`.
-- Antes de substituir um ficheiro, os scripts guardam-no em `%APPDATA%\makerworld-to-any\copias\` (as ultimas 30,
-  com `indice.json`). `desfazer.py` repoe; o ficheiro reposto tambem fica guardado.
+- `%APPDATA%\makerworld-to-any\config.json` (elsewhere: `MAKERWORLD_TO_ANY_CONFIG`): `perfis`, `impressora`,
+  `saida`, `originais`, `precos` ({material: EUR/kg}), `preco_hora`. Outside the skill folder, so it survives
+  updates. Read with or without a BOM (Notepad may add one). If it is broken there is a warning and, before it is
+  overwritten, a copy `config.json.estragado` is kept.
+- Before replacing a file, the scripts save it in `%APPDATA%\makerworld-to-any\copias\` (the last 30, with
+  `indice.json`). `desfazer.py` restores it; the restored file is saved too.
 
-## Pecas com texto (trabalho a mao)
+## Parts with text (manual work)
 
-- **Pendentes/enfeites OpenSCAD** (MakerLab ou OpenSCAD do autor): o texto e uma extrusao plana. Para trocar o nome:
-  cortar a malha em 2D (ex. manifold3d), descobrir a fonte e o tamanho do texto original, gerar o novo texto com a
-  mesma fonte e o mesmo `offset`, extrudir e substituir a malha da peca do texto no 3MF original, e so depois correr
-  o `adaptar.py`.
-- Pontos dos i/j e acentos ficam muitas vezes soltos (pecas flutuantes): ligar a propria haste com um "pescoco" de
-  ~1 mm (e confirmar que nao liga a letra do lado), ou baixar o acento ate tocar na letra.
-- Pecas que rodam (anel dentro de um aro): confirmar em varias alturas que o anel com o texto e uma peca e o aro
-  outra, para continuar a rodar.
-- Nomes escritos sem acento: perguntar se levam (Ines ou Inês).
+- **OpenSCAD pendants/ornaments** (MakerLab or the designer's OpenSCAD): the text is a flat extrusion. To change the
+  name: slice the mesh in 2D (e.g. manifold3d), find the font and size of the original text, generate the new text
+  with the same font and the same `offset`, extrude it and replace the mesh of the text part in the original 3MF, and
+  only then run `adaptar.py`.
+- Dots on i/j and accents are often loose (floating parts): join them to the stem itself with a ~1 mm "neck" (and
+  check it doesn't join the next letter), or lower the accent until it touches the letter.
+- Parts that spin (a ring inside a frame): check at several heights that the ring with the text is one part and the
+  frame another, so it keeps spinning.
+- Names written without accents: ask whether they have one (Ines or Inês).

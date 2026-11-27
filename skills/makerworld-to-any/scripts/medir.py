@@ -30,7 +30,7 @@ def desenha(caminho, pegadas, por_prato, cores, res=None):
         import matplotlib.pyplot as plt
         import numpy as np
     except ImportError:
-        raise SystemExit("--imagem precisa do matplotlib e do numpy (pip install matplotlib numpy)")
+        raise SystemExit("--imagem needs matplotlib and numpy (pip install matplotlib numpy)")
     pratos = sorted(por_prato)
     col = min(len(pratos), 3)
     lin = -(-len(pratos) // col)
@@ -62,8 +62,8 @@ def desenha(caminho, pegadas, por_prato, cores, res=None):
         if res and res.get(p, {}).get("torre"):
             t = res[p]["torre"]
             ax.add_patch(plt.Rectangle((t[0], t[1]), t[2] - t[0], t[3] - t[1], fc="#c9ccd1", ec="#555555", hatch="//", alpha=0.8, zorder=1))
-            ax.annotate("torre de purga", ((t[0] + t[2]) / 2, (t[1] + t[3]) / 2), fontsize=7, ha="center", va="center", zorder=5)
-        titulo = f"prato {p}"
+            ax.annotate("prime tower", ((t[0] + t[2]) / 2, (t[1] + t[3]) / 2), fontsize=7, ha="center", va="center", zorder=5)
+        titulo = f"plate {p}"
         if res and p in res:
             titulo += f" - {res[p]['tempo']}, {res[p]['total_g']} g"
         ax.set_title(titulo, fontsize=10)
@@ -73,33 +73,33 @@ def desenha(caminho, pegadas, por_prato, cores, res=None):
         ax.grid(alpha=0.2)
     for n in range(len(pratos), lin * col):
         eixos[n // col][n % col].axis("off")
-    fig.suptitle(f"{K.MODELO} - mesa {K.CAMA_X:g} x {K.CAMA_Y:g} mm", fontsize=11)
+    fig.suptitle(f"{K.MODELO} - bed {K.CAMA_X:g} x {K.CAMA_Y:g} mm", fontsize=11)
     fig.tight_layout()
     fig.savefig(caminho, dpi=90)
     plt.close(fig)
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Medir um projeto 3MF (MakerWorld to Any)")
+    ap = argparse.ArgumentParser(description="Measure a 3MF project (MakerWorld to Any)")
     ap.add_argument("ficheiro")
-    ap.add_argument("--fatiar", action="store_true")
-    ap.add_argument("--imagem", metavar="PNG", help="desenha os pratos vistos de cima")
+    ap.add_argument("--fatiar", action="store_true", help="slice every plate (time and grams)")
+    ap.add_argument("--imagem", metavar="PNG", help="draws the plates seen from above")
     a = ap.parse_args()
     z = zipfile.ZipFile(a.ficheiro)
     j = json.loads(z.read("Metadata/project_settings.config")) if "Metadata/project_settings.config" in z.namelist() else {}
     impressora = str(K.primeiro(j.get("printer_settings_id", "")) or "?")
-    print("impressora:", impressora, "| perfil:", K.primeiro(j.get("print_settings_id", "")) or "?")
+    print("printer:", impressora, "| profile:", K.primeiro(j.get("print_settings_id", "")) or "?")
     for i, (n, c) in enumerate(zip(j.get("filament_settings_id", []), j.get("filament_colour", [])), 1):
-        print(f"filamento {i}: {str(n).split(' @')[0]} {c}")
+        print(f"filament {i}: {str(n).split(' @')[0]} {c}")
     mod = K.Modelo(z)
     anycubic = K.impressora_do_projeto(j)
     por_prato, pegadas, avisos = {}, {}, []
     if anycubic:
-        print(f"mesa da {K.MODELO}: {K.CAMA_X:g} x {K.CAMA_Y:g} x {K.ALTURA_MAX:g} mm")
+        print(f"{K.MODELO} bed: {K.CAMA_X:g} x {K.CAMA_Y:g} x {K.ALTURA_MAX:g} mm")
         por_prato = K.caixas_por_prato(mod)
         for p, cs in sorted(por_prato.items()):
             for c in cs:
-                print(f"prato {p}: {c['nome']}: {c['tam'][0]:.1f} x {c['tam'][1]:.1f} x {c['tam'][2]:.1f} mm "
+                print(f"plate {p}: {c['nome']}: {c['tam'][0]:.1f} x {c['tam'][1]:.1f} x {c['tam'][2]:.1f} mm "
                       f"(x {c['llo'][0]:.1f}..{c['lhi'][0]:.1f}, y {c['llo'][1]:.1f}..{c['lhi'][1]:.1f})")
         avisos = K.avisos_mesa(por_prato, sobreposicao=not distancias.disponivel())
         if distancias.disponivel():
@@ -107,31 +107,31 @@ def main():
             avisos += av
             for p, peg in sorted(pegadas.items()):
                 for x, y, g in peg.folgas(limite=10.0):
-                    print(f"prato {p}: folga entre '{peg.itens[x]['nome']}' e '{peg.itens[y]['nome']}': {g:.1f} mm")
+                    print(f"plate {p}: gap between '{peg.itens[x]['nome']}' and '{peg.itens[y]['nome']}': {g:.1f} mm")
     else:
-        print("(nao e um projeto Anycubic: so medidas)")
+        print("(not an Anycubic project: sizes only)")
         for c in mod.caixas():
             print(f"{c['nome']}: {c['tam'][0]:.1f} x {c['tam'][1]:.1f} x {c['tam'][2]:.1f} mm")
     z.close()
     res = None
     if a.fatiar:
         if not anycubic:
-            raise SystemExit("--fatiar so para projetos de impressoras Anycubic (adapta primeiro)")
+            raise SystemExit("--fatiar is only for Anycubic printer projects (adapt it first)")
         tmp = tempfile.mkdtemp(prefix="mw2any_med_")
         try:
             res = K.fatia(os.path.abspath(a.ficheiro), os.path.join(tmp, "fatiado"), tmp, avisos)
-            print("FATIADO:\n  " + K.texto_resumo(res, j.get("filament_colour")).replace("\n", "\n  "))
+            print("SLICED:\n  " + K.texto_resumo(res, j.get("filament_colour")).replace("\n", "\n  "))
             avisos += K.colisoes_torre(res, por_prato, pegadas=pegadas)
         finally:
             shutil.rmtree(tmp, ignore_errors=True)
     if a.imagem:
         if not anycubic or not pegadas:
-            raise SystemExit("--imagem so para projetos de impressoras Anycubic e com o numpy instalado")
+            raise SystemExit("--imagem is only for Anycubic printer projects, with numpy installed")
         fc = j.get("filament_colour") or []
         cores = {o["id"]: fc[o["efetivo"] - 1] for o in pecas.le(mod.ms) if 0 < o["efetivo"] <= len(fc)}
         desenha(a.imagem, pegadas, por_prato, cores, res)
-        print("imagem:", os.path.abspath(a.imagem))
-    print("AVISOS:" if avisos else "AVISOS: nenhum")
+        print("image:", os.path.abspath(a.imagem))
+    print("WARNINGS:" if avisos else "WARNINGS: none")
     for av in avisos:
         print("  -", av)
 

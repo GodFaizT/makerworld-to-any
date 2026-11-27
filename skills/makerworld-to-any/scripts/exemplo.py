@@ -1,15 +1,15 @@
-"""Cria um projeto de exemplo no formato do Bambu Studio, para testes, para o diagnostico e para demonstracoes.
-MakerWorld to Any - feito pela Megatic (https://megatic.pt).
+"""Creates an example project in the Bambu Studio format, for the tests, the diagnostics and demos.
+MakerWorld to Any - made by Megatic (https://megatic.pt).
 
-Uso:
-    python exemplo.py <saida.3mf>
+Usage:
+    python exemplo.py <output.3mf>
 
-O exemplo junta de proposito as coisas que dao trabalho num projeto do MakerWorld:
-  - 2 pratos com nome ("Caixa" e "Tampa"; com nome, a linha de comandos do Anycubic rebenta);
-  - 4 filamentos no projeto mas so 2 em uso (o 2 e o 4), um deles numa peca dentro de um objeto;
-  - definicoes mudadas pelo autor: enchimento, suportes em arvore organica (nao existe no Anycubic) e uma
-    velocidade acima do que os perfis da Anycubic usam.
-A geometria (caixa hexagonal com faixa, tampa) e gerada aqui: nao vem de nenhum modelo de outra pessoa.
+The example deliberately puts together the things that make a MakerWorld project hard work:
+  - 2 plates with names ("Caixa" and "Tampa"; with names, Anycubic's command line crashes);
+  - 4 filaments in the project but only 2 in use (2 and 4), one of them on a part inside an object;
+  - settings changed by the designer: infill, organic tree supports (which don't exist in Anycubic) and a
+    speed above what the Anycubic profiles use.
+The geometry (hexagonal box with a band, lid) is generated here: it doesn't come from anyone else's model.
 """
 import json
 import math
@@ -153,6 +153,6 @@ def cria(caminho, mesa=256.0, impressora=None, junto=False, camadas_variaveis=Fa
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
+    if len(sys.argv) != 2 or sys.argv[1].startswith("-"):
         raise SystemExit(__doc__)
-    print("criado:", os.path.abspath(cria(sys.argv[1])))
+    print("created:", os.path.abspath(cria(sys.argv[1])))

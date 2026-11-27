@@ -42,7 +42,7 @@ class Projeto:
         self.z = zipfile.ZipFile(self.caminho)
         self.j = json.loads(self.z.read("Metadata/project_settings.config"))
         if not K.impressora_do_projeto(self.j):
-            raise SystemExit("Este projeto nao e de uma impressora Anycubic: adapta-o primeiro com adaptar.py")
+            raise SystemExit("This project is not for an Anycubic printer: adapt it first with adaptar.py")
         self.mod = K.Modelo(self.z)
         self.n = self.mod.n_pratos
         self.itens = self.mod.caixas()
@@ -71,13 +71,13 @@ class Projeto:
         if a.isdigit():
             n = int(a)
             if not 1 <= n <= len(self.itens):
-                raise SystemExit(f"Nao ha objeto {n} (ha {len(self.itens)})")
+                raise SystemExit(f"There is no object {n} (there are {len(self.itens)})")
             return [self.itens[n - 1]]
         if a in ("tudo", "todos", "todas", "*"):
             return list(self.itens)
         achados = [c for c in self.itens if a in c["nome"].lower()]
         if not achados:
-            raise SystemExit(f"Nenhum objeto com '{alvo}' no nome. Ha: " + ", ".join(sorted({c['nome'] for c in self.itens})))
+            raise SystemExit(f"No object with '{alvo}' in its name. There are: " + ", ".join(sorted({c['nome'] for c in self.itens})))
         return achados
 
     def membros(self, p):
@@ -92,11 +92,11 @@ class Projeto:
         """regras: [(alvo, prato)]"""
         for alvo, p in regras:
             if p < 1:
-                raise SystemExit("O prato tem de ser 1 ou mais")
+                raise SystemExit("The plate must be 1 or more")
             for c in self.escolhe(alvo):
                 if c["novo"] != p:
                     c["novo"] = p
-                    self.feito.append(f"{c['nome']} -> prato {p}")
+                    self.feito.append(f"{c['nome']} -> plate {p}")
         self._arruma_mudados()
 
     def um_por_prato(self):
@@ -106,13 +106,13 @@ class Projeto:
                 continue
             p += 1
             c["novo"] = p
-        self.feito.append(f"um objeto por prato ({p} pratos)")
+        self.feito.append(f"one object per plate ({p} plates)")
         self._arruma_mudados()
 
     def junta(self):
         for c in self.itens:
             c["novo"] = 1
-        self.feito.append("tudo no prato 1")
+        self.feito.append("everything on plate 1")
         self._arruma_mudados()
 
     def _arruma_mudados(self):
@@ -155,7 +155,7 @@ class Projeto:
                 c["d"][0] += dx
                 c["d"][1] += dy
             if regista:
-                self.feito.append(f"prato {q} centrado")
+                self.feito.append(f"plate {q} centered")
 
     def pegadas(self, p):
         """Pegadas das pecas do prato p, ja nas posicoes novas (None sem numpy)."""
@@ -169,7 +169,7 @@ class Projeto:
 
     def afasta(self, alvo, p=None):
         if not distancias.disponivel():
-            raise SystemExit("Afastar pecas precisa do numpy (pip install numpy)")
+            raise SystemExit("Moving parts apart needs numpy (pip install numpy)")
         for q in ([p] if p else sorted({c["novo"] for c in self.itens})):
             peg = self.pegadas(q)
             if peg is None or len(peg) < 2:
@@ -183,8 +183,8 @@ class Projeto:
                 peg.itens[k]["d"][1] += dy
             self.centra(q, regista=False)
             depois = min([g for _, _, g in self.pegadas(q).folgas(limite=alvo + 20)] or [alvo + 20])
-            self.feito.append(f"prato {q}: pecas afastadas (folga minima {antes:.1f} -> {depois:.1f} mm)"
-                              + ("" if ok else " - nao consegui chegar ao pedido, ve no Anycubic"))
+            self.feito.append(f"plate {q}: parts moved apart (minimum gap {antes:.1f} -> {depois:.1f} mm)"
+                              + ("" if ok else " - couldn't reach the requested gap, check in Anycubic"))
 
     def junta_demasiado(self, minimo=2.0, alvo=5.0):
         """Depois de mover: se pecas de grupos diferentes ficaram em cima umas das outras, afasta-as."""
@@ -235,8 +235,8 @@ class Projeto:
                 base = RE_CAMADA.sub("", base)
                 base = base[:onde] + "".join(camadas[x] for x in sorted(camadas, key=altura)) + base[onde:]
             if com and len(fontes) > 1:
-                self.avisos.append(f"prato {q}: as trocas de cor ou pausas por camada vinham do prato {' e '.join(str(p) for p in com)} e passam a "
-                                   "valer para todas as pecas deste prato: confirma no Anycubic")
+                self.avisos.append(f"plate {q}: the color changes or pauses by layer came from plate {' and '.join(str(p) for p in com)} and now "
+                                   "apply to every part on this plate: check in Anycubic")
             novos.append(re.sub(r'(<plate_info id=")\d+', lambda m: m.group(1) + str(q), base))
         return texto[:primeiro.start()] + "".join(novos) + RE_BLOCO.sub("", texto[primeiro.start():])
 
@@ -308,8 +308,8 @@ class Projeto:
                 pos = K.posicao_torre(rects, nfil, largura, livre=peg.livre if peg is not None else None)
                 if not pos:
                     pos = (int(K.CAMA_X / 2), int(K.CAMA_Y - 50))
-                    self.avisos.append(f"prato {q}: nao ha sitio livre para a torre de purga; ficou em ({pos[0]}, {pos[1]}), provavelmente "
-                                       "em cima de pecas: poe menos pecas neste prato")
+                    self.avisos.append(f"plate {q}: there is no free spot for the prime tower; it went to ({pos[0]}, {pos[1]}), probably "
+                                       "on top of parts: put fewer parts on this plate")
                 torre.append(pos)
             j["wipe_tower_x"] = [str(t[0]) for t in torre]
             j["wipe_tower_y"] = [str(t[1]) for t in torre]
@@ -351,19 +351,19 @@ def lista(caminho, titulo=None):
     z = zipfile.ZipFile(caminho)
     j = json.loads(z.read("Metadata/project_settings.config"))
     if not K.impressora_do_projeto(j):
-        raise SystemExit("Este projeto nao e de uma impressora Anycubic: adapta-o primeiro com adaptar.py")
+        raise SystemExit("This project is not for an Anycubic printer: adapt it first with adaptar.py")
     mod = K.Modelo(z)
     por_prato = K.caixas_por_prato(mod)
     if titulo:
         print(titulo)
-    print(f"{K.MODELO}: mesa {K.CAMA_X:g} x {K.CAMA_Y:g} mm, {mod.n_pratos} prato(s)")
+    print(f"{K.MODELO}: bed {K.CAMA_X:g} x {K.CAMA_Y:g} mm, {mod.n_pratos} plate(s)")
     for p in range(1, mod.n_pratos + 1):
         cs = por_prato.get(p, [])
-        print(f"prato {p}:" + ("" if cs else " (vazio)"))
+        print(f"plate {p}:" + ("" if cs else " (empty)"))
         for c in cs:
             print(f"  {c['i'] + 1}  {c['nome']}  {c['tam'][0]:.1f} x {c['tam'][1]:.1f} x {c['tam'][2]:.1f} mm  "
                   f"(x {c['llo'][0]:.1f}..{c['lhi'][0]:.1f}, y {c['llo'][1]:.1f}..{c['lhi'][1]:.1f})"
-                  + ("  [nao imprime]" if c["printable"] == "0" else ""))
+                  + ("  [not printed]" if c["printable"] == "0" else ""))
     avisos = K.avisos_mesa(por_prato, sobreposicao=not distancias.disponivel())
     pegadas = {}
     if distancias.disponivel():
@@ -380,30 +380,30 @@ def interpreta(texto):
         if not r:
             continue
         if "=" not in r or not r.rsplit("=", 1)[1].strip().isdigit():
-            raise SystemExit(f"Nao percebi '{r}': usa objeto=prato (ex.: 'body=1;barra=2')")
+            raise SystemExit(f"I didn't understand '{r}': use object=plate (e.g. 'body=1;barra=2')")
         alvo, p = r.rsplit("=", 1)
         out.append((alvo.strip(), int(p)))
     return out
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Pratos de um projeto Anycubic (MakerWorld to Any)")
+    ap = argparse.ArgumentParser(description="Plates of an Anycubic project (MakerWorld to Any)")
     ap.add_argument("projeto")
     ap.add_argument("saida", nargs="?")
-    ap.add_argument("--listar", action="store_true")
-    ap.add_argument("--mover", help='ex.: "body=1;barra=2" (nome, numero da lista ou "prato 2")')
-    ap.add_argument("--um-por-prato", action="store_true")
-    ap.add_argument("--juntar", action="store_true", help="tudo num prato so")
-    ap.add_argument("--afastar", type=float, metavar="MM", help="folga minima entre pecas")
-    ap.add_argument("--centrar", action="store_true")
-    ap.add_argument("--prato", type=int, help="so este prato (para --afastar e --centrar)")
-    ap.add_argument("--fatiar", action="store_true")
+    ap.add_argument("--listar", action="store_true", help="what is on each plate")
+    ap.add_argument("--mover", help='e.g. "body=1;barra=2" (name, number in the list or "prato 2")')
+    ap.add_argument("--um-por-prato", action="store_true", help="one object per plate")
+    ap.add_argument("--juntar", action="store_true", help="everything on one plate")
+    ap.add_argument("--afastar", type=float, metavar="MM", help="minimum gap between parts")
+    ap.add_argument("--centrar", action="store_true", help="center the parts on the bed")
+    ap.add_argument("--prato", type=int, help="only this plate (for --afastar and --centrar)")
+    ap.add_argument("--fatiar", action="store_true", help="slice every plate at the end")
     a = ap.parse_args()
 
     if a.listar or not (a.mover or a.um_por_prato or a.juntar or a.afastar or a.centrar):
         z, j, por_prato, pegadas, avisos = lista(a.projeto)
         z.close()
-        print("AVISOS:" if avisos else "AVISOS: nenhum")
+        print("WARNINGS:" if avisos else "WARNINGS: none")
         for av in avisos:
             print("  -", av)
         return
@@ -428,20 +428,20 @@ def main():
 
     for f in feito:
         print("-", f)
-    z, j, por_prato, pegadas, avisos = lista(destino, "RESULTADO: " + destino)
+    z, j, por_prato, pegadas, avisos = lista(destino, "RESULT: " + destino)
     avisos = list(pr.avisos) + avisos
     if a.fatiar:
         tmp = tempfile.mkdtemp(prefix="mw2any_pratos_")
         try:
             res = K.fatia(destino, os.path.join(tmp, "fatiado"), tmp, avisos)
-            print("FATIADO:\n  " + K.texto_resumo(res, j.get("filament_colour")).replace("\n", "\n  "))
+            print("SLICED:\n  " + K.texto_resumo(res, j.get("filament_colour")).replace("\n", "\n  "))
             avisos += K.colisoes_torre(res, por_prato, pegadas=pegadas)
         finally:
             shutil.rmtree(tmp, ignore_errors=True)
     z.close()
     if copia:
-        print("COPIA DO FICHEIRO ANTERIOR:", copia, "(desfazer.py repoe)")
-    print("AVISOS:" if avisos else "AVISOS: nenhum")
+        print("BACKUP OF THE PREVIOUS FILE:", copia, "(desfazer.py restores it)")
+    print("WARNINGS:" if avisos else "WARNINGS: none")
     for av in avisos:
         print("  -", av)
 

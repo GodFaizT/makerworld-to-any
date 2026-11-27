@@ -113,17 +113,17 @@ def em_npx_skills():
 
 
 def atualiza_npx_skills():
-    print("Instalada com o npx skills (skills.sh): as pastas sao geridas por ele e esta atualizacao nao lhes mexe.\n"
-          "Para atualizar, corre num terminal:\n"
+    print("Installed with npx skills (skills.sh): it manages the folders, so this update doesn't touch them.\n"
+          "To update, run in a terminal:\n"
           "  npx skills update\n"
-          "Depois abre uma sessao nova do Claude Code.")
+          "Then open a new Claude Code session.")
     return 0
 
 
 def atualiza_plugin():
     claude = shutil.which("claude")
     if not claude:
-        print("Instalada como plugin. Dentro do Claude Code corre:\n"
+        print("Installed as a plugin. Inside Claude Code run:\n"
               "  /plugin marketplace update makerworld-to-any\n"
               f"  /plugin update {PLUGIN}")
         return 1
@@ -132,7 +132,7 @@ def atualiza_plugin():
         print(((r.stdout or "") + (r.stderr or "")).strip())
         if r.returncode != 0:
             return r.returncode
-    print("Plugin atualizado. Abre uma sessao nova do Claude Code para usar a versao nova.")
+    print("Plugin updated. Open a new Claude Code session to use the new version.")
     return 0
 
 
@@ -141,11 +141,11 @@ def descarrega(asset, destino):
     publica para esse ficheiro (o campo `digest` da API). Se algo nao bater, nada e alterado."""
     url = str(asset.get("browser_download_url") or "")
     if not url.startswith(f"https://github.com/{REPO}/releases/download/"):
-        raise SystemExit(f"O ZIP da release nao vem das releases de {REPO} ({url}); atualizacao cancelada, nada foi alterado")
+        raise SystemExit(f"The release ZIP doesn't come from the {REPO} releases ({url}); update cancelled, nothing was changed")
     m = re.fullmatch(r"sha256:([0-9a-f]{64})", str(asset.get("digest") or "").lower())
     if not m:
-        raise SystemExit("O GitHub nao da o SHA-256 do ZIP desta release, por isso nao o posso conferir; atualizacao cancelada, "
-                         "nada foi alterado. Alternativa: npx skills add " + REPO)
+        raise SystemExit("GitHub doesn't give the SHA-256 of this release's ZIP, so I can't check it; update cancelled, "
+                         "nothing was changed. Alternative: npx skills add " + REPO)
     h = hashlib.sha256()
     pedido = urllib.request.Request(url, headers={"User-Agent": CABECALHOS["User-Agent"]})
     with urllib.request.urlopen(pedido, timeout=120) as r, open(destino, "wb") as f:
@@ -153,13 +153,13 @@ def descarrega(asset, destino):
             h.update(bloco)
             f.write(bloco)
     if h.hexdigest() != m.group(1):
-        raise SystemExit("O ZIP descarregado nao tem o SHA-256 que o GitHub publica para ele; atualizacao cancelada, nada foi alterado")
+        raise SystemExit("The downloaded ZIP doesn't have the SHA-256 GitHub publishes for it; update cancelled, nothing was changed")
 
 
 def atualiza_pastas(rel):
     asset = next((a for a in rel.get("assets", []) if re.fullmatch(r"makerworld-to-any-v[\d.]+\.zip", a["name"])), None)
     if not asset:
-        raise SystemExit("A release nao tem o ZIP da skill. Usa: npx github:" + REPO)
+        raise SystemExit("The release has no skill ZIP. Use: npx github:" + REPO)
     tmp = tempfile.mkdtemp(prefix="mw2any_atualizar_")
     try:
         zipf = os.path.join(tmp, asset["name"])
@@ -168,15 +168,15 @@ def atualiza_pastas(rel):
         with zipfile.ZipFile(zipf) as z:
             for n in z.namelist():                       # nada fora da pasta de extracao
                 if n.startswith(("/", "\\")) or ".." in n.replace("\\", "/").split("/"):
-                    raise SystemExit(f"ZIP com caminho estranho ({n}); atualizacao cancelada")
+                    raise SystemExit(f"ZIP with an odd path ({n}); update cancelled")
             z.extractall(ext)
         pastas = [d for d in os.listdir(ext) if os.path.isfile(os.path.join(ext, d, "SKILL.md"))]
         if "makerworld-to-any" not in pastas:
-            raise SystemExit("O ZIP nao tem a skill makerworld-to-any; atualizacao cancelada")
+            raise SystemExit("The ZIP doesn't have the makerworld-to-any skill; update cancelled")
         ligacoes = [d for d in pastas if e_ligacao(os.path.join(BASE, d))]
         if ligacoes:                                     # confirmar antes de mexer em qualquer pasta
-            raise SystemExit("Estas pastas sao ligacoes (instaladas com o npx skills): " + ", ".join(sorted(ligacoes))
-                             + ". Nada foi alterado. Atualiza com: npx skills update")
+            raise SystemExit("These folders are links (installed with npx skills): " + ", ".join(sorted(ligacoes))
+                             + ". Nothing was changed. Update with: npx skills update")
         for d in pastas:
             destino = os.path.join(BASE, d)
             if os.path.isdir(destino):
@@ -196,8 +196,8 @@ def avisa_obsoletas_npx():
     """No npx skills as pastas sao dele: so diz como trocar os comandos antigos pelos novos."""
     velhas = obsoletas_presentes()
     if velhas:
-        print("Os comandos mudaram de nome (" + ", ".join(f"/{d} -> /{RENOMEADOS[d]}" for d in velhas) + ").\n"
-              "Para ficares com os novos, corre num terminal:\n"
+        print("The commands were renamed (" + ", ".join(f"/{d} -> /{RENOMEADOS[d]}" for d in velhas) + ").\n"
+              "To get the new ones, run in a terminal:\n"
               f"  npx skills remove {' '.join(velhas)} -g -y\n"
               f'  npx skills add {REPO} --skill "*" -g -a claude-code -y')
 
@@ -212,7 +212,7 @@ def limpa_obsoletas():
             nosso = "MakerWorld to Any" in f.read()
         if nosso:
             shutil.rmtree(os.path.join(BASE, d))
-            print(f"Removido o comando antigo /{d}")
+            print(f"Removed the old command /{d}")
 
 
 def main():
@@ -229,13 +229,13 @@ def main():
     try:
         rel = ultima_release()
     except Exception as e:  # sem internet, limite do GitHub...
-        raise SystemExit(f"Nao consegui ver a ultima versao no GitHub ({e}). Alternativa: npx github:{REPO}")
+        raise SystemExit(f"Couldn't check the latest version on GitHub ({e}). Alternative: npx github:{REPO}")
     remota = rel.get("tag_name", "").lstrip("v")
-    print(f"MakerWorld to Any (Megatic) - instalada: {local} | ultima: {remota}")
+    print(f"MakerWorld to Any (Megatic) - installed: {local} | latest: {remota}")
     if tupla(remota) <= tupla(local):
-        print("Ja tens a ultima versao.")
+        print("You already have the latest version.")
         return 0
-    print("Novidades:\n" + novidades(rel))
+    print("What's new:\n" + novidades(rel))
     if so_ver:
         return 0
     if em_plugin():
@@ -245,8 +245,8 @@ def main():
     pastas = atualiza_pastas(rel)
     # Nada do que se descarregou e executado aqui. Os comandos antigos que so a versao nova conhece sao apagados quando
     # ela correr (limpa_obsoletas no inicio do main).
-    print(f"Atualizado para a {remota}: {', '.join(sorted(pastas))} em {BASE}")
-    print("Abre uma sessao nova do Claude Code para usar a versao nova.")
+    print(f"Updated to {remota}: {', '.join(sorted(pastas))} in {BASE}")
+    print("Open a new Claude Code session to use the new version.")
     return 0
 
 

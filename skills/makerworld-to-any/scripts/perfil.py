@@ -36,35 +36,35 @@ def mostra():
     cfg = K.le_config()
     perfis = os.environ.get("MAKERWORLD_TO_ANY_PERFIS") or cfg.get("perfis") or "sistema"
     imp = os.environ.get("MAKERWORLD_TO_ANY_IMPRESSORA") or cfg.get("impressora") or "Kobra X"
-    print("MakerWorld to Any (Megatic) - preferencias")
-    print(f"  perfis por omissao : {'os teus (quando existem; senao os da Anycubic)' if perfis == 'meus' else 'os da Anycubic'}"
-          + ("   [variavel de ambiente]" if os.environ.get("MAKERWORLD_TO_ANY_PERFIS") else ""))
-    print(f"  impressora         : {imp}" + ("   [variavel de ambiente]" if os.environ.get("MAKERWORLD_TO_ANY_IMPRESSORA") else ""))
-    print(f"  pasta dos adaptados: {cfg.get('saida') or '(ao lado do original, ou a pasta Adaptado <impressora> se existir)'}")
-    print(f"  pasta dos originais: {cfg.get('originais') or '(os originais ficam onde estao)'}")
+    print("MakerWorld to Any (Megatic) - settings")
+    print("  default profiles   : " + ("yours (when they exist; otherwise Anycubic's)" if perfis == "meus" else "Anycubic's")
+          + ("   [environment variable]" if os.environ.get("MAKERWORLD_TO_ANY_PERFIS") else ""))
+    print(f"  printer            : {imp}" + ("   [environment variable]" if os.environ.get("MAKERWORLD_TO_ANY_IMPRESSORA") else ""))
+    print(f"  adapted folder     : {cfg.get('saida') or '(next to the original, or the Adaptado <printer> folder if it exists)'}")
+    print(f"  originals folder   : {cfg.get('originais') or '(originals stay where they are)'}")
     if cfg.get("precos") or cfg.get("preco_hora"):
         pk = "; ".join(f"{k}={v:g}" for k, v in sorted((cfg.get("precos") or {}).items()))
-        print(f"  precos             : filamento {pk or '-'} EUR/kg | maquina {float(cfg.get('preco_hora') or 0):g} EUR/h")
+        print(f"  prices             : filament {pk or '-'} EUR/kg | machine {float(cfg.get('preco_hora') or 0):g} EUR/h")
     else:
-        print("  precos             : (sem precos: o relatorio nao mostra custo)")
-    print(f"  guardado em        : {K.CONFIG}" + ("" if os.path.exists(K.CONFIG) else " (ainda nao existe: valores por omissao)"))
+        print("  prices             : (no prices: the report shows no cost)")
+    print(f"  saved in           : {K.CONFIG}" + ("" if os.path.exists(K.CONFIG) else " (doesn't exist yet: defaults)"))
     try:
         K.usa_impressora(K.encontra_maquina(imp))
         alvo = K.MAQUINA_SISTEMA
     except SystemExit:
         alvo = None
-    print("Perfis teus no Anycubic Slicer Next:")
+    print("Your profiles in Anycubic Slicer Next:")
     algum = False
-    for tipo, titulo in (("machine", "impressora"), ("process", "impressao"), ("filament", "filamento")):
+    for tipo, titulo in (("machine", "printer"), ("process", "process"), ("filament", "filament")):
         for n, base in K.meus(tipo):
             algum = True
             serve = ""
             if alvo:
                 ok = base == alvo if tipo == "machine" else K.meu_compativel(tipo, n)
-                serve = "  <- para a tua impressora" if ok else ""
-            print(f"  [{titulo}] {n}   (baseado em {base or '?'}){serve}")
+                serve = "  <- for your printer" if ok else ""
+            print(f"  [{titulo}] {n}   (based on {base or '?'}){serve}")
     if not algum:
-        print("  nenhum (no Anycubic Slicer Next: muda um perfil e guarda-o com outro nome)")
+        print("  none (in Anycubic Slicer Next: change a profile and save it under another name)")
 
 
 def precos(texto):
@@ -75,30 +75,30 @@ def precos(texto):
         if not par:
             continue
         if "=" not in par:
-            raise SystemExit(f"Nao percebi '{par}': usa material=preco (ex.: \"PLA=18;PETG=20;*=22\")")
+            raise SystemExit(f"I didn't understand '{par}': use material=price (e.g. \"PLA=18;PETG=20;*=22\")")
         mat, v = par.rsplit("=", 1)
         try:
             out[mat.strip().upper() if mat.strip() != "*" else "*"] = float(v.replace(",", ".").replace("€", "").strip())
         except ValueError:
-            raise SystemExit(f"Preco invalido em '{par}'")
+            raise SystemExit(f"Invalid price in '{par}'")
     return out
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Preferencias da MakerWorld to Any")
+    ap = argparse.ArgumentParser(description="MakerWorld to Any settings")
     ap.add_argument("modo", nargs="?", help="meus | anycubic")
-    ap.add_argument("--impressora", help='impressora por omissao, ex. "Kobra S1"')
-    ap.add_argument("--saida", metavar="PASTA", help="pasta dos adaptados ({impressora} = modelo)")
-    ap.add_argument("--originais", metavar="PASTA", help="pasta para onde vao os originais depois de adaptados")
-    ap.add_argument("--preco-kg", metavar="LISTA", help='euros por kg, ex. "PLA=18;PETG=20;*=22"')
-    ap.add_argument("--preco-hora", type=float, metavar="EUR", help="euros por hora de maquina")
-    ap.add_argument("--apagar", metavar="CHAVE", action="append", help="tira uma preferencia: " + ", ".join(CHAVES))
+    ap.add_argument("--impressora", help='default printer, e.g. "Kobra S1"')
+    ap.add_argument("--saida", metavar="FOLDER", help="folder for adapted files ({impressora} = the printer model)")
+    ap.add_argument("--originais", metavar="FOLDER", help="folder the originals go to after they are adapted")
+    ap.add_argument("--preco-kg", metavar="LIST", help='euros per kg, e.g. "PLA=18;PETG=20;*=22"')
+    ap.add_argument("--preco-hora", type=float, metavar="EUR", help="euros per machine hour")
+    ap.add_argument("--apagar", metavar="KEY", action="append", help="removes a setting: " + ", ".join(CHAVES))
     a = ap.parse_args()
     mudou = {}
     if a.modo:
         m = MODOS.get(a.modo.strip().lower())
         if not m:
-            raise SystemExit(f"Nao percebi '{a.modo}'. Usa: meus | anycubic")
+            raise SystemExit(f"I didn't understand '{a.modo}'. Use: meus | anycubic")
         mudou["perfis"] = m
     if a.impressora:
         maq = K.encontra_maquina(a.impressora)          # valida (sai com a lista se nao existir)
@@ -115,11 +115,11 @@ def main():
         mudou["preco_hora"] = a.preco_hora
     for chave in a.apagar or []:
         if chave not in CHAVES:
-            raise SystemExit(f"Nao conheco '{chave}'. Ha: " + ", ".join(CHAVES))
+            raise SystemExit(f"Unknown setting '{chave}'. There are: " + ", ".join(CHAVES))
         mudou[chave] = None
     if mudou:
         K.grava_config(**mudou)
-        print("Guardado:", ", ".join(f"{k} = {v if v is not None else '(apagado)'}" for k, v in mudou.items()))
+        print("Saved:", ", ".join(f"{k} = {v if v is not None else '(removed)'}" for k, v in mudou.items()))
         print()
     mostra()
 

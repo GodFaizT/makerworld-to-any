@@ -1,12 +1,12 @@
-"""Separa pratos de um projeto Anycubic: fica so com os pratos pedidos, renumerados 1..n, e com os objetos
-deslocados para as novas posicoes de prato (passo = mesa x 1.2: 312 mm na Kobra X).
+"""Splits the plates of an Anycubic project: keeps only the plates asked for, renumbered 1..n, with the objects
+moved to the new plate positions (step = bed x 1.2: 312 mm on the Kobra X).
 
-Uso:
-    python separar_pratos.py <entrada.3mf> <saida.3mf> <pratos, ex. 3,4>
+Usage:
+    python separar_pratos.py <input.3mf> <output.3mf> <plates, e.g. 3,4>
 
-Exemplo: um projeto com o tamanho grande nos pratos 1-2 e o pequeno nos 3-4 -> "1,2" e "3,4" dao dois ficheiros.
-Fatiar depois com medir.py --fatiar para confirmar. Para mudar objetos de prato sem apagar nada: pratos.py.
-Se <saida.3mf> ja existir fica uma copia de seguranca (desfazer.py repoe).
+Example: a project with the large size on plates 1-2 and the small one on 3-4 -> "1,2" and "3,4" give two files.
+Slice afterwards with medir.py --fatiar to confirm. To move objects between plates without deleting anything:
+pratos.py. If <output.3mf> already exists a backup is kept (desfazer.py restores it).
 """
 import json
 import math
@@ -32,14 +32,14 @@ def main():
     zi = zipfile.ZipFile(src)
     ms = zi.read("Metadata/model_settings.config").decode("utf-8")
     if not K.impressora_do_projeto(json.loads(zi.read("Metadata/project_settings.config"))):
-        raise SystemExit("Este projeto nao e de uma impressora Anycubic: adapta-o primeiro com adaptar.py")
+        raise SystemExit("This project is not for an Anycubic printer: adapt it first with adaptar.py")
     placas = {int(re.search(r'plater_id" value="(\d+)"', p).group(1)): p for p in re.findall(r"  <plate>.*?</plate>\n", ms, re.S)}
     n_orig = len(placas)
     faltam = [p for p in pratos if p not in placas]
     if faltam:
-        raise SystemExit(f"O projeto so tem os pratos {sorted(placas)}")
+        raise SystemExit(f"The project only has plates {sorted(placas)}")
     if len(set(pratos)) != len(pratos):
-        raise SystemExit("Ha pratos repetidos na lista")
+        raise SystemExit("There are repeated plates in the list")
 
     def slot(i, n):        # coluna, linha (a linha cresce para y negativo)
         c = colunas(n)
@@ -50,8 +50,8 @@ def main():
         for oid in re.findall(r'object_id" value="(\d+)"', p):
             if oid in obj_prato:
                 # copias do mesmo objeto (instancias) em mais de um sitio: aqui cada objeto so pode ter um prato
-                raise SystemExit("Este projeto tem copias do mesmo objeto (instancias): usa pratos.py --mover para as arrumar, "
-                                 "ou separa os pratos no Anycubic")
+                raise SystemExit("This project has copies of the same object (instances): use pratos.py --mover to arrange them, "
+                                 "or split the plates in Anycubic")
             obj_prato[oid] = i
     novo_id = {old: k + 1 for k, old in enumerate(pratos)}
     manter = {o for o, i in obj_prato.items() if i in pratos}
@@ -61,7 +61,7 @@ def main():
         (c0, l0), (c1, l1) = slot(i, n_orig), slot(novo_id[i], len(pratos))
         return (c1 - c0) * K.PASSO_X, -(l1 - l0) * K.PASSO_Y
 
-    print("objetos mantidos:", sorted(manter, key=int))
+    print("objects kept:", sorted(manter, key=int))
     m = zi.read("3D/3dmodel.model").decode("utf-8")
     # posicao de cada objeto no projeto (1, 2, ...): e por ela que o ficheiro das alturas de camada variaveis os conhece
     ordem = list(dict.fromkeys(re.findall(r'<item\s[^>]*?objectid="(\d+)"', m)))
@@ -154,7 +154,7 @@ def main():
     os.replace(tmp, dst)
     print("ok", dst)
     if copia:
-        print("COPIA DO FICHEIRO ANTERIOR:", copia, "(desfazer.py repoe)")
+        print("BACKUP OF THE PREVIOUS FILE:", copia, "(desfazer.py restores it)")
 
 
 if __name__ == "__main__":

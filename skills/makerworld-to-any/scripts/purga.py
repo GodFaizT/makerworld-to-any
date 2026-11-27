@@ -19,7 +19,7 @@ def _rgba(cor):
     if len(c) == 3:
         c = "".join(x * 2 for x in c)
     if len(c) not in (6, 8):
-        raise ValueError(f"cor invalida: {cor!r} (usa #RRGGBB)")
+        raise ValueError(f"invalid color: {cor!r} (use #RRGGBB)")
     r, g, b = (int(c[i:i + 2], 16) / 255.0 for i in (0, 2, 4))
     a = int(c[6:8], 16) if len(c) == 8 else 255
     if a == 0:                      # transparente conta como branco

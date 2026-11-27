@@ -1,33 +1,33 @@
-MakerWorld to Any (makerworld-to-any) - skill do Claude Code
-Feito pela Megatic - https://megatic.pt
+MakerWorld to Any (makerworld-to-any) - Claude Code skill
+Made by Megatic - https://megatic.pt
 https://github.com/GodFaizT/makerworld-to-any
 
-Adapta projetos 3MF do Bambu Studio / MakerWorld para impressoras Anycubic
-(Kobra X, Kobra 4, Kobra S1, S1 Max, Kobra 3, 3 Max, Kobra 2, Kobra 1) no Anycubic Slicer Next,
-com os perfis de cada impressora, e fatia para dar tempo e gramas.
+Adapts Bambu Studio / MakerWorld 3MF projects for Anycubic printers
+(Kobra X, Kobra 4, Kobra S1, S1 Max, Kobra 3, 3 Max, Kobra 2, Kobra 1) in Anycubic Slicer Next,
+with each printer's profiles, and slices them to give the time and grams.
 
-Instalar
---------
-1. Descompactar este zip.
-2. Duplo clique em instalar.bat (copia as pastas para %USERPROFILE%\.claude\skills\).
-3. Abrir uma sessao nova do Claude Code.
+Install
+-------
+1. Unzip this zip.
+2. Double-click instalar.bat (copies the folders to %USERPROFILE%\.claude\skills\).
+3. Open a new Claude Code session.
 
-Comandos
+Commands
 --------
-  /kobrax "C:\...\modelo.3mf"                  adaptar para a Kobra X
+  /kobrax "C:\...\model.3mf"                   adapt for the Kobra X
   /kobra4, /kobras1, /kobras1max, /kobra3, /kobra3max
-  /anycubic Kobra 2 Neo "C:\...\modelo.3mf"    qualquer outra Anycubic
-      depois do ficheiro podes juntar pedidos: "com 10 cm", "bico 0.6", "em PETG", "dourado",
-      "com os meus perfis", "guarda o g-code"
+  /anycubic Kobra 2 Neo "C:\...\model.3mf"     any other Anycubic
+      after the file you can add requests: "10 cm tall", "0.6 nozzle", "in PETG", "gold",
+      "with my profiles", "save the g-code"
 
-  /any-plates "C:\...\adaptado.3mf"            mover objetos entre pratos, um por prato, afastar pecas
-  /any-colors "C:\...\adaptado.3mf"            cores por peca, juntar uma cor, mudar o material
-  /any-undo                                    repor a versao anterior de um ficheiro
-  /any-settings                                os teus perfis, impressora, pastas e precos
-  /any-doctor teste                            confirmar que esta tudo a funcionar
-  /any-update                                  atualizar para a ultima versao
+  /any-plates "C:\...\adapted.3mf"             move objects between plates, one per plate, move parts apart
+  /any-colors "C:\...\adapted.3mf"             per-part colors, add a color, change the material
+  /any-undo                                    restore the previous version of a file
+  /any-settings                                your profiles, printer, folders and prices
+  /any-doctor test                             check that everything works
+  /any-update                                  update to the latest version
 
-Ou pede simplesmente: "adapta este ficheiro para a kobra x: ..."
+Or just ask: "adapt this file for the kobra x: ..."
 
-Precisa do Anycubic Slicer Next (C:\Program Files\AnycubicSlicerNext) e do Python 3.
-O numpy e opcional (pip install numpy): mede a folga real entre pecas e deixa afasta-las.
+Needs Anycubic Slicer Next (C:\Program Files\AnycubicSlicerNext) and Python 3.
+numpy is optional (pip install numpy): it measures the real gap between parts and lets the skill move them apart.

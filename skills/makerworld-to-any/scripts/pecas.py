@@ -105,10 +105,10 @@ def interpreta(regras):
         if not r:
             continue
         if "=" not in r:
-            raise SystemExit(f"Nao percebi '{r}': usa alvo=filamento (ex.: 'anel=2' ou '1.3=2')")
+            raise SystemExit(f"I didn't understand '{r}': use target=filament (e.g. 'anel=2' or '1.3=2')")
         alvo, fil = r.rsplit("=", 1)
         if not fil.strip().isdigit() or int(fil) < 1:
-            raise SystemExit(f"'{r}': o filamento tem de ser um numero (1, 2, ...)")
+            raise SystemExit(f"'{r}': the filament must be a number (1, 2, ...)")
         out.append((alvo.strip().strip('"\''), int(fil)))
     return out
 
@@ -129,11 +129,11 @@ def atribui(ms, regras):
         elif m:
             o = next((o for o in objs if o["n"] == int(m.group(1))), None)
             if o is None:
-                raise SystemExit(f"Nao ha objeto {m.group(1)} (ha {len(objs)})")
+                raise SystemExit(f"There is no object {m.group(1)} (there are {len(objs)})")
             if m.group(2):
                 p = next((p for p in o["pecas"] if p["n"] == int(m.group(2))), None)
                 if p is None:
-                    raise SystemExit(f"O objeto {o['n']} ({o['nome']}) nao tem peca {m.group(2)} (tem {len(o['pecas'])})")
+                    raise SystemExit(f"Object {o['n']} ({o['nome']}) has no part {m.group(2)} (it has {len(o['pecas'])})")
                 escolhidos = [(o, p)]
             else:
                 escolhidos = [(o, None)]
@@ -143,15 +143,15 @@ def atribui(ms, regras):
                 escolhidos = [(o, p) for o in objs for p in o["pecas"] if a in p["nome"].lower()]
             if not escolhidos:
                 nomes = sorted({o["nome"] for o in objs} | {p["nome"] for o in objs for p in o["pecas"]})
-                raise SystemExit(f"Nenhum objeto ou peca com '{alvo}' no nome. Ha: " + ", ".join(nomes))
+                raise SystemExit(f"No object or part with '{alvo}' in its name. There are: " + ", ".join(nomes))
         for o, p in escolhidos:
             if p is None:
                 plano[o["id"]]["obj"] = fil
                 plano[o["id"]]["pecas"] = {pid: fil for pid in plano[o["id"]]["pecas"]}
-                feito.append(f"{o['n']} {o['nome']} -> filamento {fil}")
+                feito.append(f"{o['n']} {o['nome']} -> filament {fil}")
             else:
                 plano[o["id"]]["pecas"][p["id"]] = fil
-                feito.append(f"{o['n']}.{p['n']} {o['nome']} / {p['nome']} -> filamento {fil}")
+                feito.append(f"{o['n']}.{p['n']} {o['nome']} / {p['nome']} -> filament {fil}")
         ms = impoe(ms, plano)
     return ms, feito
 
@@ -164,9 +164,9 @@ def texto_lista(objs, cores=None):
     for o in objs:
         normais = [p for p in o["pecas"] if p["tipo"] == "normal_part"]
         fs = sorted({p["efetivo"] for p in normais} or {o["efetivo"]})
-        linhas.append(f"{o['n']}  {o['nome']}  [filamento {', '.join(str(f) + cor(f) for f in fs)}]")
+        linhas.append(f"{o['n']}  {o['nome']}  [filament {', '.join(str(f) + cor(f) for f in fs)}]")
         if len(o["pecas"]) > 1:
             for p in o["pecas"]:
                 tipo = "" if p["tipo"] == "normal_part" else f"  ({p['tipo'].replace('_part', '').replace('_', ' ')})"
-                linhas.append(f"   {o['n']}.{p['n']}  {p['nome']}  [filamento {p['efetivo']}{cor(p['efetivo'])}]{tipo}")
+                linhas.append(f"   {o['n']}.{p['n']}  {p['nome']}  [filament {p['efetivo']}{cor(p['efetivo'])}]{tipo}")
     return "\n".join(linhas)

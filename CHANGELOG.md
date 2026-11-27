@@ -1,125 +1,136 @@
-# Novidades
+# Changelog
 
-## 2.1.0 - 2026-11-26 · comandos e instruções em inglês
+## 2.2.0 - 2026-11-27 · reports, notes and installer in English
 
-- Os comandos passam a ter nomes em inglês: `/any-pratos` → `/any-plates`, `/any-cores` → `/any-colors`,
-  `/any-perfil` → `/any-settings`, `/any-desfazer` → `/any-undo`, `/any-diagnostico` → `/any-doctor`. O `/kobrax`,
-  o `/anycubic` e os outros ficam iguais. Os pedidos continuam a poder ser feitos em português, e o Claude responde
-  na língua de quem escreve.
-- Os `SKILL.md` (a skill e os 13 comandos) estão em inglês e começam pelo que se vê no skills.sh: o que faz,
-  exemplos, impressoras, como instalar. As instruções para o Claude ficam por baixo. Os scripts, as opções deles e
-  os relatórios continuam em português.
-- Os comandos com o nome antigo saem sozinhos no `/any-update` (no ZIP e no `npx github:`). Numa instalação com o
-  `npx skills`, o `/any-update` diz o que correr para os trocar: `npx skills remove` dos antigos e `npx skills add`
-  outra vez. O `/any-doctor` avisa se ainda houver comandos com o nome antigo.
+- The scripts' reports, warnings, notes, errors and `--help` texts are in English (`SLICED`, `WARNINGS`,
+  `[designer changed]`, `ESTIMATED COST`...). Claude still answers in the language you write in.
+- The technical notes (`referencia/notas.md`), this changelog and the ZIP installer (`LEIA-ME.txt`, `instalar.bat`)
+  are in English too.
+- Unchanged: the scripts' options and their values (`--impressora`, `--afastar`, `meus`...), the keys of the
+  `--json` report and of the settings file. Requests, settings and programs made for 2.1 keep working.
+- Projects adapted with an earlier version are still recognised (the end G-code comment that lifts the nozzle is
+  now in English).
 
-## 2.0.3 - 2026-11-26 · Anycubic Slicer Next 2.0.0.7 e mais segurança
+## 2.1.0 - 2026-11-26 · commands and instructions in English
 
-Segurança (o que a análise do Snyk no skills.sh apontou):
+- The commands have English names: `/any-pratos` → `/any-plates`, `/any-cores` → `/any-colors`,
+  `/any-perfil` → `/any-settings`, `/any-desfazer` → `/any-undo`, `/any-diagnostico` → `/any-doctor`. `/kobrax`,
+  `/anycubic` and the others stay the same. You can still ask in Portuguese, and Claude answers in the language you
+  write in.
+- The `SKILL.md` files (the skill and the 13 commands) are in English and start with what skills.sh shows: what it
+  does, examples, printers, how to install. The instructions for Claude come below. The scripts, their options and
+  the reports stay in Portuguese.
+- Commands with the old names are removed by `/any-update` (ZIP and `npx github:` installs). With an `npx skills`
+  install, `/any-update` says what to run to swap them: `npx skills remove` for the old ones and `npx skills add`
+  again. `/any-doctor` warns if commands with the old names are still there.
 
-- O `/any-update` confere o SHA-256 que o GitHub publica para o ZIP da release antes de mexer em alguma pasta, só
-  aceita ZIPs das releases deste repositório e já não executa o script novo que descarregou. Se a conferência
-  falhar, nada é alterado.
-- O g-code que vem dentro de um projeto continua a ficar de fora, e o Claude já não pergunta se o quer manter. Para
-  usar um g-code teu, guarda-o num perfil de impressora no Anycubic e adapta com os teus perfis (`--perfis meus`).
-  O `--manter-gcode` só é usado se tu o pedires.
-- Os nomes que vêm de um 3MF (objetos, peças) aparecem nos relatórios sem quebras de linha nem caracteres
-  invisíveis, e no máximo com 80 caracteres. A skill e os comandos dizem ao Claude que o que vem dentro de um 3MF
-  são dados do autor do modelo, nunca instruções.
+## 2.0.3 - 2026-11-26 · Anycubic Slicer Next 2.0.0.7 and more security
+
+Security (what the Snyk analysis on skills.sh pointed out):
+
+- `/any-update` checks the SHA-256 GitHub publishes for the release ZIP before touching any folder, only accepts
+  ZIPs from this repository's releases and no longer runs the new script it downloaded. If the check fails, nothing
+  is changed.
+- The G-code inside a project still stays out, and Claude no longer asks whether to keep it. To use your own G-code,
+  save it in a printer profile in Anycubic and adapt with your profiles (`--perfis meus`). `--manter-gcode` is only
+  used if you ask for it.
+- Names that come from a 3MF (objects, parts) show up in the reports without line breaks or invisible characters,
+  and at most 80 characters long. The skill and the commands tell Claude that what comes inside a 3MF is the model
+  designer's data, never instructions.
 
 Anycubic Slicer Next 2.0.0.7:
 
-- Testada com o Anycubic Slicer Next 2.0.0.7 (e a 2.0.0.3): o `/any-diagnostico` já não avisa com nenhuma das duas.
-- Gramas por cor certos com a 2.0.0.7. Esta versão escreve no fim do g-code o peso todo na última cor usada do prato
-  (ex.: "0 g amarelo, 34 g vermelho" numa caixa que é quase toda amarela). O g-code e o total estão certos. Agora a
-  skill confere esse resumo com o que cada cor extrude no g-code e, se não bater, refaz a divisão. O custo por
-  material também fica certo.
-- O `/any-update` também reconhece a instalação do `npx skills` quando ele copia as pastas em vez de as ligar (o que
-  faz com `-a claude-code`): diz para atualizar com `npx skills update` e não mexe nas pastas.
-- README: o `npx skills` precisa do Git (está nos requisitos), e há uma solução para o erro
-  `spawn git ENOENT` em "Problemas".
+- Tested with Anycubic Slicer Next 2.0.0.7 (and 2.0.0.3): `/any-diagnostico` no longer warns with either.
+- Correct grams per color with 2.0.0.7. This version writes, at the end of the G-code, the whole weight on the last
+  color used on the plate (e.g. "0 g yellow, 34 g red" for a box that is almost all yellow). The G-code and the total
+  are right. Now the skill checks that summary against what each color extrudes in the G-code and, if it doesn't
+  match, redoes the split. The cost per material is right too.
+- `/any-update` also recognises the `npx skills` install when it copies the folders instead of linking them (which
+  it does with `-a claude-code`): it says to update with `npx skills update` and doesn't touch the folders.
+- README: `npx skills` needs Git (it's in the requirements), and there's a fix for the `spawn git ENOENT` error in
+  "Problems".
 
-## 2.0.2 - 2026-11-25 · instalar com npx skills e README passo a passo
+## 2.0.2 - 2026-11-25 · install with npx skills and a step-by-step README
 
-- Instalar com `npx skills add GodFaizT/makerworld-to-any --skill "*" -g -a claude-code -y` (skills.sh). O plugin
-  do Claude Code, o ZIP e o `npx github:` continuam a funcionar.
-- O `/any-update` reconhece uma instalação feita com o `npx skills` (pastas ligadas a `~/.agents/skills`): não lhes
-  mexe e diz para atualizar com `npx skills update`. Antes dava erro a meio. Também nunca apaga uma ligação e
-  confirma todas as pastas antes de substituir alguma.
-- README novo, em português e em inglês: início rápido, instalação passo a passo (o que é preciso, as 4 formas de
-  instalar, como atualizar e remover cada uma), a primeira adaptação passo a passo e uma secção de problemas e
-  soluções.
+- Install with `npx skills add GodFaizT/makerworld-to-any --skill "*" -g -a claude-code -y` (skills.sh). The Claude
+  Code plugin, the ZIP and `npx github:` still work.
+- `/any-update` recognises an install made with `npx skills` (folders linked to `~/.agents/skills`): it leaves them
+  alone and says to update with `npx skills update`. Before, it failed halfway. It also never deletes a link and
+  checks every folder before replacing any.
+- New README, in Portuguese and English: quick start, step-by-step install (what you need, the 4 ways to install,
+  how to update and remove each one), the first adaptation step by step and a problems and fixes section.
 
-## 2.0.1 - 2026-11-25 · g-code de um projeto só com autorização
+## 2.0.1 - 2026-11-25 · a project's G-code only with permission
 
-- Ao mudar as cores ou o material de um projeto já adaptado, o g-code e os limites da máquina que vêm dentro do
-  ficheiro deixam de passar sozinhos: correm na impressora e qualquer ficheiro pode dizer que é "da tua impressora".
-  O relatório avisa; se foste tu que os afinaste, repete com `--manter-gcode`. O resto do que afinaste (acelerações,
-  velocidades, temperaturas…) continua a passar.
-- Um projeto com as definições estragadas já não é adaptado nem fatiado (antes podia seguir sem ser verificado).
-- Testes no GitHub com as versões novas das ações (`checkout` e `setup-python` v7).
-- A imagem do README passa a mostrar a conversa no Claude (o pedido e a resposta), em português e em inglês, com os
-  números de uma adaptação real.
+- When changing the colors or material of an already adapted project, the G-code and machine limits inside the file
+  no longer pass on their own: they run on the printer, and any file can claim to be "for your printer". The report
+  warns; if you tuned them yourself, repeat with `--manter-gcode`. The rest of what you tuned (accelerations,
+  speeds, temperatures...) still passes.
+- A project with broken settings is no longer adapted or sliced (before, it could go ahead unchecked).
+- Tests on GitHub with the new versions of the actions (`checkout` and `setup-python` v7).
+- The README image shows the conversation in Claude (the request and the answer), in Portuguese and English, with
+  the numbers from a real adaptation.
 
-## 2.0.0 - 2026-11-25 · pratos, cores por peça, desfazer e diagnóstico
+## 2.0.0 - 2026-11-25 · plates, per-part colors, undo and diagnostics
 
-Projetos já adaptados passam a poder ser trabalhados sem voltar ao original, e a skill ficou testada de ponta a ponta.
+Already adapted projects can be worked on without going back to the original, and the skill is tested end to end.
 
-**Comandos novos**
-- `/any-pratos` — ver o que está em cada prato, mover objetos entre pratos, um objeto por prato, juntar tudo,
-  afastar peças encostadas e centrar.
-- `/any-cores` — ver o filamento de cada objeto e de cada peça, pôr peças noutra cor, juntar uma cor nova, mudar
-  cores ou o material. A purga é recalculada para as cores novas.
-- `/any-desfazer` — repor a versão anterior de um ficheiro. Os scripts guardam sempre uma cópia antes de
-  substituírem um ficheiro (as últimas 30).
-- `/any-diagnostico` — verifica Python, Anycubic Slicer Next (e a versão), perfis e preferências; com `teste` adapta,
-  muda cores, arruma pratos, muda o tamanho e fatia um projeto de exemplo em menos de um minuto.
+**New commands**
+- `/any-pratos`: see what's on each plate, move objects between plates, one object per plate, merge everything,
+  move apart parts that touch and center.
+- `/any-cores`: see the filament of each object and part, put parts in another color, add a new color, change
+  colors or the material. Purging is recalculated for the new colors.
+- `/any-desfazer`: restore the previous version of a file. The scripts always keep a copy before replacing a file
+  (the last 30).
+- `/any-diagnostico`: checks Python, Anycubic Slicer Next (and its version), profiles and settings; with `teste` it
+  adapts, changes colors, arranges plates, resizes and slices an example project in under a minute.
 
-**Melhor**
-- Folga real entre peças, pela forma das peças e não pelas caixas: avisa de peças a menos de 2 mm e a torre de
-  purga vai para um sítio mesmo livre.
-- Purga entre cores recalculada quando as cores mudam (a linha de comandos do Anycubic não o faz); fica a do autor
-  onde as cores são as dele.
-- Relatório mais claro: o que o autor mudou de propósito, o que vinha do perfil dele, e o que não passou e porquê.
-- As velocidades do autor nunca passam acima das do perfil da impressora, em todas as impressoras.
-- Alturas de camada variáveis: o relatório diz a altura média real; `--sem-camadas-variaveis` ignora-as. Com
-  suportes em árvore orgânica (que o Anycubic recusa com camadas variáveis) os suportes passam a árvore híbrida.
-- `/any-perfil` guarda também a pasta dos adaptados, a pasta dos originais e os preços (por kg de cada material e
-  por hora de máquina): o relatório passa a trazer o custo estimado de cada trabalho.
-- `--gcode PASTA` guarda o g-code já fatiado de cada prato; `--json` dá o relatório para programas.
-- `medir.py --imagem` desenha os pratos vistos de cima.
-- Nomes de objetos em chinês, com emoji, etc. já não rebentam os scripts no Windows.
-- Os erros conhecidos do Anycubic vêm com uma dica do que fazer.
-- Ao mudar as cores ou o material de um projeto já adaptado, o que afinaste à mão no Anycubic (acelerações,
-  temperaturas, g-code…) fica como estava.
-- Scripts de pós-processamento que venham dentro de um projeto nunca passam para o adaptado nem são executados.
-- Trocas de cor por camada e alturas de camada variáveis acompanham as peças quando mudam de prato ou de tamanho.
+**Better**
+- Real clearance between parts, from the parts' shape and not their boxes: warns about parts less than 2 mm apart,
+  and the prime tower goes to a spot that is really free.
+- Purging between colors recalculated when the colors change (Anycubic's command line doesn't do it); the
+  designer's stays where the colors are theirs.
+- Clearer report: what the designer changed on purpose, what came from their profile, and what didn't pass and why.
+- The designer's speeds never go above the printer profile's, on every printer.
+- Variable layer heights: the report gives the real average height; `--sem-camadas-variaveis` ignores them. With
+  organic tree supports (which Anycubic refuses with variable layer heights) the supports become hybrid tree.
+- `/any-perfil` also saves the adapted-files folder, the originals folder and prices (per kg of each material and
+  per machine hour): the report then includes the estimated cost of each job.
+- `--gcode PASTA` saves the sliced G-code of each plate; `--json` gives the report for programs.
+- `medir.py --imagem` draws the plates seen from above.
+- Object names in Chinese, with emoji, etc. no longer break the scripts on Windows.
+- Known Anycubic errors come with a hint of what to do.
+- When changing the colors or material of an already adapted project, what you tuned by hand in Anycubic
+  (accelerations, temperatures, G-code...) stays as it was.
+- Post-processing scripts inside a project never pass into the adapted project and are never run.
+- Color changes by layer and variable layer heights follow the parts when they change plate or size.
 
-**Para quem mexe no código**
-- Testes automáticos (`python -m unittest discover -s tests -t tests`) com perfis falsos, sem precisar do slicer;
-  os testes de ponta a ponta correm quando o Anycubic Slicer Next está instalado.
-- Tudo o que é preciso para publicar está no repositório: `tools/publica.py` (versão num sítio só, ZIPs, release),
+**For people working on the code**
+- Automated tests (`python -m unittest discover -s tests -t tests`) with fake profiles, no slicer needed; the
+  end-to-end tests run when Anycubic Slicer Next is installed.
+- Everything needed to publish is in the repository: `tools/publica.py` (version in one place, ZIPs, release),
   `tools/gera_comandos.py`, `tools/verifica.py`, `instalador/`.
-- README em inglês (`README.en.md`) e imagens geradas a partir de uma adaptação real (`tools/gera_docs.py`).
+- README in English (`README.en.md`) and images generated from a real adaptation (`tools/gera_docs.py`).
 
 ## 1.6.0 - 2026-11-24
-- Cada material com o seu perfil (PLA e variantes, PETG, ABS, ASA, PC, PA, TPU, fibras...) e `--material`.
-- Guia de perfis no README.
+- Each material with its own profile (PLA and variants, PETG, ABS, ASA, PC, PA, TPU, fiber-filled...) and
+  `--material`.
+- Profile guide in the README.
 
 ## 1.5.0 - 2026-11-24
-- Comando `/any-perfil`: perfis e impressora por omissão.
+- `/any-perfil` command: default profiles and printer.
 
-## 1.4.0 a 1.4.2 - 2026-11-24
-- Perfis do utilizador (`--perfis meus`) e comando de atualização, que passou a chamar-se `/any-update`.
+## 1.4.0 to 1.4.2 - 2026-11-24
+- The user's profiles (`--perfis meus`) and an update command, later renamed `/any-update`.
 
 ## 1.3.0 - 2026-11-24
-- Comandos `/kobrax`, `/kobra4`, `/kobras1`, `/kobras1max`, `/kobra3`, `/kobra3max` e `/anycubic`.
+- Commands `/kobrax`, `/kobra4`, `/kobras1`, `/kobras1max`, `/kobra3`, `/kobra3max` and `/anycubic`.
 
 ## 1.2.0 - 2026-11-24
-- Várias impressoras Anycubic (todas as que o Anycubic Slicer Next traz).
+- Several Anycubic printers (all the ones Anycubic Slicer Next ships).
 
 ## 1.1.0 - 2026-11-24
-- Novo nome: MakerWorld to Any.
+- New name: MakerWorld to Any.
 
 ## 1.0.0 - 2026-11-24
-- Primeira versão: projetos Bambu Lab / MakerWorld para a Anycubic Kobra X.
+- First version: Bambu Lab / MakerWorld projects for the Anycubic Kobra X.
