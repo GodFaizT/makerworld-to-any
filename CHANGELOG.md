@@ -11,7 +11,8 @@
 - The skill and the commands no longer assume Claude Code: they say how to load the main skill in other agents and
   where the request is when the agent doesn't fill in `$ARGUMENTS`.
 - `/any-update` recognises installs for Codex, Antigravity and the Gemini CLI and gives the right command for each
-  one. `npx github:GodFaizT/makerworld-to-any --agente codex|antigravity|gemini` installs for those agents.
+  one. `npx github:GodFaizT/makerworld-to-any --agent codex|antigravity|gemini` installs for those agents, and its
+  options also have English names (`--agent`, `--project`, `--dest`, `--uninstall`, `--check`).
 - README: how to install and use it in each agent, and why the browser chats (claude.ai, ChatGPT, Gemini) can only
   advise.
 

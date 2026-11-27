@@ -2,7 +2,7 @@
   "name": "makerworld-to-any",
   "displayName": "MakerWorld to Any",
   "description": "Adapts Bambu Studio / MakerWorld 3MF projects for Anycubic printers (Kobra X, S1, Kobra 3, Kobra 4...) in Anycubic Slicer Next and slices them: your printer's profiles, the designer's tweaks, the ACE colours, time and grams of each plate. Made by Megatic.",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "author": {
     "name": "Megatic",
     "url": "https://megatic.pt"
