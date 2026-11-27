@@ -18,7 +18,10 @@ const { spawnSync } = require("child_process");
 
 const NOME = "makerworld-to-any";
 const ORIGEM = path.join(__dirname, "..", "skills", NOME);
-const args = process.argv.slice(2);
+// as opcoes tambem em ingles (--agent, --project, --dest, --uninstall, --check); as portuguesas continuam a valer
+const INGLES = { "--agent": "--agente", "--project": "--projeto", "--dest": "--destino",
+  "--uninstall": "--desinstalar", "--check": "--verificar" };
+const args = process.argv.slice(2).map((a) => INGLES[a] || a);
 const tem = (f) => args.includes(f);
 const valor = (f) => {
   const i = args.indexOf(f);
@@ -34,7 +37,7 @@ const AGENTES = {
 };
 const AGENTE = AGENTES[(valor("--agente") || "claude").toLowerCase()];
 if (!AGENTE) {
-  console.log(`  Unknown agent '${valor("--agente")}'. Use: ${Object.keys(AGENTES).join(", ")}`);
+  console.log(`  Unknown agent '${valor("--agente")}'. Use --agent with: ${Object.keys(AGENTES).join(", ")}`);
   process.exit(1);
 }
 
@@ -47,14 +50,14 @@ if (tem("--ajuda") || tem("-h") || tem("--help")) {
   console.log(`
   ${NOME} — agent skill: Bambu Lab / MakerWorld projects -> Anycubic printers
 
-  npx github:GodFaizT/${NOME}                      installs for Claude Code, all projects (~/.claude/skills)
-  npx github:GodFaizT/${NOME} --agente codex       for Codex / ChatGPT (~/.agents/skills)
-  npx github:GodFaizT/${NOME} --agente antigravity for Antigravity (~/.gemini/config/skills)
-  npx github:GodFaizT/${NOME} --agente gemini      for Gemini CLI (~/.gemini/skills)
-  npx github:GodFaizT/${NOME} --projeto            installs in this project only
-  npx github:GodFaizT/${NOME} --destino D          installs in the skills folder D
-  npx github:GodFaizT/${NOME} --desinstalar        removes it (with the same --agente)
-  npx github:GodFaizT/${NOME} --verificar          only checks Python and Anycubic Slicer Next
+  npx github:GodFaizT/${NOME}                     installs for Claude Code, all projects (~/.claude/skills)
+  npx github:GodFaizT/${NOME} --agent codex       for Codex / ChatGPT (~/.agents/skills)
+  npx github:GodFaizT/${NOME} --agent antigravity for Antigravity / Gemini (~/.gemini/config/skills)
+  npx github:GodFaizT/${NOME} --agent gemini      for the Gemini CLI (~/.gemini/skills)
+  npx github:GodFaizT/${NOME} --project           installs in this project only
+  npx github:GodFaizT/${NOME} --dest D            installs in the skills folder D
+  npx github:GodFaizT/${NOME} --uninstall         removes it (with the same --agent)
+  npx github:GodFaizT/${NOME} --check             only checks Python and Anycubic Slicer Next
 `);
   process.exit(0);
 }

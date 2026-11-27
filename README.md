@@ -58,39 +58,52 @@ grams of every plate.
 
 ## 🚀 Quick start
 
-It works in **Claude Code**, in **Codex** (ChatGPT) and in **Antigravity** (Gemini): any AI agent that runs on the
-Windows computer where Anycubic Slicer Next is installed. For Claude Code, in a terminal (PowerShell, Command Prompt
-or Git Bash), **not** inside Claude Code:
+It works with the AI you already use: **Claude**, **ChatGPT** or **Gemini**, through their agent that runs on your
+computer. That has to be the Windows computer where [Anycubic Slicer Next](https://www.anycubic.com) and
+[Python](https://www.python.org/downloads/) are installed.
+
+**1. Install it.** Open a terminal (PowerShell, Command Prompt or Git Bash, not inside the agent) and run the line for
+your AI:
+
+**Claude** · Claude Code
 
 ```bash
 npx skills add GodFaizT/makerworld-to-any --skill "*" -g -a claude-code -y
 ```
 
-Or, as a plugin, inside Claude Code:
+**ChatGPT** · Codex (the ChatGPT app for Windows, the `codex` CLI or the VS Code extension)
 
-```text
-/plugin marketplace add GodFaizT/makerworld-to-any
-/plugin install makerworld-to-any@makerworld-to-any
+```bash
+npx skills add GodFaizT/makerworld-to-any --skill "*" -g -a codex -y
 ```
 
-Then open a **new** Claude Code session and type your printer's command followed by the path to the file:
+**Gemini** · Antigravity
+
+```bash
+agy plugin install https://github.com/GodFaizT/makerworld-to-any
+```
+
+**2. Open a new session** of your agent. Skills are only loaded when a session starts.
+
+**3. Give it a file.** Type your printer's command and the path to the `.3mf`:
 
 ```text
 /kobrax "C:\Downloads\Vase.3mf"
 ```
 
+In ChatGPT (Codex) the commands start with `$`: `$kobrax "C:\Downloads\Vase.3mf"`. You can also just ask, in any
+language: *"adapt C:\Downloads\Vase.3mf for my Kobra X"*.
+
 `Vase - Kobra X.3mf` appears next to the original, already checked, with the time and grams of every plate. 🎉
 
-| Using… | Install (in a terminal) | Then type |
-|---|---|---|
-| **Codex** (ChatGPT app, CLI or IDE) | `npx skills add GodFaizT/makerworld-to-any --skill "*" -g -a codex -y` | `$kobrax "C:\Downloads\Vase.3mf"` |
-| **Antigravity** (Gemini) | `agy plugin install https://github.com/GodFaizT/makerworld-to-any` | `/kobrax "C:\Downloads\Vase.3mf"` |
-
-New to this, or something didn't work? The full steps are below.
+New to this, or something didn't work? The full steps are below: [what you need](#what-you-need), other ways to
+install (Claude Code plugin, ZIP) and [how to check it works](#check).
 
 <a id="install"></a>
 
 ## 📦 Install, step by step
+
+<a id="what-you-need"></a>
 
 ### 1. What you need
 
@@ -105,16 +118,24 @@ New to this, or something didn't work? The full steps are below.
 | ➕ | **[Node.js](https://nodejs.org)**, only for the `npx` installs | runs the installer (`npx skills` needs Node.js 22.20 or newer) | `node --version` |
 | ➕ | **[Git](https://git-scm.com/download/win)**, only for `npx skills` | `npx skills` downloads the repository with Git | `git --version` |
 
-### 2. Install: pick one way
+### 2. Install it for your agent
 
-| Way | Good for | Updates |
+| Your AI | Agent | Commands look like | How to install |
+|---|---|---|---|
+| Claude | Claude Code | `/kobrax` | [4 ways](#claude-code) |
+| ChatGPT | Codex | `$kobrax` | [`npx skills`](#codex) |
+| Gemini | Antigravity | `/kobrax` | [plugin](#antigravity) |
+
+<a id="claude-code"></a>
+
+#### Claude (Claude Code)
+
+| Way | Good for | Update |
 |---|---|---|
 | **A. `npx skills`** ⭐ recommended | most people | `npx skills update` |
 | **B. Claude Code plugin** | installing without leaving Claude Code | `/any-update` |
 | **C. ZIP** | computers without Node.js | `/any-update` |
-| **D. `npx github:`** | this project's own installer | `/any-update` |
-| **E. Codex** (ChatGPT) | using ChatGPT's agent | `npx skills update` |
-| **F. Antigravity** (Gemini) | using Google's agent | reinstall the plugin |
+| **D. `npx github:`** | this project's own installer, no Git needed | `/any-update` |
 
 <details open>
 <summary><b>A. With <code>npx skills</code> (recommended)</b></summary>
@@ -132,7 +153,7 @@ npx skills add GodFaizT/makerworld-to-any --skill "*" -g -a claude-code -y
 | `GodFaizT/makerworld-to-any` | this GitHub repository |
 | `--skill "*"` | installs **every** skill: the main one (`makerworld-to-any`) and the commands (`/kobrax`, `/any-plates`…). The commands call the main skill, so install them together. |
 | `-g` | for your user, in every project (`~/.claude/skills`). Without it, only in the current folder. |
-| `-a claude-code` | for Claude Code |
+| `-a claude-code` | for Claude Code (`-a codex` for Codex, `-a gemini-cli` for the Gemini CLI) |
 | `-y` | no questions |
 
 Prefer menus? Run `npx skills add GodFaizT/makerworld-to-any` and **select every skill** in the list.
@@ -184,19 +205,18 @@ Inside Claude Code:
 
 ```bash
 npx github:GodFaizT/makerworld-to-any                 # every project (~/.claude/skills)
-npx github:GodFaizT/makerworld-to-any --projeto       # only the current folder (./.claude/skills)
-npx github:GodFaizT/makerworld-to-any --verificar     # only check Python and Anycubic Slicer Next
-npx github:GodFaizT/makerworld-to-any --desinstalar   # remove
+npx github:GodFaizT/makerworld-to-any --project       # only the current folder (./.claude/skills)
+npx github:GodFaizT/makerworld-to-any --check         # only check Python and Anycubic Slicer Next
+npx github:GodFaizT/makerworld-to-any --uninstall     # remove
 ```
 
 - **Update:** `/any-update`, or run the first command again
 
 </details>
 
-<details>
-<summary><b>E. In Codex (ChatGPT)</b></summary>
+<a id="codex"></a>
 
-<br>
+#### ChatGPT (Codex)
 
 Codex is ChatGPT's agent: the ChatGPT app for Windows, the `codex` CLI or the VS Code extension. In a terminal:
 
@@ -204,21 +224,18 @@ Codex is ChatGPT's agent: the ChatGPT app for Windows, the `codex` CLI or the VS
 npx skills add GodFaizT/makerworld-to-any --skill "*" -g -a codex -y
 ```
 
-It goes to `~/.agents/skills`. Start a new Codex session and call the commands with `$` instead of `/`:
-`$kobrax "C:\Downloads\Vase.3mf"`, `$any-plates`, `$any-doctor test`… or just ask. Without Git:
-`npx github:GodFaizT/makerworld-to-any --agente codex`.
+The skills go to `~/.agents/skills`. Start a new Codex session and call the commands with `$` instead of `/`:
+`$kobrax "C:\Downloads\Vase.3mf"`, `$any-plates`, `$any-doctor test`… or just ask.
 
+- **Without Git:** `npx github:GodFaizT/makerworld-to-any --agent codex`
 - **Update:** `npx skills update`
 - **Remove:** `npx skills remove`, then pick the MakerWorld to Any skills
 
-</details>
+<a id="antigravity"></a>
 
-<details>
-<summary><b>F. In Antigravity (Gemini)</b></summary>
+#### Gemini (Antigravity)
 
-<br>
-
-Antigravity is Google's agent (it replaced the Gemini CLI). The repository is an Antigravity plugin, so in a
+Antigravity is Google's agent; it replaced the Gemini CLI. This repository is an Antigravity plugin, so in a
 terminal:
 
 ```bash
@@ -230,19 +247,14 @@ Start a new conversation and use `/kobrax "C:\Downloads\Vase.3mf"`, `/any-plates
 - **Update:** `agy plugin uninstall makerworld-to-any`, then install it again
 - **Still on the Gemini CLI?** `npx skills add GodFaizT/makerworld-to-any --skill "*" -g -a gemini-cli -y`
 
-</details>
+#### In the browser (claude.ai, chatgpt.com, gemini.google.com)
 
-<details>
-<summary><b>And the claude.ai, ChatGPT or Gemini chats?</b></summary>
+The chats in the browser run on a server without Anycubic Slicer Next, so they **cannot adapt or slice**: they can
+only explain and advise. In claude.ai you can upload `makerworld-to-any-skill.zip` (from the
+[releases](https://github.com/GodFaizT/makerworld-to-any/releases/latest)) under **Settings → Capabilities → Skills**.
+To adapt, use one of the agents above on your computer.
 
-<br>
-
-The chats in the browser run on a server without Anycubic Slicer Next, so they **cannot adapt or slice**. In
-claude.ai you can upload `makerworld-to-any-skill.zip` (from the
-[releases](https://github.com/GodFaizT/makerworld-to-any/releases/latest)) under **Settings → Capabilities → Skills**
-and Claude explains and advises there. To adapt, use one of the agents above on your computer.
-
-</details>
+<a id="check"></a>
 
 ### 3. Check that it works
 
@@ -438,7 +450,7 @@ temperature…). The skill uses yours whenever you have one based on the profile
    ```text
    /any-settings
    ```
-   It lists your profiles and marks the ones that fit your printer with *"← para a tua impressora"* (for your printer).
+   It lists your profiles and marks the ones that fit your printer with *"<- for your printer"*.
 3. **Choose to use them:**
    ```text
    /any-settings mine                                 ← always, from now on
