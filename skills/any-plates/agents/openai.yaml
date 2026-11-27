@@ -1,0 +1,5 @@
+interface:
+  display_name: "/any-plates"
+  short_description: "MakerWorld to Any: plates"
+policy:
+  allow_implicit_invocation: false

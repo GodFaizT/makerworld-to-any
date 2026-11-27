@@ -1,0 +1,5 @@
+interface:
+  display_name: "/any-update"
+  short_description: "MakerWorld to Any: update"
+policy:
+  allow_implicit_invocation: false

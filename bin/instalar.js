@@ -1,8 +1,11 @@
 #!/usr/bin/env node
-// Instala (ou remove) a skill makerworld-to-any no Claude Code.
+// Instala (ou remove) a skill makerworld-to-any no Claude Code, no Codex, no Antigravity ou no Gemini CLI.
 //
-//   npx github:GodFaizT/makerworld-to-any              -> ~/.claude/skills/makerworld-to-any
-//   npx github:GodFaizT/makerworld-to-any --projeto    -> ./.claude/skills/makerworld-to-any
+//   npx github:GodFaizT/makerworld-to-any                      -> ~/.claude/skills/makerworld-to-any
+//   npx github:GodFaizT/makerworld-to-any --agente codex       -> ~/.agents/skills/makerworld-to-any
+//   npx github:GodFaizT/makerworld-to-any --agente antigravity -> ~/.gemini/config/skills/makerworld-to-any
+//   npx github:GodFaizT/makerworld-to-any --agente gemini      -> ~/.gemini/skills/makerworld-to-any
+//   npx github:GodFaizT/makerworld-to-any --projeto            -> ./.claude/skills (ou ./.agents/skills)
 //   npx github:GodFaizT/makerworld-to-any --desinstalar
 //   ... --destino <pasta>   instala noutra pasta de skills
 //   ... --verificar         so verifica Python e Anycubic Slicer Next
@@ -22,6 +25,19 @@ const valor = (f) => {
   return i >= 0 ? args[i + 1] : undefined;
 };
 
+// pasta global de skills de cada agente (relativa a pasta do utilizador), e como se chamam os comandos nele
+const AGENTES = {
+  claude: { pasta: [".claude", "skills"], nome: "Claude Code", prefixo: "/" },
+  codex: { pasta: [".agents", "skills"], nome: "Codex", prefixo: "$" },
+  antigravity: { pasta: [".gemini", "config", "skills"], nome: "Antigravity", prefixo: "/" },
+  gemini: { pasta: [".gemini", "skills"], nome: "Gemini CLI", prefixo: "/" },
+};
+const AGENTE = AGENTES[(valor("--agente") || "claude").toLowerCase()];
+if (!AGENTE) {
+  console.log(`  Unknown agent '${valor("--agente")}'. Use: ${Object.keys(AGENTES).join(", ")}`);
+  process.exit(1);
+}
+
 const cor = (c, t) => (process.stdout.isTTY ? `\x1b[${c}m${t}\x1b[0m` : t);
 const ok = (t) => console.log(cor("32", "  ✔ ") + t);
 const aviso = (t) => console.log(cor("33", "  ! ") + t);
@@ -29,21 +45,24 @@ const erro = (t) => console.log(cor("31", "  ✖ ") + t);
 
 if (tem("--ajuda") || tem("-h") || tem("--help")) {
   console.log(`
-  ${NOME} — Claude Code skill: Bambu Lab / MakerWorld projects -> Anycubic printers
+  ${NOME} — agent skill: Bambu Lab / MakerWorld projects -> Anycubic printers
 
-  npx github:GodFaizT/${NOME}               installs for all projects (~/.claude/skills)
-  npx github:GodFaizT/${NOME} --projeto     installs in this project only (./.claude/skills)
-  npx github:GodFaizT/${NOME} --destino D   installs in the skills folder D
-  npx github:GodFaizT/${NOME} --desinstalar removes it
-  npx github:GodFaizT/${NOME} --verificar   only checks Python and Anycubic Slicer Next
+  npx github:GodFaizT/${NOME}                      installs for Claude Code, all projects (~/.claude/skills)
+  npx github:GodFaizT/${NOME} --agente codex       for Codex / ChatGPT (~/.agents/skills)
+  npx github:GodFaizT/${NOME} --agente antigravity for Antigravity (~/.gemini/config/skills)
+  npx github:GodFaizT/${NOME} --agente gemini      for Gemini CLI (~/.gemini/skills)
+  npx github:GodFaizT/${NOME} --projeto            installs in this project only
+  npx github:GodFaizT/${NOME} --destino D          installs in the skills folder D
+  npx github:GodFaizT/${NOME} --desinstalar        removes it (with the same --agente)
+  npx github:GodFaizT/${NOME} --verificar          only checks Python and Anycubic Slicer Next
 `);
   process.exit(0);
 }
 
 function pastaSkills() {
   if (valor("--destino")) return path.resolve(valor("--destino"));
-  if (tem("--projeto")) return path.join(process.cwd(), ".claude", "skills");
-  return path.join(os.homedir(), ".claude", "skills");
+  if (tem("--projeto")) return path.join(process.cwd(), AGENTE.pasta[0] === ".claude" ? ".claude" : ".agents", "skills");
+  return path.join(os.homedir(), ...AGENTE.pasta);
 }
 
 function verificar() {
@@ -116,7 +135,7 @@ try {
     });
   }
   ok(`Skill installed in ${path.join(base, NOME)}`);
-  const cmds = PASTAS.filter((p) => p !== NOME).map((p) => "/" + p);
+  const cmds = PASTAS.filter((p) => p !== NOME).map((p) => AGENTE.prefixo + p);
   if (cmds.length) ok(`Commands: ${cmds.join(" ")}`);
 } catch (e) {
   erro(`Copy failed: ${e.message}`);
@@ -124,10 +143,10 @@ try {
 }
 verificar();
 console.log(`
-  Open a new Claude Code session and use, for example:
-    ${cor("36", '/kobrax "C:\\...\\model.3mf"')}
-    ${cor("36", '/kobras1 "C:\\...\\model.3mf" 10 cm tall')}
-    ${cor("36", '/anycubic Kobra 2 Neo "C:\\...\\model.3mf"')}
-    ${cor("36", "/any-doctor test")}   checks that everything works
+  Open a new ${AGENTE.nome} session and use, for example:
+    ${cor("36", AGENTE.prefixo + 'kobrax "C:\\...\\model.3mf"')}
+    ${cor("36", AGENTE.prefixo + 'kobras1 "C:\\...\\model.3mf" 10 cm tall')}
+    ${cor("36", AGENTE.prefixo + 'anycubic Kobra 2 Neo "C:\\...\\model.3mf"')}
+    ${cor("36", AGENTE.prefixo + "any-doctor test")}   checks that everything works
   or just ask ${cor("36", '"adapt this file for the kobra x: ..."')}.
 `);

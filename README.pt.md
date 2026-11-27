@@ -6,7 +6,7 @@
 
 <p align="center">
   <b>Projetos do MakerWorld prontos a imprimir na tua Anycubic, com um comando.</b><br>
-  <sub>Skill do Claude Code · feita pela <a href="https://megatic.pt"><b>Megatic</b></a></sub>
+  <sub>Skill para o Claude Code, o Codex (ChatGPT) e o Antigravity (Gemini) · feita pela <a href="https://megatic.pt"><b>Megatic</b></a></sub>
 </p>
 
 <p align="center">
@@ -17,6 +17,8 @@
   <a href="https://github.com/GodFaizT/makerworld-to-any/releases/latest"><img alt="Versão" src="https://img.shields.io/github/v/release/GodFaizT/makerworld-to-any?label=vers%C3%A3o&color=38BDF8"></a>
   <a href="https://github.com/GodFaizT/makerworld-to-any/actions/workflows/verificacao.yml"><img alt="Verificação" src="https://img.shields.io/github/actions/workflow/status/GodFaizT/makerworld-to-any/verificacao.yml?label=verifica%C3%A7%C3%A3o"></a>
   <img alt="Claude Code skill" src="https://img.shields.io/badge/Claude%20Code-skill-D97757?logo=claude&logoColor=white">
+  <img alt="Codex skill" src="https://img.shields.io/badge/Codex%20(ChatGPT)-skill-10A37F">
+  <img alt="Antigravity plugin" src="https://img.shields.io/badge/Antigravity%20(Gemini)-plugin-4285F4">
   <img alt="Anycubic Slicer Next" src="https://img.shields.io/badge/Anycubic%20Slicer%20Next-2.0-1E88E5">
   <img alt="Windows" src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?logo=windows&logoColor=white">
   <a href="LICENSE"><img alt="Licença MIT" src="https://img.shields.io/badge/licen%C3%A7a-MIT-22c55e"></a>
@@ -52,7 +54,9 @@ tempo e as gramas de cada prato.
 
 ## 🚀 Começar já
 
-Num terminal (PowerShell, Linha de Comandos ou Git Bash), **fora** do Claude Code:
+Funciona no **Claude Code**, no **Codex** (ChatGPT) e no **Antigravity** (Gemini): qualquer agente de IA que corra no
+computador Windows onde está o Anycubic Slicer Next. Para o Claude Code, num terminal (PowerShell, Linha de Comandos
+ou Git Bash), **fora** do Claude Code:
 
 ```bash
 npx skills add GodFaizT/makerworld-to-any --skill "*" -g -a claude-code -y
@@ -73,6 +77,11 @@ Depois abre uma sessão **nova** do Claude Code e escreve o comando da tua impre
 
 Fica `Vaso - Kobra X.3mf` ao lado do original, já verificado, com o tempo e as gramas de cada prato. 🎉
 
+| Usas… | Instalar (num terminal) | Depois escreve |
+|---|---|---|
+| **Codex** (app do ChatGPT, CLI ou IDE) | `npx skills add GodFaizT/makerworld-to-any --skill "*" -g -a codex -y` | `$kobrax "C:\Downloads\Vaso.3mf"` |
+| **Antigravity** (Gemini) | `agy plugin install https://github.com/GodFaizT/makerworld-to-any` | `/kobrax "C:\Downloads\Vaso.3mf"` |
+
 Primeira vez, ou alguma coisa não correu bem? Os passos todos estão a seguir.
 
 <a id="instalar"></a>
@@ -84,7 +93,7 @@ Primeira vez, ou alguma coisa não correu bem? Os passos todos estão a seguir.
 | | O quê | Para quê | Como confirmar |
 |---|---|---|---|
 | ✅ | **Windows 10 ou 11** | a linha de comandos do Anycubic Slicer Next corre no Windows | — |
-| ✅ | **[Claude Code](https://claude.com/claude-code)**: terminal, VS Code ou separador *Code* da app Claude | é o Claude que corre os scripts da skill no teu computador | `claude --version` |
+| ✅ | Um agente de IA que corra no teu computador: **[Claude Code](https://claude.com/claude-code)** (terminal, VS Code ou separador *Code* da app Claude), **Codex** (app do ChatGPT, CLI ou extensão do IDE) ou **Antigravity** (Gemini) | é o agente que corre os scripts da skill no teu computador | `claude --version`, `codex --version` ou `agy --version` |
 | ✅ | **[Anycubic Slicer Next](https://www.anycubic.com)** 2.0 (testada com a 2.0.0.3 e a 2.0.0.7), em `C:\Program Files\AnycubicSlicerNext` | é ele que exporta e fatia os projetos | abre normalmente; instalado noutra pasta → ver [Problemas](#problemas) |
 | ✅ | **[Python 3.8 ou mais recente](https://www.python.org/downloads/)**, com *"Add python.exe to PATH"* marcado ao instalar | os scripts são em Python | `python --version` |
 | ➕ | `numpy` *(opcional)* | mede a folga real entre peças e consegue afastá-las | `pip install numpy` |
@@ -100,6 +109,8 @@ Primeira vez, ou alguma coisa não correu bem? Os passos todos estão a seguir.
 | **B. Plugin do Claude Code** | instalar sem sair do Claude Code | `/any-update` |
 | **C. ZIP** | computadores sem Node.js | `/any-update` |
 | **D. `npx github:`** | o instalador do próprio projeto | `/any-update` |
+| **E. Codex** (ChatGPT) | usar o agente do ChatGPT | `npx skills update` |
+| **F. Antigravity** (Gemini) | usar o agente da Google | reinstalar o plugin |
 
 <details open>
 <summary><b>A. Com <code>npx skills</code> (recomendada)</b></summary>
@@ -179,20 +190,61 @@ npx github:GodFaizT/makerworld-to-any --desinstalar   # remover
 </details>
 
 <details>
-<summary><b>E no chat do claude.ai?</b></summary>
+<summary><b>E. No Codex (ChatGPT)</b></summary>
 
 <br>
 
-Carrega `makerworld-to-any-skill.zip` (das [releases](https://github.com/GodFaizT/makerworld-to-any/releases/latest))
-em **Definições → Capacidades → Skills**. O chat corre num servidor sem o Anycubic Slicer Next: aí o Claude explica e
-aconselha, mas **não adapta nem fatia**. Para isso usa o Claude Code.
+O Codex é o agente do ChatGPT: a app do ChatGPT para Windows, o `codex` no terminal ou a extensão do VS Code. Num
+terminal:
+
+```bash
+npx skills add GodFaizT/makerworld-to-any --skill "*" -g -a codex -y
+```
+
+Fica em `~/.agents/skills`. Abre uma sessão nova do Codex e chama os comandos com `$` em vez de `/`:
+`$kobrax "C:\Downloads\Vaso.3mf"`, `$any-plates`, `$any-doctor test`… ou pede por palavras. Sem Git:
+`npx github:GodFaizT/makerworld-to-any --agente codex`.
+
+- **Atualizar:** `npx skills update`
+- **Remover:** `npx skills remove` e escolhe as skills da MakerWorld to Any
+
+</details>
+
+<details>
+<summary><b>F. No Antigravity (Gemini)</b></summary>
+
+<br>
+
+O Antigravity é o agente da Google (substituiu o Gemini CLI). O repositório é um plugin do Antigravity, por isso,
+num terminal:
+
+```bash
+agy plugin install https://github.com/GodFaizT/makerworld-to-any
+```
+
+Começa uma conversa nova e usa `/kobrax "C:\Downloads\Vaso.3mf"`, `/any-plates`… ou pede por palavras.
+
+- **Atualizar:** `agy plugin uninstall makerworld-to-any` e instala outra vez
+- **Ainda usas o Gemini CLI?** `npx skills add GodFaizT/makerworld-to-any --skill "*" -g -a gemini-cli -y`
+
+</details>
+
+<details>
+<summary><b>E nos chats do claude.ai, do ChatGPT ou do Gemini?</b></summary>
+
+<br>
+
+Os chats no browser correm num servidor sem o Anycubic Slicer Next, por isso **não adaptam nem fatiam**. No claude.ai
+podes carregar `makerworld-to-any-skill.zip` (das
+[releases](https://github.com/GodFaizT/makerworld-to-any/releases/latest)) em **Definições → Capacidades → Skills** e
+o Claude explica e aconselha. Para adaptar, usa um dos agentes acima no teu computador.
 
 </details>
 
 ### 3. Confirmar que funciona
 
-1. **Fecha o Claude Code e abre uma sessão nova.** As skills só são carregadas quando a sessão começa.
-2. Escreve `/` e procura `/kobrax`, `/any-plates`… na lista.
+1. **Fecha o teu agente e abre uma sessão nova.** As skills só são carregadas quando a sessão começa.
+2. Escreve `/` (no Codex, `$`) e procura `kobrax`, `any-plates`… na lista.
 3. Corre o teste:
    ```text
    /any-doctor teste
@@ -209,7 +261,8 @@ aconselha, mas **não adapta nem fatia**. Para isso usa o Claude Code.
    que queres. Tem de ser o projeto `.3mf`, **não** um `.gcode.3mf`: esse já vem fatiado e não tem modelo para adaptar.
 2. **Copia o caminho.** No Explorador de Ficheiros, clica com o botão direito no ficheiro → **Copiar como caminho**
    (ou seleciona-o e carrega em `Ctrl` + `Shift` + `C`). Fica com as aspas, por exemplo `"C:\Downloads\Vaso.3mf"`.
-3. **Pede ao Claude Code.** Escreve o comando da tua impressora e cola o caminho:
+3. **Pede ao teu agente.** Escreve o comando da tua impressora e cola o caminho (no Codex o comando começa por `$`:
+   `$kobrax`):
    ```text
    /kobrax "C:\Downloads\Vaso.3mf"
    ```
@@ -530,8 +583,9 @@ A forma de atualizar depende de como instalaste:
 | `npx skills` | `npx skills update` (num terminal) |
 | plugin do Claude Code | `/any-update` (ou `/plugin update makerworld-to-any@makerworld-to-any`) |
 | ZIP ou `npx github:` | `/any-update` |
+| plugin do Antigravity | `agy plugin uninstall makerworld-to-any` e depois `agy plugin install https://github.com/GodFaizT/makerworld-to-any` |
 
-No fim, abre uma sessão nova do Claude Code. As novidades de cada versão estão no [CHANGELOG](CHANGELOG.md) (em inglês).
+No fim, abre uma sessão nova do teu agente. As novidades de cada versão estão no [CHANGELOG](CHANGELOG.md) (em inglês).
 
 ```text
 /any-doctor         ← Python, Anycubic Slicer Next, perfis e preferências
@@ -547,7 +601,7 @@ Depois de atualizares o **Anycubic Slicer Next**, corre `/any-doctor teste`: a s
 
 | Problema | O que fazer |
 |---|---|
-| O `/kobrax` não aparece no Claude Code | Abre uma sessão **nova**. Continua sem aparecer? Confirma que as skills estão instaladas (`npx skills list`, `/plugin`, ou as pastas em `~/.claude/skills`). Com `npx skills`, instala **todas** as skills (`--skill "*"`): os comandos não funcionam sem a skill principal. |
+| O `/kobrax` não aparece no teu agente | Abre uma sessão **nova** (no Codex, procura `$kobrax`). Continua sem aparecer? Confirma que as skills estão instaladas (`npx skills list`, `/plugin`, `agy plugin list`, ou as pastas em `~/.claude/skills`, `~/.agents/skills` no Codex). Com `npx skills`, instala **todas** as skills (`--skill "*"`): os comandos não funcionam sem a skill principal. |
 | O `npx skills` falha com *"Failed to clone repository"* … `spawn git ENOENT` | Esse terminal não encontra o Git. Se o `git --version` der erro, instala o [Git](https://git-scm.com/download/win). Se o Git já estiver instalado, **fecha o terminal, abre um novo** e corre o comando outra vez. |
 | *"Anycubic Slicer Next não encontrado"* | Instala-o. Se está noutra pasta, diz à skill onde está o programa e abre um terminal novo:<br>`setx ANYCUBIC_SLICER "D:\Programas\AnycubicSlicerNext\AnycubicSlicerNext.exe"` |
 | *"Python não encontrado"*, ou o `python` abre a Microsoft Store | Instala o Python de [python.org](https://www.python.org/downloads/) com *"Add python.exe to PATH"* marcado. Depois, no Windows, vai a **Definições → Aplicações → Definições avançadas de aplicações → Aliases de execução de aplicações** e desliga os de `python.exe` e `python3.exe`. |
@@ -563,10 +617,12 @@ Depois de atualizares o **Anycubic Slicer Next**, corre `/any-doctor teste`: a s
 ## ❓ Perguntas frequentes
 
 <details>
-<summary><b>Funciona no chat do claude.ai ou só no Claude Code?</b></summary>
+<summary><b>Funciona no ChatGPT, no Gemini ou no chat do claude.ai?</b></summary>
 
-<br>Precisa de correr o Anycubic Slicer Next no teu computador, por isso adapta no **Claude Code** (terminal, VS Code
-ou separador *Code* da app Claude para Windows). No chat do claude.ai a skill só explica e aconselha.
+<br>Precisa de correr o Anycubic Slicer Next no teu computador, por isso adapta num agente que corra lá: **Claude
+Code** (terminal, VS Code ou separador *Code* da app Claude para Windows), **Codex** (app do ChatGPT para Windows, CLI
+ou IDE) ou **Antigravity** (Gemini). Nos chats do browser (claude.ai, chatgpt.com, gemini.google.com) só explica e
+aconselha.
 </details>
 
 <details>

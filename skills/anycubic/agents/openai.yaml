@@ -1,0 +1,5 @@
+interface:
+  display_name: "/anycubic"
+  short_description: "MakerWorld to Any: any Anycubic printer"
+policy:
+  allow_implicit_invocation: false

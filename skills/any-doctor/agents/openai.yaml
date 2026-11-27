@@ -1,0 +1,5 @@
+interface:
+  display_name: "/any-doctor"
+  short_description: "MakerWorld to Any: is everything working?"
+policy:
+  allow_implicit_invocation: false

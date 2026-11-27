@@ -1,0 +1,5 @@
+interface:
+  display_name: "/any-undo"
+  short_description: "MakerWorld to Any: undo"
+policy:
+  allow_implicit_invocation: false

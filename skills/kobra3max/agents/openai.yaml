@@ -1,0 +1,5 @@
+interface:
+  display_name: "/kobra3max"
+  short_description: "MakerWorld to Any: Anycubic Kobra 3 Max"
+policy:
+  allow_implicit_invocation: false

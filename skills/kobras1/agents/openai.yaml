@@ -1,0 +1,5 @@
+interface:
+  display_name: "/kobras1"
+  short_description: "MakerWorld to Any: Anycubic Kobra S1"
+policy:
+  allow_implicit_invocation: false

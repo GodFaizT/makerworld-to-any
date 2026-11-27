@@ -6,9 +6,11 @@ Uso:
     python atualizar.py --verificar  so diz se ha versao nova
 
 - Instalada como plugin do Claude Code: usa `claude plugin marketplace update` + `claude plugin update`.
-- Instalada com o `npx skills add` (skills.sh): as pastas em ~/.claude/skills sao ligacoes (no Windows, juncoes)
-  para ~/.agents/skills, ou copias registadas em ~/.agents/.skill-lock.json, geridas pelo `npx skills`. Nao mexe
-  em nada e diz para correr `npx skills update`.
+- Instalada como plugin do Antigravity (`agy plugin install`): nao mexe em nada e diz como a reinstalar.
+- Instalada com o `npx skills add` (skills.sh), para o Claude Code, o Codex, o Antigravity ou o Gemini CLI: as pastas
+  sao ligacoes (no Windows, juncoes) para ~/.agents/skills, estao em ~/.agents/skills (Codex), ou sao copias
+  registadas em ~/.agents/.skill-lock.json, geridas pelo `npx skills`. Nao mexe em nada e diz para correr
+  `npx skills update`.
 - Instalada como skill (ZIP, `npx github:`, a mao): descarrega o ZIP da ultima release, confere o SHA-256 que o
   GitHub publica para ele e substitui so as pastas da skill e dos comandos que vem nele (as outras skills nao sao
   tocadas). Nunca apaga uma ligacao e nunca executa o que descarregou.
@@ -37,6 +39,13 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 SKILL = os.path.dirname(AQUI)              # .../makerworld-to-any
 BASE = os.path.dirname(SKILL)              # pasta das skills (ou skills/ do plugin)
 CABECALHOS = {"User-Agent": "makerworld-to-any-atualizar", "Accept": "application/vnd.github+json"}
+# pastas globais de skills de cada agente (relativas a pasta do utilizador) e o nome do agente no `npx skills -a`
+AGENTES = [(os.path.join(".claude", "skills"), "claude-code"), (os.path.join(".agents", "skills"), "codex"),
+           (os.path.join(".gemini", "skills"), "gemini-cli"),
+           (os.path.join(".gemini", "antigravity-cli", "skills"), "antigravity-cli"),
+           (os.path.join(".gemini", "antigravity", "skills"), "antigravity"),
+           (os.path.join(".gemini", "config", "skills"), "antigravity")]
+NOVA_SESSAO = "Open a new session of your agent (Claude Code, Codex, Antigravity...) to use the new version."
 # comandos que mudaram de nome: makerworld-update -> any-update (1.4.1); os /any-* em portugues -> ingles (2.1.0)
 RENOMEADOS = {"makerworld-update": "any-update", "any-pratos": "any-plates", "any-cores": "any-colors",
               "any-perfil": "any-settings", "any-desfazer": "any-undo", "any-diagnostico": "any-doctor"}
@@ -66,9 +75,30 @@ def novidades(rel, linhas=14):
     return "\n".join("  " + l for l in corpo[:linhas]) + ("\n  ..." if len(corpo) > linhas else "")
 
 
+def _partes(p):
+    return os.path.normcase(p).replace("/", os.sep).split(os.sep)
+
+
 def em_plugin():
-    partes = os.path.normcase(SKILL).replace("/", os.sep).split(os.sep)
+    """Plugin do Claude Code (~/.claude/plugins/...)."""
+    partes = _partes(SKILL)
     return any(partes[i] == ".claude" and partes[i + 1] == "plugins" for i in range(len(partes) - 1))
+
+
+def em_plugin_antigravity():
+    """Plugin do Antigravity (~/.gemini/config/plugins/... ou ~/.gemini/antigravity-cli/plugins/...)."""
+    partes = _partes(os.path.realpath(SKILL))
+    return any(partes[i] == ".gemini" and "plugins" in partes[i + 1:i + 3] for i in range(len(partes) - 1))
+
+
+def agente():
+    """O agente da pasta onde a skill esta, como o `npx skills -a` lhe chama (claude-code por omissao)."""
+    base = os.path.normcase(os.path.realpath(BASE))
+    casa = os.path.expanduser("~")
+    for pasta, nome in AGENTES:
+        if base == os.path.normcase(os.path.realpath(os.path.join(casa, pasta))):
+            return nome
+    return "claude-code"
 
 
 def e_ligacao(p):
@@ -103,11 +133,12 @@ def em_npx_skills():
     if any(partes[i] == ".agents" and partes[i + 1] == "skills" for i in range(len(partes) - 1)):
         return True
     casa = os.path.expanduser("~")
-    if os.path.normcase(os.path.realpath(BASE)) == os.path.normcase(os.path.realpath(os.path.join(casa, ".claude", "skills"))):
+    globais = [os.path.normcase(os.path.realpath(os.path.join(casa, pasta))) for pasta, _ in AGENTES]
+    if os.path.normcase(os.path.realpath(BASE)) in globais:
         registos = [os.path.join(casa, ".agents", ".skill-lock.json")]
         if os.environ.get("XDG_STATE_HOME"):
             registos.insert(0, os.path.join(os.environ["XDG_STATE_HOME"], "skills", ".skill-lock.json"))
-    else:                                          # <projeto>/.claude/skills -> <projeto>/skills-lock.json
+    else:                                          # <projeto>/.<agente>/skills -> <projeto>/skills-lock.json
         registos = [os.path.join(os.path.dirname(os.path.dirname(BASE)), "skills-lock.json")]
     return any(_no_registo(r) for r in registos)
 
@@ -116,7 +147,16 @@ def atualiza_npx_skills():
     print("Installed with npx skills (skills.sh): it manages the folders, so this update doesn't touch them.\n"
           "To update, run in a terminal:\n"
           "  npx skills update\n"
-          "Then open a new Claude Code session.")
+          "Then open a new session of your agent.")
+    return 0
+
+
+def atualiza_plugin_antigravity():
+    print("Installed as an Antigravity plugin: this update doesn't touch it.\n"
+          "To update, run in a terminal:\n"
+          "  agy plugin uninstall makerworld-to-any\n"
+          f"  agy plugin install https://github.com/{REPO}\n"
+          "Then start a new Antigravity conversation.")
     return 0
 
 
@@ -199,7 +239,7 @@ def avisa_obsoletas_npx():
         print("The commands were renamed (" + ", ".join(f"/{d} -> /{RENOMEADOS[d]}" for d in velhas) + ").\n"
               "To get the new ones, run in a terminal:\n"
               f"  npx skills remove {' '.join(velhas)} -g -y\n"
-              f'  npx skills add {REPO} --skill "*" -g -a claude-code -y')
+              f'  npx skills add {REPO} --skill "*" -g -a {agente()} -y')
 
 
 def limpa_obsoletas():
@@ -219,8 +259,9 @@ def main():
     if "--limpar" in sys.argv:
         limpa_obsoletas()
         return 0
-    npx_skills = not em_plugin() and em_npx_skills()
-    if not em_plugin() and not npx_skills:
+    plugin = em_plugin() or em_plugin_antigravity()
+    npx_skills = not plugin and em_npx_skills()
+    if not plugin and not npx_skills:
         limpa_obsoletas()
     elif npx_skills:
         avisa_obsoletas_npx()
@@ -240,13 +281,15 @@ def main():
         return 0
     if em_plugin():
         return atualiza_plugin()
+    if em_plugin_antigravity():
+        return atualiza_plugin_antigravity()
     if npx_skills:
         return atualiza_npx_skills()
     pastas = atualiza_pastas(rel)
     # Nada do que se descarregou e executado aqui. Os comandos antigos que so a versao nova conhece sao apagados quando
     # ela correr (limpa_obsoletas no inicio do main).
     print(f"Updated to {remota}: {', '.join(sorted(pastas))} in {BASE}")
-    print("Open a new Claude Code session to use the new version.")
+    print(NOVA_SESSAO)
     return 0
 
 

@@ -8,9 +8,10 @@ description: Adapts Bambu Studio / MakerWorld 3MF projects (Bambu Lab A1, A1 min
 **MakerWorld projects, ready to print on your Anycubic, with one request.**
 
 MakerWorld models are made in Bambu Studio for Bambu Lab printers. Opened in Anycubic Slicer Next they lose their
-profiles, keep Bambu filaments and temperatures, and turn the prime tower off. With this skill you give Claude a
-`.3mf` and get back an **Anycubic Slicer Next** project that is already sliced, with your printer's profiles, the
-designer's tweaks, the colors on the ACE, and the time and grams of every plate.
+profiles, keep Bambu filaments and temperatures, and turn the prime tower off. With this skill you give your AI
+agent (Claude Code, Codex / ChatGPT or Antigravity / Gemini) a `.3mf` and get back an **Anycubic Slicer Next**
+project that is already sliced, with your printer's profiles, the designer's tweaks, the colors on the ACE, and the
+time and grams of every plate.
 
 Made by [Megatic](https://megatic.pt) · [GitHub](https://github.com/GodFaizT/makerworld-to-any) · Windows ·
 Anycubic Slicer Next 2.0.0.3 and 2.0.0.7 · ask in any language
@@ -61,14 +62,20 @@ Nozzles from 0.2 to 0.8 mm, whichever the printer has in Anycubic Slicer Next.
 
 ## 📦 Install
 
-You need Windows with **Anycubic Slicer Next**, **Python 3.8+**, **Git** and **Claude Code** on the same computer.
-`numpy` is optional: with it the skill measures the real clearance between parts.
+You need Windows with **Anycubic Slicer Next**, **Python 3.8+** and an AI agent that runs on your computer:
+**Claude Code**, **Codex** (ChatGPT) or **Antigravity** (Gemini). `numpy` is optional: with it the skill measures the
+real clearance between parts.
 
 To install the skill with all its commands, in a terminal:
 
-```bash
-npx skills add GodFaizT/makerworld-to-any --skill "*" -g -a claude-code -y
-```
+| Agent | Install | Then type |
+|---|---|---|
+| Claude Code | `npx skills add GodFaizT/makerworld-to-any --skill "*" -g -a claude-code -y` | `/kobrax Vase.3mf` |
+| Codex (CLI, IDE, ChatGPT app) | `npx skills add GodFaizT/makerworld-to-any --skill "*" -g -a codex -y` | `$kobrax Vase.3mf` |
+| Antigravity | `agy plugin install https://github.com/GodFaizT/makerworld-to-any` | `/kobrax Vase.3mf` |
+| Gemini CLI | `npx skills add GodFaizT/makerworld-to-any --skill "*" -g -a gemini-cli -y` | "adapt Vase.3mf for the Kobra X" |
+
+`npx skills` needs Node.js and Git. In every agent you can also just ask, in any language.
 
 ## ⚡ Commands
 
@@ -83,9 +90,11 @@ npx skills add GodFaizT/makerworld-to-any --skill "*" -g -a claude-code -y
 | `/any-doctor` | is everything working? (`test` runs a full test) |
 | `/any-update` | update the skill and the commands |
 
+In Codex the commands start with `$` instead of `/` (`$kobrax`, `$any-plates`...).
+
 ---
 
-## Instructions for Claude
+## Instructions for the agent
 
 Converts 3MF projects made in Bambu Studio (most MakerWorld models) into Anycubic Slicer Next projects (tested with
 2.0.0.3 and 2.0.0.7) for any Anycubic printer the slicer ships. Bed, profiles and filaments come from each printer's
@@ -94,14 +103,15 @@ scripts' reports are in English: translate them when replying in another languag
 values are Portuguese, without accents (`--impressora`, `meus`, `tudo`...). The report markers quoted below are
 written exactly as the scripts print them.
 
-The scripts are in `scripts/` inside this skill's folder (the "Base directory" given when the skill loads). They need
+The scripts are in `scripts/` inside this skill's folder (the folder that holds this `SKILL.md`; in Claude Code, the
+"Base directory" given when the skill loads). They need
 Python 3.8+ (`python` or `py -3`) and Anycubic Slicer Next installed in `C:\Program Files\AnycubicSlicerNext`
 (elsewhere: environment variable `ANYCUBIC_SLICER`). numpy is optional: with it the scripts measure the real clearance
 between parts and can move them apart. Each adaptation takes 1 to 3 minutes because it exports and slices every plate.
 
-If Anycubic Slicer Next is not available in this environment (e.g. claude.ai chat or the Claude app, which run on a
-Linux server), don't try to install or simulate it: explain that the adaptation has to run in Claude Code on the
-Windows computer where Anycubic is installed (in the Claude app: the "Code" tab), and help with advice only.
+If Anycubic Slicer Next is not available in this environment (e.g. the claude.ai, ChatGPT or Gemini chats, which run
+on a Linux server), don't try to install or simulate it: explain that the adaptation has to run in an agent on the
+Windows computer where Anycubic is installed (Claude Code, Codex or Antigravity), and help with advice only.
 
 ### Scripts
 
@@ -326,8 +336,9 @@ user when they ask "how is it arranged".
   tested one), profiles, settings. `diagnostico.py --teste [--impressora "..."]`: adapts, changes colors, merges
   plates, resizes and slices an example project in a temporary folder (under a minute). Run it when something fails
   for no obvious reason and after the user updates Anycubic Slicer Next.
-- `/any-update` (or `atualizar.py`) updates the skill and the commands to the latest release on GitHub; as a plugin
-  it uses `claude plugin update`. A new session is needed afterwards.
+- `/any-update` (or `atualizar.py`) updates the skill and the commands to the latest release on GitHub; as a Claude
+  Code plugin it uses `claude plugin update`; installed with `npx skills` or as an Antigravity plugin it only says
+  which commands to run. A new session of the agent is needed afterwards.
 
 ### When manual work is needed
 

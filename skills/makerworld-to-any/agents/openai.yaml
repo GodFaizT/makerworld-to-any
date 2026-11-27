@@ -1,0 +1,5 @@
+interface:
+  display_name: "MakerWorld to Any"
+  short_description: "MakerWorld / Bambu Studio 3MF projects, ready to print on your Anycubic"
+policy:
+  allow_implicit_invocation: true

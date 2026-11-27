@@ -31,3 +31,7 @@ Or just ask: "adapt this file for the kobra x: ..."
 
 Needs Anycubic Slicer Next (C:\Program Files\AnycubicSlicerNext) and Python 3.
 numpy is optional (pip install numpy): it measures the real gap between parts and lets the skill move them apart.
+
+instalar.bat installs it for Claude Code. For Codex (ChatGPT) or Antigravity (Gemini), see
+"Install" on https://github.com/GodFaizT/makerworld-to-any (npx skills add ... -a codex,
+or agy plugin install https://github.com/GodFaizT/makerworld-to-any).

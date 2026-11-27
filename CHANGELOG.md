@@ -1,5 +1,20 @@
 # Changelog
 
+## 2.3.0 - 2026-11-27 · Codex (ChatGPT) and Antigravity (Gemini)
+
+- Works in **Codex**, ChatGPT's agent (the ChatGPT app for Windows, the CLI and the IDE extension):
+  `npx skills add GodFaizT/makerworld-to-any --skill "*" -g -a codex -y`, then `$kobrax Vase.3mf`. Each command
+  has an `agents/openai.yaml`, so Codex only runs it when you call it.
+- Works in **Antigravity**, Google's agent that replaced the Gemini CLI: the repository is an Antigravity plugin
+  (`plugin.json`), so `agy plugin install https://github.com/GodFaizT/makerworld-to-any`, then `/kobrax Vase.3mf`.
+  The Gemini CLI works with `npx skills add ... -a gemini-cli`.
+- The skill and the commands no longer assume Claude Code: they say how to load the main skill in other agents and
+  where the request is when the agent doesn't fill in `$ARGUMENTS`.
+- `/any-update` recognises installs for Codex, Antigravity and the Gemini CLI and gives the right command for each
+  one. `npx github:GodFaizT/makerworld-to-any --agente codex|antigravity|gemini` installs for those agents.
+- README: how to install and use it in each agent, and why the browser chats (claude.ai, ChatGPT, Gemini) can only
+  advise.
+
 ## 2.2.0 - 2026-11-27 · reports, notes and installer in English
 
 - The scripts' reports, warnings, notes, errors and `--help` texts are in English (`SLICED`, `WARNINGS`,

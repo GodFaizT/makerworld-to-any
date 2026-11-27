@@ -1,0 +1,5 @@
+interface:
+  display_name: "/any-settings"
+  short_description: "MakerWorld to Any: settings"
+policy:
+  allow_implicit_invocation: false

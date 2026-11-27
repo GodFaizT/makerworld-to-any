@@ -1,0 +1,5 @@
+interface:
+  display_name: "/any-colors"
+  short_description: "MakerWorld to Any: per-part colors"
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,5 @@
+interface:
+  display_name: "/kobrax"
+  short_description: "MakerWorld to Any: Anycubic Kobra X"
+policy:
+  allow_implicit_invocation: false
